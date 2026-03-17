@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<title>숙소 상세</title>
+
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+<style>
+
+.hotel-img{
+    width:100%;
+    object-fit:cover;
+    border-radius:10px;
+}
+
+.info-box{
+    margin-top:20px;
+}
+
+.info-title{
+    font-weight:bold;
+}
+
+.hotel-card{
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:20px;
+    background:#fff;
+}
+
+.info-row{
+    margin-bottom:10px;
+}
+
+.map-box{
+    margin-top:20px;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.action-buttons{
+    margin-top:20px;
+}
+</style>
+
+<!-- 카카오 지도 -->
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2014221291f1b63602c92cea5292906&libraries=services"></script>
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+<h2 class="mb-4">숙소 상세</h2>
+
+<div class="row">
+
+<div class="col-md-6">
+
+<img class="hotel-img"
+     th:src="@{${hotel.IMAGE_URL}}"
+     alt="호텔이미지">
+
+</div>
+
+
+<div class="col-md-6">
+
+<div class="info-box">
+
+<p>
+<span class="info-title">숙소명 :</span>
+<span th:text="${hotel.HOTEL_NAME}"></span>
+</p>
+
+<p>
+<span class="info-title">주소 :</span>
+<span th:text="${hotel['ADDRESS']} ?: '주소 없음'"></span>
+</p>
+
+<p>
+<span class="info-title">연락처 :</span>
+<span th:text="${hotel['CONTACT']} ?: '-'"></span>
+</p>
+
+<p>
+<span class="info-title">설명 :</span>
+<span th:text="${hotel['HOTEL_DESC']} ?: '-'"></span>
+</p>
+
+<p>
+<span class="info-title">상태 :</span>
+
+<span th:if="${hotel.APPROVE_STATUS=='PENDING'}"
+      class="badge bg-warning">
+심사중
+</span>
+
+<span th:if="${hotel.APPROVE_STATUS=='APPROVED'}"
+      class="badge bg-success">
+운영중
+</span>
+
+<span th:if="${hotel.APPROVE_STATUS=='REJECTED'}"
+      class="badge bg-danger">
+반려
+</span>
+
+</p>
+
+<p>
+<span class="info-title">위치 :</span>
+</p>
+
+<div id="map" style="width:100%;height:300px;border-radius:10px;"></div>
+
+<input type="hidden" id="latitude" th:value="${hotel['LATITUDE']}">
+<input type="hidden" id="longitude" th:value="${hotel['LONGITUDE']}">
+
+</div>
+
+
+<div class="mt-4">
+
+<button class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#editModal">
+수정
+</button>
+
+<button class="btn btn-danger"
+        onclick="deleteHotel()">
+삭제
+</button>
+
+<a class="btn btn-secondary"
+   th:href="@{/admin/hotel/list}">
+목록
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- 숙소 수정 모달 -->
+<div class="modal fade" id="editModal" tabindex="-1">
+
+	<div class="modal-dialog">
+		<div class="modal-content">
+		
+		<div class="modal-header">
+		<h5 class="modal-title">숙소 수정</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+		</div>
+		
+		<div class="modal-body">
+		
+		<input type="hidden" id="hotel_id" th:value="${hotel.HOTEL_ID}">
+		
+		<div class="mb-3">
+		<label>숙소명</label>
+		<input type="text"
+		       class="form-control"
+		       id="hotel_name"
+		       th:value="${hotel.HOTEL_NAME}">
+		</div>
+		
+		<div class="mb-3">
+		<label>주소</label>
+		<input type="text"
+		       class="form-control"
+		       id="address"
+		       th:value="${hotel['ADDRESS']} ?: '주소 없음'">
+		       
+		</div>
+		
+		<div class="mb-3">
+		<label>연락처</label>
+		<input type="text"
+		       class="form-control"
+		       id="contact"
+		       th:value="${hotel['CONTACT']} ?: '-'">
+		</div>
+		
+		<div class="mb-3">
+		<label>설명</label>
+		<textarea class="form-control"
+		          id="hotel_desc"
+		          rows="3"
+		          th:text="${hotel['HOTEL_DESC']} ?: '-'">
+		</textarea>
+		</div>
+		
+		</div>
+		
+		<div class="modal-footer">
+		<button class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+		<button class="btn btn-primary" onclick="updateHotel()">저장</button>
+		</div>
+		
+		</div>
+	</div>
+</div>
+
+
+<script>
+/* 숙소 삭제 */
+function deleteHotel(){
+
+	if(!confirm("숙소를 비활성화 하시겠습니까?")) return;
+	
+	let hotel_id = /*[[${hotel.HOTEL_ID}]]*/ 0;
+	
+	const token = document.querySelector('meta[name="_csrf"]').content;
+	const header = document.querySelector('meta[name="_csrf_header"]').content;	
+	
+	fetch("[[@{/admin/hotel/delete}]]",{
+	
+	method:"POST",
+	
+	headers:{
+		"Content-Type":"application/json",
+		[header]: token
+		},
+	
+	body:JSON.stringify({
+	hotel_id:hotel_id
+	})
+	
+	})
+	.then(res=>res.json())
+	.then(data=>{
+	
+	if(data.result==1){
+	
+	alert("삭제 완료");
+	location.href="/final_hotel/admin/hotel/list";
+	
+	}
+	
+	});
+
+}
+
+/* 숙소 수정 */
+function updateHotel(){
+
+	let hotel_id = document.getElementById("hotel_id").value;
+	let hotel_name = document.getElementById("hotel_name").value;
+	let address = document.getElementById("address").value;
+	let contact = document.getElementById("contact").value;
+	let hotel_desc = document.getElementById("hotel_desc").value;
+
+	const token = document.querySelector('meta[name="_csrf"]').content;
+	const header = document.querySelector('meta[name="_csrf_header"]').content;	
+	
+	fetch("[[@{/admin/hotel/update}]]",{
+
+	method:"POST",
+
+	headers:{
+		"Content-Type":"application/json",
+		[header]: token
+		},
+
+	body:JSON.stringify({
+	hotel_id:hotel_id,
+	hotel_name:hotel_name,
+	address:address,
+	contact:contact,
+	hotel_desc:hotel_desc
+	})
+
+	})
+	.then(res=>res.json())
+	.then(data=>{
+
+	if(data.result==1){
+
+	alert("수정 완료");
+	location.reload();
+
+	}
+
+	});
+
+	}
+
+
+/* 지도 */
+document.addEventListener("DOMContentLoaded", function(){
+
+const lat = parseFloat(document.getElementById("latitude").value);
+const lng = parseFloat(document.getElementById("longitude").value);
+
+console.log("좌표:", lat, lng);
+
+if(!lat || !lng){
+    console.log("좌표 없음");
+    return;
+}
+
+kakao.maps.load(function(){
+
+    const container = document.getElementById("map");
+
+    const options = {
+        center: new kakao.maps.LatLng(lat, lng),
+        level: 3
+    };
+
+    const map = new kakao.maps.Map(container, options);
+
+    const marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(lat, lng)
+    });
+
+    marker.setMap(map);
+
+});
+
+});
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>권한 없음</title>
+  <link rel="stylesheet" href="">
+  <style>
+    .wrap{max-width:800px;margin:0 auto}
+    .card{border:1px solid #e8ddd7;border-radius:18px;padding:16px;background:#fff;box-shadow:0 18px 38px rgba(0,0,0,.06)}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid #e8ddd7;text-decoration:none}
+  </style>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    /*]]>*/
+  </script>
+</head>
+<body>
+<div class="container">
+  <div class="wrap">
+    <h2 style="margin:16px 0">권한이 없습니다</h2>
+    <div class="card">
+      해당 기능에 접근할 권한이 없습니다.
+      <div style="margin-top:14px">
+        <a class="btn" th:href="@{/admin/login}">관리자 로그인</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

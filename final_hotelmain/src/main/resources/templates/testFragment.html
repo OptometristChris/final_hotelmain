@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<!--/* 타임리프는 백엔드 서버에서 HTML을 동적으로 렌더링하는 용도로 사용된다. */-->
+
+<head>
+<meta charset="UTF-8">
+<title>Fragment에 대해 알아보기</title>
+
+<!--/* Thymeleaf 전용 주석문. 소스보기에서 보이지 않는다.
+       
+  ▣ Thymeleaf 에서 $ 는 Spring MVC의 모델(Model)에 담긴 데이터(속성값)에 접근할 때 사용한다.
+    즉, Thymeleaf 에서 ${...} 은 컨트롤러에서 넘긴 데이터인 Spring MVC의 Model 객체나 Request Scope 등에 있는 변수를 참조할 때 사용한다.
+     <예시> ${user.name} → Model에 담긴 user 객체의 name 속성 값 출력
+           Thymeleaf 에서 ${...} 은 변수 표현식(Variable Expressions)으로 JSP 의 EL (Expression Language) 과 비슷한 역할을 하는 것이다.
+            
+            
+   ▣ Thymeleaf 에서 # 은 Thymeleaf 의 내장 객체 또는 유틸리티 객체에 접근할 때 사용하는 객체(Object) 접근 연산자 이다.
+      ----------------------------------------------------------------------------------------------
+        예시           설명                        사용 예
+      ----------------------------------------------------------------------------------------------
+        #strings          문자열 관련 함수             ${#strings.toUpperCase('hello')} → "HELLO"
+        #lists              리스트/컬렉션 관련 함수        ${#lists.size(myList)} → 리스트 크기
+        #dates              날짜/시간 관련 함수            ${#dates.format(today, 'yyyy-MM-dd')}  처리객체 java.util.Date, Calendar
+        #temporals        날짜/시간 관련 함수            ${#temporals.format(localDateTime, 'yyyy-MM-dd HH:mm:ss')}  처리객체 LocalDate, LocalDateTime
+        #numbers          숫자 관련 함수                ${#numbers.formatInteger(num, 3)}
+        #bools              불리언 처리 함수                ${#bools.isTrue(flag)}
+        #arrays          배열 관련 함수                ${#arrays.length(myArray)}
+        #maps              맵 관련 함수                ${#maps.containsKey(myMap, 'key')}
+        #request          HttpServletRequest 객체    ${#request.getParameter('id')}
+        #session          HttpSession 객체            ${#session.getAttribute('user')}
+        #authentication   Spring Security 의         ${#authentication.principal.username}  스프링 시큐리티로 로그인 되어진 아이디. 상세경로
+                          Authentication 객체         ${#authentication.name}                스프링 시큐리티로 로그인 되어진 아이디. 축약경로 
+                          (스프링 시큐리티의 인증정보 객체)
+        #authorization    Spring Security 의         ${#authorization.expression('isAuthenticated()')}  스프링 시큐리티로 로그인 되어진 여부.
+                          Authorization 객체          특정 권한이 있는지, 혹은 로그인 상태인지를 확인(Check)하여 결과(true/false)를 반환해준다.
+                          (스프링 시큐리티의 인증/권한 체크 객체)  Spring Security의 표현식(Expression)을 문자열로 넣어 실행한 결과를 가져온다.
+       
+       ※ 예시 ※ 
+       <p>리스트 크기: <span th:text="${#lists.size(userList)}"></span></p>
+       <p>대문자 변환: <span th:text="${#strings.toUpperCase(userName)}"></span></p>
+       <p>요청 파라미터: <span th:text="${#request.getParameter('id')}"></span></p>
+             
+             
+   ▣ Thymeleaf 에서 @{...} 는 URL 표현식(URL Expressions) 을 작성할 때 사용한다.
+      URL 경로를 동적으로 만들어주고, Context Path를 자동으로 포함시키는 기능을 한다.
+     
+      ※ 예시
+      <a th:href="@{/login}">로그인</a> 은 서버 context-path가 /myapp일 경우라면 
+      실제 출력은 <a href="/myapp/login">로그인</a> 이 된다.
+              
+   ▶ 변수 치환 => @{...} 안에서 변수 값을 ${...} 형태로 전달해서 URL을 만들 수 있다.
+      ※ 예시
+      <a th:href="@{/view/{id}(id=${board.id})}">상세보기</a>   board.id가 100 이면
+      <a href="/myapp/view/100">상세보기</a> 이 된다.
+   
+   ▶ 쿼리 파라미터 추가 => URL 뒤에 파라미터를 붙이고 싶을 때 (...) 안에 key=value 형태로 작성한다. 
+      ※ 예시
+      <a th:href="@{/search(type=${type}, keyword=${keyword})}">검색</a> 은 type=title, keyword=java 이라면
+      <a href="/myapp/search?type=title&keyword=java">검색</a> 이 된다.
+  
+   ▶ 절대경로 와 상대경로 
+     / 로 시작  → 서버 루트 기준 절대경로
+     ../      → 상위 폴더 기준 상대경로
+     ~로 시작   → 웹 애플리케이션 루트 기준 
+     
+     ※ 예시
+     @{/css/style.css}      → /myapp/css/style.css
+     @{../img/logo.png}     → 현재 경로 기준 상위폴더의 img/logo.png
+     @{~/index}             → /myapp/index
+     
+   ▶ 다른 속성에서도 사용 가능
+     th:src (이미지, JS 파일 경로)
+     th:action (form 전송 URL)
+     th:href (링크)
+     th:background (배경이미지 경로) 등
+     
+     ※ 예시
+     <form th:action="@{/login}" method="post">
+     <img th:src="@{/images/logo.png}">
+     <script th:src="@{/js/main.js}"></script>
+                 
+*/-->
+
+<!--/* Required meta tags */-->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> 
+
+<!--/* Bootstrap CSS */-->
+                    <!--/* 소스위치 resources/static/bootstrap-4.6.2-dist/css/bootstrap.min.css */-->
+                    
+<link rel="stylesheet" type="text/css" th:href="@{/bootstrap-4.6.2-dist/css/bootstrap.min.css}" > 
+
+
+<style type="text/css">
+
+    div#container {
+     /* border: solid 1px red; */
+       width: 80%;
+       margin: 0 auto;
+    }
+    
+    fieldset {
+       width: 50%;
+    }
+    
+   ul {list-style: none;}
+   
+    li {line-height: 200%;}
+
+</style>
+
+<!--/* Optional JavaScript */-->
+             <!--/* 소스위치 resources/static/js/jquery-3.7.1.min.js */-->
+<script type="text/javascript" th:src="@{/js/jquery-3.7.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/bootstrap-4.6.2-dist/js/bootstrap.bundle.min.js}" ></script> 
+</head>
+<body>
+
+	<!--/* >>> 템플릿 조각 <<< 
+       공통부분을 템플릿화 하여 필요한 부분에서 해당 템플릿을 불러와 설정하는 기능.
+       <예> 좌측 카테고리영역, 상단 영역, 하단 영역 등 공통으로 사용되는 영역을 모듈화 시킨다. 
+  */-->
+	<div class="container" style="margin: 5% 10% 5% 9%;">
+	
+		<h3>템플릿 조각 포함 insert</h3>
+		<div th:insert="~{fragment/fragment_1 :: header}"
+			 style="color: red; font-size: 20pt;"></div>
+			 
+		<!--/* 
+            ▶ 절대경로 와 상대경로 
+              / 로 시작  → 서버 루트 기준 절대경로
+              ../      → 상위 폴더 기준 상대경로
+              
+              ※ 예시
+              @{/css/style.css}      → /myapp/css/style.css
+              @{../img/logo.png}     → 현재 경로 기준 상위폴더의 img/logo.png
+              
+              ~로 시작   → 웹 애플리케이션 루트 기준
+                  
+              th:insert 는 th:insert가 작성된 태그 내부에 import하는 템플릿 조각을 추가한다.
+              ~{경로 :: 템플릿조각이름}
+              경로 작성에 주의해야 하는데, Thymeleaf에 특정한 설정이 없다면 기본 default 최상위 경로는 templates/ 로 시작되어진다. 
+       */-->
+      
+
+      <hr class="border border-info">
+      
+      <h3>템플릿 조각 포함 replace</h3>
+		<div th:replace="~{fragment/fragment_1 :: header}"
+			 style="color: red; font-size: 20pt;"></div>
+	
+	  <hr class="border border-info">
+	  
+	  <div th:replace="~{fragment/fragment_1 :: headerParam('안녕', '행복')}"
+		   style="color: red; font-size: 20pt;"></div>
+	  
+	
+	</div>
+	
+	
+	<div id="container">
+    <!--/* JSTL이나 Thymeleaf 템플릿 문법으로 데이터를 화면에 출력할때 request scope에 존재하는 데이터를 찾고 없으면 session scope에 존재한 데이터를 찾는다. */-->
+	    <div>
+	         <span style="font-size: 20pt; color: red;">requestScope 에 저장된 데이터 출력하기</span>
+	         <!--/* 서버에서 request 영역(또는 Model)에 담아준 각종 속성(attribute)들을 서버사이드 템플릿 엔진인 타임리프에서는 여러 방법으로 표현을 할 수 있다.  
+                    가장 기본적인 "텍스트" 출력 문법은 다음과 같다. */-->
+	         <p><span th:text="${myTitle_withNoTag}">여기에 적은 글자가 보이나요?</span>&nbsp;는 백엔드 서버에서 HTML을 동적으로 렌더링하는 용도로 사용된다.</p>
+	         <p><span th:text="${myTitle_withNoTag}"></span>&nbsp;는 백엔드 서버에서 HTML을 동적으로 렌더링하는 용도로 사용된다.</p>
+	         <p>[[${myTitle_withNoTag}]]&nbsp;는 백엔드 서버에서 HTML을 동적으로 렌더링하는 용도로 사용된다.</p>
+	         
+	         <!--/* 서버에서 request 영역(또는 Model)에 담아준 각종 속성(attribute)에 "태그"가 들어간 경우 출력하는 경우는 아래와 같다. */-->
+	         <p><span th:utext="${myTitle_withTag}"></span>&nbsp;는 백엔드 서버에서 HTML을 동적으로 렌더링하는 용도로 사용된다.</p>
+	         <p>[(${myTitle_withTag})]&nbsp;는 백엔드 서버에서 HTML을 동적으로 렌더링하는 용도로 사용된다.</p>
+	         
+	         <hr class="border border-info">
+           
+	      	 <div>
+	         	<span style="font-size: 20pt; color: blue;">sessiontScope 에 저장된 데이터 출력하기</span>
+	          
+		          <!--/* session scope에 저장된 데이터를 가져올땐 'session' 이라는 값을 앞에다 붙혀주면 된다. */--> 
+		          
+		          <!--/* 서버에서 session 영역(또는 Model)에 담아준 각종 속성(attribute)들을 서버사이드 템플릿 엔진인 타임리프에서는 여러 방법으로 표현을 할 수 있다.  
+		                가장 기본적인 "텍스트" 출력 문법은 다음과 같다. */--> 
+	         	<p>안녕하세요?&nbsp;<span th:text="${session.loginuser_name_withNoTag}"></span>&nbsp;인사드립니다.</p>
+	         	<p>안녕하세요?&nbsp;[[${session.loginuser_name_withNoTag}]]&nbsp;인사드립니다.</p>
+	         	<!--/* 서버에서 session 영역(또는 Model)에 담아준 각종 속성(attribute)에 "태그"가 들어간 경우 출력하는 경우는 아래와 같다. */-->
+	         	<p>안녕하세요?&nbsp;<span th:utext="${session.loginuser_name_withTag}"></span>&nbsp;인사드립니다.</p>
+	         	<p>안녕하세요?&nbsp;[(${session.loginuser_name_withTag})]&nbsp;인사드립니다.</p>
+	    	 </div>
+    
+    </div>
+	
+
+
+
+
+
+
+</body>
+</html>

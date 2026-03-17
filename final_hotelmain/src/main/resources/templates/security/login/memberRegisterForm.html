@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div#divRegisterFrm})}" 
+      lang="ko" 
+      xmlns:th="http://www.thymeleaf.org"> 
+
+
+<head>
+<meta charset="UTF-8">
+<!--/* #스프링시큐리티08 */-->
+<title>회원가입</title> 
+
+<link rel="stylesheet" th:href="@{/css/security/memberRegisterForm.css}">
+
+<!-- =========================================================
+     [임시 테스트용 의존성 로딩 - 헤더 추가시 삭제 가능]
+     - datepicker 사용을 위한 jQuery / jQuery UI (JS + CSS)
+     - daum.Postcode 사용을 위한 Kakao(daum) postcode API
+     ========================================================= -->
+
+<!-- [헤더 추가시 삭제 가능] jQuery UI CSS (datepicker 스타일) -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
+
+<!-- [헤더 추가시 삭제 가능] jQuery (반드시 먼저) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- [헤더 추가시 삭제 가능] jQuery UI (datepicker 포함) -->
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+<!-- [헤더 추가시 삭제 가능] Daum/Kakao 우편번호 API -->
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+<!-- ========================================================= -->
+
+<style type="text/css">
+:root{
+  --bg:#ffffff;
+  --panel:#ffffff;
+  --line:#e7e7e7;
+  --line-2:#d9d9d9;
+  --text:#111111;
+  --muted:#6f6f6f;
+  --danger:#c94b4b;
+  --header-offset:165px;
+  --page-bottom:90px;
+  --radius:10px;
+  --shadow:0 10px 24px rgba(0,0,0,.04);
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Noto Sans KR', sans-serif;
+  background:#fff;
+  color:var(--text);
+}
+
+#divRegisterFrm{
+  width:100%;
+  margin:0 !important;
+  padding:var(--header-offset) 16px var(--page-bottom);
+  justify-content:center;
+}
+
+#divRegisterFrm > .col-md-12{
+  max-width:980px;
+  flex:0 0 980px;
+  width:100%;
+  padding:0;
+}
+
+form[name="registerFrm"]{
+  width:100%;
+}
+
+#tblMemberRegister{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+  box-shadow:none;
+}
+
+#tblMemberRegister thead th{
+  padding:22px 18px;
+  background:#fafafa;
+  border-bottom:1px solid var(--line);
+  font-size:1.15rem;
+  font-weight:700;
+  color:#111;
+  text-align:center;
+}
+
+#tblMemberRegister tbody td{
+  padding:16px 18px;
+  border-bottom:1px solid var(--line);
+  vertical-align:middle;
+  font-size:.94rem;
+  color:#222;
+  background:#fff;
+}
+
+#tblMemberRegister tbody tr:last-child td{
+  border-bottom:none;
+}
+
+#tblMemberRegister tbody td:first-child{
+  width:190px !important;
+  font-weight:700 !important;
+  color:#333;
+  background:#fcfcfc;
+}
+
+#tblMemberRegister input[type="text"],
+#tblMemberRegister input[type="password"],
+#tblMemberRegister input[type="email"],
+#tblMemberRegister select{
+  height:44px;
+  padding:0 12px;
+  border:1px solid var(--line-2);
+  border-radius:8px;
+  font-size:.94rem;
+  background:#fff;
+  color:#111;
+  outline:none;
+}
+
+#tblMemberRegister input[type="text"]:focus,
+#tblMemberRegister input[type="password"]:focus,
+#tblMemberRegister input[type="email"]:focus,
+#tblMemberRegister select:focus{
+  border-color:#111;
+  box-shadow:0 0 0 4px rgba(17,17,17,.05);
+}
+
+#tblMemberRegister input[readonly]{
+  background:#f8f8f8;
+  color:#666;
+}
+
+#tblMemberRegister input#address,
+#tblMemberRegister input#detail_address,
+#tblMemberRegister input#extra_address{
+  width:calc(100% - 6px);
+  max-width:100%;
+  margin-bottom:8px;
+}
+
+#tblMemberRegister input#postcode{
+  width:120px;
+}
+
+#tblMemberRegister input#hp1,
+#tblMemberRegister input#hp2,
+#tblMemberRegister input#hp3{
+  width:90px;
+  text-align:center;
+}
+
+#tblMemberRegister input#memberid,
+#tblMemberRegister input#email,
+#tblMemberRegister input#passwd,
+#tblMemberRegister input#pwdcheck,
+#tblMemberRegister input#name,
+#tblMemberRegister input#datepicker{
+  width:280px;
+  max-width:100%;
+}
+
+#tblMemberRegister img#idcheck,
+#tblMemberRegister img#zipcodeSearch{
+  vertical-align:middle !important;
+  cursor:pointer;
+  border:1px solid var(--line-2);
+  border-radius:8px;
+  background:#fff;
+  padding:4px 8px;
+  margin-left:8px;
+}
+
+#tblMemberRegister iframe{
+  width:100% !important;
+  max-width:100%;
+  height:180px !important;
+  border:1px solid var(--line) !important;
+  border-radius:8px;
+}
+
+span.error{
+  display:inline-block;
+  margin-left:8px;
+  margin-top:6px;
+  color:#c94b4b;
+  font-size:.82rem;
+  font-weight:500;
+}
+
+span#idcheckResult,
+span#emailCheckResult{
+  display:inline-block;
+  margin-left:10px;
+  margin-top:6px;
+  font-size:.84rem;
+  font-weight:600;
+}
+
+.star{
+  color:#c94b4b;
+  font-weight:700;
+}
+
+#tblMemberRegister input[type="checkbox"]{
+  width:16px;
+  height:16px;
+  accent-color:#111;
+  vertical-align:middle;
+}
+
+#tblMemberRegister button,
+#tblMemberRegister input[type="button"],
+#tblMemberRegister input[type="reset"]{
+  height:46px;
+  min-width:130px;
+  padding:0 18px;
+  border-radius:999px;
+  border:1px solid #111;
+  background:#111;
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+
+#tblMemberRegister input[type="reset"]{
+  background:#fff;
+  color:#111;
+  border-color:var(--line-2);
+}
+
+#tblMemberRegister .btn-register-wrap,
+#tblMemberRegister .action-row{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  padding-top:8px;
+}
+
+@media (max-width:900px){
+  #divRegisterFrm{
+    padding:145px 12px 80px;
+  }
+
+  #divRegisterFrm > .col-md-12{
+    max-width:100%;
+    flex:1 1 auto;
+  }
+
+  #tblMemberRegister,
+  #tblMemberRegister thead,
+  #tblMemberRegister tbody,
+  #tblMemberRegister tr,
+  #tblMemberRegister td,
+  #tblMemberRegister th{
+    display:block;
+    width:100%;
+  }
+
+  #tblMemberRegister thead th{
+    border-bottom:1px solid var(--line);
+  }
+
+  #tblMemberRegister tbody tr{
+    border-bottom:1px solid var(--line);
+  }
+
+  #tblMemberRegister tbody td{
+    border-bottom:none;
+    padding:12px 14px;
+  }
+
+  #tblMemberRegister tbody td:first-child{
+    width:100% !important;
+    background:#fafafa;
+    border-bottom:1px solid var(--line);
+  }
+
+  #tblMemberRegister input#memberid,
+  #tblMemberRegister input#email,
+  #tblMemberRegister input#passwd,
+  #tblMemberRegister input#pwdcheck,
+  #tblMemberRegister input#name,
+  #tblMemberRegister input#datepicker,
+  #tblMemberRegister input#address,
+  #tblMemberRegister input#detail_address,
+  #tblMemberRegister input#extra_address{
+    width:100%;
+  }
+
+  #tblMemberRegister input#hp1,
+  #tblMemberRegister input#hp2,
+  #tblMemberRegister input#hp3{
+    width:calc(33.333% - 8px);
+  }
+}
+</style>
+
+<script th:inline="javascript">
+ /*<![CDATA[*/
+
+    let b_flag_zipcodeSearch_click = false;
+    // "우편번호찾기" 을 클릭했는지 클릭을 안했는지 여부를 알아오기 위한 용도.
+    
+    let b_flag_idDuplicate_click = false;
+    // "아이디중복확인" 을 클릭했는지 클릭을 안했는지 여부를 알아오기 위한 용도.
+    
+    let b_flag_emailDuplicate_click = false;
+    // "이메일중복확인" 을 클릭했는지 클릭을 안했는지 여부를 알아오기 위한 용도.
+    
+
+	$(document).ready(function(){
+		
+		$("span.error").hide();
+		$("input#name").focus();
+		
+		$("input#name").blur( function(e) {
+			
+			const $target = $(e.target);
+			
+			const name = $target.val().trim();
+			
+			if(name == "") {
+				
+				$("table#tblMemberRegister :input").prop("disabled", true);
+				$target.prop("disabled", false);
+				
+			    $target.parent().find("span.error").show();
+				
+				$target.focus();
+			}
+			else {
+				// 공백이 아닌 글자를 입력했을 경우
+				$("table#tblMemberRegister :input").prop("disabled", false);
+				
+			    $target.parent().find("span.error").hide();
+			}
+			
+		});// 아이디가 name 인 것은 포커스를 잃어버렸을 경우(blur) 이벤트를 처리해주는 것이다. 
+				
+		
+		$("input#memberid").blur( function(e) {
+			
+			const $target = $(e.target);
+			
+			const memberid = $target.val().trim();
+			
+			if(memberid == "") {
+				// 입력하지 않거나 공백만 입력했을 경우 
+				$("table#tblMemberRegister :input").prop("disabled", true);
+				$target.prop("disabled", false);
+				
+			    $target.parent().find("span.error").show();
+				
+				$target.focus();
+			}
+			else {
+				// 공백이 아닌 글자를 입력했을 경우
+				$("table#tblMemberRegister :input").prop("disabled", false);
+				
+			    $target.parent().find("span.error").hide();
+			}
+			
+		});// 아이디가 memberid 인 것은 포커스를 잃어버렸을 경우(blur) 이벤트를 처리해주는 것이다.
+		
+		
+		$("input#passwd").blur( function(e) {
+			
+			const $target = $(e.target);
+			
+		    const regExp = new RegExp(/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).*$/g); 
+            
+            const bool = regExp.test($target.val());
+			
+			if(!bool) {
+				// 암호가 정규표현식에 위배된 경우  
+				$("table#tblMemberRegister :input").prop("disabled", true);
+				$target.prop("disabled", false);
+				
+			    $target.parent().find("span.error").show();
+				
+				$target.focus();
+			}
+			else {
+				// 암호가 정규표현식에 맞는 경우 
+				$("table#tblMemberRegister :input").prop("disabled", false);
+				
+			    $target.parent().find("span.error").hide();
+			}
+			
+		});// 아이디가 passwd 인 것은 포커스를 잃어버렸을 경우(blur) 이벤트를 처리해주는 것이다.
+		
+		
+		$("input#pwdcheck").blur( function(e) {
+			
+			const $target = $(e.target);
+			
+			const passwd = $("input#passwd").val();
+			const pwdcheck = $target.val();
+			
+			if(passwd != pwdcheck) {
+				// 암호와 암호확인값이 틀린 경우 
+				$("table#tblMemberRegister :input").prop("disabled", true);
+				$target.prop("disabled", false);
+				$("input#passwd").prop("disabled", false);
+				
+			    $target.parent().find("span.error").show();
+				
+			    $("input#passwd").focus();
+			}
+			else {
+				// 암호와 암호확인값이 같은 경우 
+				$("table#tblMemberRegister :input").prop("disabled", false);
+				
+			    $target.parent().find("span.error").hide();
+			}
+			
+		});// 아이디가 passwd 인 것은 포커스를 잃어버렸을 경우(blur) 이벤트를 처리해주는 것이다.
+		
+		
+		$("input#email").blur( function(e) {
+			
+			const $target = $(e.target);
+			
+		    const regExp = new RegExp(/^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i);  
+            //  이메일 정규표현식 객체 생성 
+            
+            const bool = regExp.test($target.val());
+			
+			if(!bool) {
+				// 이메일이 정규표현식에 위배된 경우  
+				$("table#tblMemberRegister :input").prop("disabled", true);
+				$target.prop("disabled", false);
+				
+			    $target.parent().find("span.error").show();
+				
+				$target.focus();
+			}
+			else {
+				// 이메일이 정규표현식에 맞는 경우 
+				$("table#tblMemberRegister :input").prop("disabled", false);
+				
+			    $target.parent().find("span.error").hide();
+			}
+			
+		});// 아이디가 email 인 것은 포커스를 잃어버렸을 경우(blur) 이벤트를 처리해주는 것이다.
+		
+		
+		$("input#hp2").blur( function(e) {
+			
+			const $target = $(e.target);
+			
+		    const regExp = new RegExp(/^[1-9][0-9]{2,3}$/g);  
+            //  숫자 3자리 또는 4자리만 들어오도록 검사해주는 정규표현식 객체 생성 
+            
+            const bool = regExp.test($target.val());
+			
+			if(!bool) {
+				// 국번이 정규표현식에 위배된 경우  
+				$("table#tblMemberRegister :input").prop("disabled", true);
+				$target.prop("disabled", false);
+				
+			    $target.parent().find("span.error").show();
+				
+				$target.focus();
+			}
+			else {
+				// 국번이 정규표현식에 맞는 경우 
+				$("table#tblMemberRegister :input").prop("disabled", false);
+				
+			    $target.parent().find("span.error").hide();
+			}
+			
+		});// 아이디가 hp2 인 것은 포커스를 잃어버렸을 경우(blur) 이벤트를 처리해주는 것이다.
+		
+		
+		$("input#hp3").blur( function(e) {
+			
+			const $target = $(e.target);
+			
+		    const regExp = new RegExp(/^\d{4}$/g);  
+            //  숫자 4자리만 들어오도록 검사해주는 정규표현식 객체 생성 
+            
+            const bool = regExp.test($target.val());
+			
+			if(!bool) {
+				// 마지막 전화번호 4자리가 정규표현식에 위배된 경우  
+				$("table#tblMemberRegister :input").prop("disabled", true);
+				$target.prop("disabled", false);
+				
+			    $target.parent().find("span.error").show();
+				
+				$target.focus();
+			}
+			else {
+				// 마지막 전화번호 4자리가 정규표현식에 맞는 경우 
+				$("table#tblMemberRegister :input").prop("disabled", false);
+				
+			    $target.parent().find("span.error").hide();
+			}
+			
+		});// 아이디가 hp3 인 것은 포커스를 잃어버렸을 경우(blur) 이벤트를 처리해주는 것이다.
+		
+		
+		$("img#zipcodeSearch").click(function(){
+		
+			new daum.Postcode({
+	            oncomplete: function(data) {
+	                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+	                // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+	                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+	                let addr = ''; // 주소 변수
+	                let extraAddr = ''; // 참고항목 변수
+
+	                //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+	                if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+	                    addr = data.roadAddress;
+	                } else { // 사용자가 지번 주소를 선택했을 경우(J)
+	                    addr = data.jibunAddress;
+	                }
+
+	                // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+	                if(data.userSelectedType === 'R'){
+	                    // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+	                    // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+	                    if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+	                        extraAddr += data.bname;
+	                    }
+	                    // 건물명이 있고, 공동주택일 경우 추가한다.
+	                    if(data.buildingName !== '' && data.apartment === 'Y'){
+	                        extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+	                    }
+	                    // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+	                    if(extraAddr !== ''){
+	                        extraAddr = ' (' + extraAddr + ')';
+	                    }
+	                    // 조합된 참고항목을 해당 필드에 넣는다.
+	                    document.getElementById("extra_address").value = extraAddr;
+	                
+	                } else {
+	                    document.getElementById("extra_address").value = '';
+	                }
+
+	                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+	                document.getElementById('postcode').value = data.zonecode;
+	                document.getElementById("address").value = addr;
+	                // 커서를 상세주소 필드로 이동한다.
+	                document.getElementById("detail_address").focus();
+	            }
+	        }).open(); 	
+			
+		});
+		
+		////////////////////////////////////////////////////////////////////////////
+		$("input#birthyyyy").keyup(function(e){
+			alert("생년월일은 키보드로 입력하지 마시고 마우스로 선택하세요!!");
+			$(e.target).val("1950");
+		});
+		
+		
+		let mm_html = "";
+		for(var i=1; i<=12; i++) {
+			if(i<10) {
+				mm_html += "<option>0"+i+"</option>";
+			}
+			else {
+				mm_html += "<option>"+i+"</option>";
+			}
+		}
+		
+		$("select#birthmm").html(mm_html);
+		
+		
+		let dd_html = ``;
+		for(let i=1; i<=31; i++) {
+			
+			if(i<10) {
+				dd_html += `<option>0${i}</option>`; 
+				// jsp에서는 EL태그 오류 생각해서 $앞에 \ 넣어줬는데, jsp와 달리 타임리프는 그럴 필요 없다 알아서 잘 먹는다
+			
+			
+			}
+			else {
+				dd_html += `<option>${i}</option>`;
+				// jsp에서는 EL태그 오류 생각해서 $앞에 \ 넣어줬는데, jsp와 달리 타임리프는 그럴 필요 없다 알아서 잘 먹는다
+			}
+			
+		}// end of for---------------------
+		
+     
+		$("select#birthdd").html(dd_html);
+	 ///////////////////////////////////////////////////////////////////////////////
+	 
+	    $("input#datepicker").bind("keyup", function(e){
+		   $(e.target).val("");
+		   $(e.target).next().show();
+	    });
+		
+		// === jQuery UI 의 datepicker === //
+		$("input#datepicker").datepicker({
+                 dateFormat: 'yy-mm-dd'  //Input Display Format 변경
+                ,showOtherMonths: true   //빈 공간에 현재월의 앞뒤월의 날짜를 표시
+                ,showMonthAfterYear:true //년도 먼저 나오고, 뒤에 월 표시
+                ,changeYear: true        //콤보박스에서 년 선택 가능
+                ,changeMonth: true       //콤보박스에서 월 선택 가능                
+           //   ,showOn: "both"          //button:버튼을 표시하고,버튼을 눌러야만 달력 표시됨. both:버튼을 표시하고,버튼을 누르거나 input을 클릭하면 달력 표시됨.  
+           //   ,buttonImage: "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif" //버튼 이미지 경로
+           //   ,buttonImageOnly: true   //기본 버튼의 회색 부분을 없애고, 이미지만 보이게 함
+           //   ,buttonText: "선택"       //버튼에 마우스 갖다 댔을 때 표시되는 텍스트                
+                ,yearSuffix: "년"         //달력의 년도 부분 뒤에 붙는 텍스트
+                ,monthNamesShort: ['1','2','3','4','5','6','7','8','9','10','11','12'] //달력의 월 부분 텍스트
+                ,monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'] //달력의 월 부분 Tooltip 텍스트
+                ,dayNamesMin: ['일','월','화','수','목','금','토'] //달력의 요일 부분 텍스트
+                ,dayNames: ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'] //달력의 요일 부분 Tooltip 텍스트
+              //,minDate: "-1M" //최소 선택일자(-1D:하루전, -1M:한달전, -1Y:일년전)
+              //,maxDate: "+1M" //최대 선택일자(+1D:하루후, +1M:한달후, +1Y:일년후)                
+         });                    
+            
+         //초기값을 오늘 날짜로 설정
+         $('input#datepicker').datepicker('setDate', 'today'); //(-1D:하루전, -1M:한달전, -1Y:일년전), (+1D:하루후, +1M:한달후, +1Y:일년후) 
+		 /////////////////////////////////////////////////////////////////////
+		
+		 $("input#datepicker").bind("change", function(e){
+			 if($(e.target).val() != "") {
+				 $(e.target).next().hide();	 
+			 } 
+		 });
+		 
+		 
+         // === 전체 datepicker 옵션 일괄 설정하기 ===  
+		 //     한번의 설정으로 $("input#fromDate"), $('input#toDate')의 옵션을 모두 설정할 수 있다.
+         $(function() {
+             //모든 datepicker에 대한 공통 옵션 설정
+             $.datepicker.setDefaults({
+                  dateFormat: 'yy-mm-dd' //Input Display Format 변경
+                 ,showOtherMonths: true //빈 공간에 현재월의 앞뒤월의 날짜를 표시
+                 ,showMonthAfterYear:true //년도 먼저 나오고, 뒤에 월 표시
+                 ,changeYear: true //콤보박스에서 년 선택 가능
+                 ,changeMonth: true //콤보박스에서 월 선택 가능                
+              // ,showOn: "both" //button:버튼을 표시하고,버튼을 눌러야만 달력 표시됨. both:버튼을 표시하고,버튼을 누르거나 input을 클릭하면 달력 표시됨.  
+              // ,buttonImage: "http://jqueryui.com/resources/demos/datepicker/images/calendar.gif" //버튼 이미지 경로
+              // ,buttonImageOnly: true //기본 버튼의 회색 부분을 없애고, 이미지만 보이게 함
+              // ,buttonText: "선택" //버튼에 마우스 갖다 댔을 때 표시되는 텍스트                
+                 ,yearSuffix: "년" //달력의 년도 부분 뒤에 붙는 텍스트
+                 ,monthNamesShort: ['1','2','3','4','5','6','7','8','9','10','11','12'] //달력의 월 부분 텍스트
+                 ,monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'] //달력의 월 부분 Tooltip 텍스트
+                 ,dayNamesMin: ['일','월','화','수','목','금','토'] //달력의 요일 부분 텍스트
+                 ,dayNames: ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'] //달력의 요일 부분 Tooltip 텍스트
+              // ,minDate: "-1M" //최소 선택일자(-1D:하루전, -1M:한달전, -1Y:일년전)
+              // ,maxDate: "+1M" //최대 선택일자(+1D:하루후, -1M:한달후, -1Y:일년후)                    
+             });
+  
+             //input을 datepicker로 선언
+             $("input#fromDate").datepicker();                    
+             $("input#toDate").datepicker();
+             
+             //From의 초기값을 오늘 날짜로 설정
+             $('input#fromDate').datepicker('setDate', 'today'); //(-1D:하루전, -1M:한달전, -1Y:일년전), (+1D:하루후, +1M:한달후, +1Y:일년후)
+             
+             //To의 초기값을 3일후로 설정
+             $('input#toDate').datepicker('setDate', '+3D'); //(-1D:하루전, -1M:한달전, -1Y:일년전), (+1D:하루후, +1M:한달후, +1Y:일년후)
+         });
+		 
+         
+         
+         // "우편번호찾기" 을 클릭했을 때 이벤트 처리하기
+         $("img#zipcodeSearch").click(function() {
+        	 b_flag_zipcodeSearch_click = true; 
+         });
+         
+         
+         // 우편번호 입력란에 키보드로 입력할 경우 이벤트 처리하기
+         $("input:text[id='postcode']").keyup(function(){
+        	 alert("우편번호 입력은 \"우편번호찾기\" 를 클릭으로만 하셔야 합니다."); 
+        	 $(this).val("");
+         });
+     
+     
+      // "아이디중복확인" 을 클릭했을 때 이벤트 처리하기
+         $("img#idcheck").click(function() {
+        	 b_flag_idDuplicate_click = true; 
+        	 // 가입하기 버튼을 클릭시 "아이디중복확인" 을 클릭했는지 클릭안했는지 알아보기 위한 용도임. 
+        	 
+        	 
+        	 // 입력하고자 하는 아이디가 데이터베이스 테이블에 존재하는지, 존재하지 않는지 알아와야 한다. 
+        	 /*
+         		Ajax (Asynchronous JavaScript and XML)란?
+			    ==> 이름만 보면 알 수 있듯이 '비동기 방식의 자바스크립트와 XML' 로서
+			        Asynchronous JavaScript + XML 인 것이다.
+			        한마디로 말하면, Ajax 란? Client 와 Server 간에 XML 데이터를 JavaScript 를 사용하여 비동기 통신으로 주고 받는 기술이다.
+			        하지만 요즘에는 데이터 전송을 위한 데이터 포맷방법으로 XML 을 사용하기 보다는 JSON(Javascript Standard Object Notation) 을 더 많이 사용한다. 
+			        참고로 HTML은 데이터 표현을 위한 포맷방법이다.
+			        그리고, 비동기식이란 어떤 하나의 웹페이지에서 여러가지 서로 다른 다양한 일처리가 개별적으로 발생한다는 뜻으로서, 
+			        어떤 하나의 웹페이지에서 서버와 통신하는 그 일처리가 발생하는 동안 일처리가 마무리 되기전에 또 다른 작업을 할 수 있다는 의미이다.
+         	 */ 
+         	 // 첫번째 방법
+         	 
+         	     const token  = $("meta[name='_csrf']").attr("content");
+    			const header = $("meta[name='_csrf_header']").attr("content");
+         	 
+         	 $.ajax({
+         		 url:/*[[@{/security/member_id_check}]]*/ "",
+         		 data:{"memberid":$("input#memberid").val()}, // data 는 /myspringboot/member/member_id_check 으로 전송해야할 데이터를 말한다.
+         		 type:"post",     // type 을 생략하면 type:"get" 이다.
+         		 dataType:"json", // Javascript Standard Object Notation.  dataType은 /myspring/security/member/member_id_check 로 부터 실행되어진 결과물을 받아오는 데이터타입을 말한다.
+         		                  // 만약에 dataType:"xml" 으로 해주면 /myspring/security/member/member_id_check 로 부터 받아오는 결과물은 xml 형식이어야 한다. 
+         		                  // 만약에 dataType:"json" 으로 해주면 /myspring/security/member/member_id_check 로 부터 받아오는 결과물은 json 형식이어야 한다.
+         		 async:true,      // async:true 가 비동기 방식을 말한다. async 을 생략하면 기본값이 비동기 방식인 async:true 이다.
+         		                  // async:false 가 동기 방식이다. 지도를 할때는 반드시 동기방식인 async:false 을 사용해야만 지도가 올바르게 나온다.  
+	         		beforeSend: function(xhr){
+	                    xhr.setRequestHeader(header, token);
+	                },
+         		 success:function(json){ // json ==> {"isExists":true} 또는 {"isExists":false} 이다.  
+         			 if(json.isExists) {
+         				 // 입력한 memberid 가 이미 사용중이라면 
+         				 $("span#idcheckResult").html($("input#memberid").val()+" 은 중복된 ID 이므로 사용불가 합니다.").css("color","red");
+         				 $("input#memberid").val("");
+         			 }
+         			 else {
+         				// 입력한 memberid 가 존재하지 않는 경우라면 
+         				$("span#idcheckResult").html($("input#memberid").val()+" 은 사용가능 합니다.").css("color","navy"); 
+         			 }
+         		 },
+         		 
+         		 error: function(request, status, error){
+					alert("code: "+request.status+"\n"+"message: "+request.responseText+"\n"+"error: "+error);
+				 }
+         	 });
+			    
+         });// end of $("img#idcheck").click(function() {})---------------------         
+        
+         
+         // 아이디값이 변경되면 가입하기 버튼을 클릭시 "아이디중복확인" 을 클릭했는지 클릭안했는지를 알아보기위한 용도 초기화 시키기  
+         $("input#memberid").bind("change", () => {
+        	 b_flag_idDuplicate_click = false;
+         });
+         
+         // 이메일값이 변경되면 가입하기 버튼을 클릭시 "이메일중복확인" 을 클릭했는지 클릭안했는지를 알아보기위한 용도 초기화 시키기 
+         $("input#email").bind("change", () => {
+        	 b_flag_emailDuplicate_click = false;
+         });
+		
+	});// end of $(document).ready()-----------------------
+	
+	
+	// >>> Function Declaration <<< //
+	
+	// "이메일중복확인" 을 클릭시 호출되는 함수
+	function isExistEmailCheck() {
+		
+		b_flag_emailDuplicate_click = true;
+		// 가입하기 버튼을 클릭시 "이메일중복확인" 을 클릭했는지 클릭안했는지 알아보기위한 용도임.
+		
+		const token  = $("meta[name='_csrf']").attr("content");
+    	const header = $("meta[name='_csrf_header']").attr("content");
+		
+		$.ajax({
+			url:/*[[@{/security/emailDuplicateCheck}]]*/ "",
+			data:{"email":$("input#email").val()}, // data 는 /myspringboot/security/emailDuplicateCheck 로 전송해야할 데이터를 말한다. 
+			type:"post",
+			dataType:"json",
+        //	async:true,   // async:true 가 비동기 방식을 말한다. async 을 생략하면 기본값이 비동기 방식인 async:true 이다.
+                          // async:false 가 동기 방식이다. 지도를 할때는 반드시 동기방식인 async:false 을 사용해야만 지도가 올바르게 나온다. 
+			beforeSend: function(xhr){
+                xhr.setRequestHeader(header, token);
+            },
+            success:function(json){
+            	
+            	if(json.isExists) {
+            		// 입력한 email 이 이미 사용중이라면
+            		$("span#emailCheckResult").html($("input#email").val()+" 은 중복된 email 이므로 사용불가 합니다.").css("color","red");
+   				    $("input#email").val("");
+            	}
+            	
+            	else {
+            		// 입력한 email 이 이미 DB 테이블에 존재하지 않는 경우라면
+            		$("span#emailCheckResult").html($("input#email").val()+" 은 사용가능 합니다.").css("color","navy"); 
+            	}
+            	
+            },
+            error: function(request, status, error){
+				alert("code: "+request.status+"\n"+"message: "+request.responseText+"\n"+"error: "+error);
+			}
+		});
+		
+	}// end of function isExistEmailCheck()-------------------------
+	
+	
+	// "가입하기" 버튼 클릭시 호출되는 함수  
+	function goRegister() {
+		
+		// **** 필수입력사항에 모두 입력이 되었는지 검사한다. **** //
+		let b_Flag_requiredInfo = false;
+	
+	    const requiredInfo_list = document.querySelectorAll("input.requiredInfo"); 
+	    for(let i=0; i<requiredInfo_list.length; i++) {
+	    	const val = requiredInfo_list[i].value.trim();
+	    	if(val == "") {
+	    		alert("*표시된 필수입력사항은 모두 입력하셔야 합니다.");
+	    		b_Flag_requiredInfo = true;
+	    		break;
+	    	}
+	    }// end of for-----------------------
+	    		
+		if(b_Flag_requiredInfo) {
+			return; // 종료	
+		}
+		
+	    
+	    ///////////////////////////////////////////////////////
+	    // "우편번호찾기" 을 클릭했는지 여부 알아오기 
+	    if(!b_flag_zipcodeSearch_click) { 
+	    	// "우편번호찾기" 을 클릭 안 했을 경우 
+	    	alert("우편번호찿기를 클릭하셔서 우편번호를 입력하셔야 합니다.");
+	    	return; // 종료
+	    }
+	    else {
+	    	// "우편번호찾기" 을 클릭을 했을 경우 
+	    	
+			    const regExp = new RegExp(/^\d{5}$/g);  
+	            //  숫자 5자리만 들어오도록 검사해주는 정규표현식 객체 생성 
+	            
+	            const postcode = $("input:text[id='postcode']").val();
+	            
+	            const bool = regExp.test(postcode);
+	            
+	            if(!bool) {
+	            	alert("우편번호 형식에 맞지 않습니다.");
+	            	$("input:text[id='postcode']").val("");
+	            	b_flag_zipcodeSearch_click = false;
+	            	return; // 종료
+	            }
+	            
+	            // 주소 및 상세주소 입력에 대한 유효성 검사하기 구현 필요 !!!!!
+	            
+	    }
+	    ///////////////////////////////////////////////////////
+	    
+	    // "아이디중복확인" 을 클릭했는지 여부 알아오기 
+	    if(!b_flag_idDuplicate_click) { 
+	    	// "아이디중복확인" 을 클릭 안 했을 경우 
+	    	alert("아이디중복확인을 클릭하셔야 합니다.");
+	    	
+	    	return; // 종료
+	    }
+	    
+	    // "이메일중복확인" 을 클릭했는지 여부 알아오기
+	    if(!b_flag_emailDuplicate_click) { 
+	    	// "이메일중복확인" 을 클릭 안 했을 경우 
+	    	alert("이메일중복확인을 클릭하셔야 합니다.");
+	    	
+	    	return; // 종료
+	    }
+	    	    
+	    
+	    const checkbox_length = $("input:checkbox[id='agree']:checked").length; 
+	    
+	    if(checkbox_length == 0) {
+	    	alert("이용약관에 동의하셔야 합니다.");
+	    	return; // 종료	
+	    }	
+	    
+	    
+	    const frm = document.registerFrm;
+	    
+	 // [[@{...}]] 문법이 자동으로 Context Path를 붙여줍니다.
+	 // Thymeleaf가 실행될 때는 주석 내부의 값이 할당되고, 
+     // 정적 HTML 상태일 때는 뒤의 'url' 문자열이 할당되어 에러가 나지 않습니다.
+	    frm.action = /*[[@{/security/memberRegisterEnd}]]*/ 'url';
+	    frm.method = "post";
+	    frm.submit();
+	    
+	    
+	}// end of function goRegister()----------------------
+	
+	
+	function goReset() {
+		$("span.error").hide();
+		$("span#idcheckResult").empty();
+		$("span#emailCheckResult").empty();
+	}// end of function goReset()-------------------------
+
+  /*]]>*/	
+</script>
+
+<body>
+  
+	<div class="row" id="divRegisterFrm">
+	  <div class="col-md-12" align="center">
+		<form name="registerFrm">
+		 <input type="hidden"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}" />
+		
+		<table id="tblMemberRegister">
+			<thead>
+				<tr>
+					<th colspan="2">::: 회원가입 (<span style="font-size: 10pt; font-style: italic;"><span class="star">*</span>표시는 필수입력사항</span>) :::</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="width: 20%; font-weight: bold;">성명&nbsp;<span class="star">*</span></td>
+					<td style="width: 80%; text-align: left;">
+					    <input type="text" name="name" id="name" class="requiredInfo" autocomplete="off" /> 
+						<span class="error">성명은 필수입력 사항입니다.</span>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 20%; font-weight: bold;">아이디&nbsp;<span class="star">*</span></td>
+					<td style="width: 80%; text-align: left;">
+					    <input type="text" name="memberid" id="memberid" class="requiredInfo" autocomplete="off" />&nbsp;&nbsp;
+					    <!--/* 아이디중복체크 */-->
+					    <img id="idcheck" th:src="@{/images/b_id_check.gif}" style="vertical-align: middle;" />
+					    <span id="idcheckResult"></span> 
+					    <span class="error">아이디는 필수입력 사항입니다.</span>
+					</td> 
+				</tr>
+				<tr>
+					<td style="width: 20%; font-weight: bold;">비밀번호&nbsp;<span class="star">*</span></td>
+					<td style="width: 80%; text-align: left;"><input type="password" name="passwd" id="passwd" class="requiredInfo" />
+						<span class="error">암호는 영문자,숫자,특수기호가 혼합된 8~15 글자로 입력하세요.</span>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 20%; font-weight: bold;">비밀번호확인&nbsp;<span class="star">*</span></td>
+					<td style="width: 80%; text-align: left;"><input type="password" id="pwdcheck" class="requiredInfo" /> 
+						<span class="error">암호가 일치하지 않습니다.</span>
+					</td>
+				</tr>
+						
+				<tr>
+					<td style="width: 20%; font-weight: bold;">생년월일</td>
+					<td style="width: 80%; text-align: left;"><input type="text" id="datepicker" name="birthday" />
+					   <span class="error">마우스로 클릭만 하세요.</span>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 20%; font-weight: bold;">이메일&nbsp;<span class="star">*</span></td>
+					<td style="width: 80%; text-align: left;"><input type="text" name="email" id="email" class="requiredInfo" placeholder="abc@def.com" /> 
+					    <span class="error">이메일 형식에 맞지 않습니다.</span>
+					    
+					    <!--/* ==== 퀴즈 시작 ==== */-->
+					    <span style="display: inline-block; width: 80px; height: 30px; border: solid 1px gray; border-radius: 5px; font-size: 8pt; text-align: center; margin-left: 10px; cursor: pointer;" onclick="isExistEmailCheck();">이메일중복확인</span> 
+					    <span id="emailCheckResult"></span>
+					    <!--/* ==== 퀴즈 끝 ==== */-->
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 20%; font-weight: bold;">연락처</td>
+					<td style="width: 80%; text-align: left;">
+					    <input type="text" id="hp1" name="hp1" size="6" maxlength="3" value="010" readonly />&nbsp;-&nbsp;
+					    <input type="text" id="hp2" name="hp2" size="6" maxlength="4" />&nbsp;-&nbsp;
+					    <input type="text" id="hp3" name="hp3" size="6" maxlength="4" />
+					    <span class="error">휴대폰 형식이 아닙니다.</span>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 20%; font-weight: bold;">우편번호</td>
+					<td style="width: 80%; text-align: left;">
+					   <input type="text" id="postcode" name="postcode" size="6" maxlength="5" />&nbsp;&nbsp;
+					   <!--/* 우편번호 찾기 */-->
+					   <img id="zipcodeSearch" th:src="@{/images/b_zipcode.gif}" style="vertical-align: middle;" />
+					   <span class="error">우편번호 형식이 아닙니다.</span> 
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 20%; font-weight: bold;">주소</td>
+					<td style="width: 80%; text-align: left;">
+					   <input type="text" id="address" name="address" size="40" placeholder="주소" /><br/>
+					   <input type="text" id="detail_address" name="detail_address" size="40" placeholder="상세주소" />&nbsp;<input type="text" id="extra_address" name="extra_address" size="40" placeholder="참고항목" /> 
+					   <span class="error">주소를 입력하세요</span>
+					</td>
+				</tr>
+				
+					
+				<tr>
+					<td colspan="2">
+						<label for="agree">이용약관에 동의합니다</label>&nbsp;&nbsp;<input type="checkbox" id="agree" />
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="text-align: center;">
+						<iframe th:src="@{/security/agree}" style="width: 85%; height: 150px; border: solid 1px navy;"></iframe>
+					</td>
+					<!--/* === Spring Boot 3.x security error : 'X-Frame-Options' to 'deny'. 해결하기 ===
+					     Spring Boot 3.x 에서는 Spring Security 를 적용하면 기본적으로 X-Frame-Options 을 'deny' 로 설정했기 때문에 iframe 이 작동하지 않는다.
+					     왜냐하면 Spring Security 는 기본적으로 X-Frame-Options Click jacking 공격 막기 설정이 되어있기 때문이다.
+					     iframe src 에 다른 URL 주소가 들어가 있는 경우 외부주소의 사이트에 공격코드가 들어있을 수 있으므로 이것은 미리 차단하기 위해서이다. 
+					     그래서 개발자도구(F12) 에 가보면 Refused to display 'http://localhost:9090/' in a frame because it set 'X-Frame-Options' to 'deny'. 이라는 에러메시지가 나온다. 
+					     
+					     이것을 해결하는 방법은 /myspringboot/src/main/java/com/spring/app/security/config/SecurityConfig.java 에 기술해 두었다.
+					*/-->
+				</tr>
+				<tr>
+					<td colspan="2" style="line-height: 90px;" class="text-center">
+						<input type="button" class="btn btn-success btn-lg mr-3" value="가입하기" onclick="goRegister()"></input>
+						<input type="reset"  class="btn btn-danger  btn-lg" value="취소하기" onclick="goReset()"></input>
+					</td>
+				</tr>
+			</tbody>
+		
+		</table>
+		</form>
+	  </div>
+	</div>  
+  
+</body>
+</html> 

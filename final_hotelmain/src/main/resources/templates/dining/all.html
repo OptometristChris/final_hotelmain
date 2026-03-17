@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+<head>
+    <title>DINING | CIEL HOTEL</title>
+
+    <link th:fragment="link" rel="stylesheet" href="">
+
+    <style th:fragment="style">
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500&display=swap');
+        #mycontent { background-color: #fff; padding-bottom: 100px; padding-top: 160px !important;}
+        .dining-header {
+            margin-top: 80px;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        .dining-header h2 {
+            font-size: 2.8rem;
+            letter-spacing: 8px;
+            font-weight: 300;
+        }
+
+        .filter-wrap {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        .btn-filter {
+            border: 1px solid #ddd;
+            background: #fff;
+            padding: 8px 30px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            color: #555;
+            transition: all 0.3s;
+            text-decoration: none !important;
+        }
+        .btn-filter:hover, .btn-filter.active {
+            background: #1a1a1a;
+            color: #fff;
+            border-color: #1a1a1a;
+        }
+
+        .hotel-select-wrap {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+        }
+        .custom-select-sm {
+            width: 220px;
+            height: 40px;
+            border-radius: 0;
+            border: 1px solid #ccc;
+            font-family: 'Noto Serif KR', serif;
+        }
+
+        .dining-card {
+            margin-bottom: 70px;
+            display: block;
+            text-decoration: none !important;
+            color: inherit !important;
+        }
+        
+        .img-wrapper {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            overflow: hidden;
+            background-color: #f4f4f4;
+            margin-bottom: 25px;
+        }
+        .img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .dining-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .badge-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .badge-hotel {
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            font-weight: 500;
+        }
+        .badge-type {
+            background: #fff;
+            color: #1a1a1a;
+            font-size: 0.75rem;
+            padding: 3px 12px;
+            border: 1px solid #1a1a1a;
+            font-weight: 500;
+        }
+
+        .res-name {
+            font-size: 1.8rem;
+            margin-bottom: 18px;
+            font-weight: 400;
+            color: #111;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .info-label {
+            width: 80px;
+            color: #888;
+            flex-shrink: 0;
+        }
+        .info-content {
+            color: #444;
+        }
+
+        .no-data {
+            padding: 100px 0;
+            text-align: center;
+            color: #999;
+            font-size: 1.1rem;
+        }
+    </style>
+
+	<script th:fragment="script">
+        $(document).ready(function() {
+
+        });
+
+        function changeHotel(hotelId) {
+            const selectedType = '[[${selectedType}]]';
+            let url = "/final_hotel/dining/all?hotel_id=" + hotelId;
+            if(selectedType && selectedType !== 'null' && selectedType !== '') {
+                url += "&d_type=" + selectedType;
+            }
+            location.href = url;
+        }
+    </script>
+</head>
+<body>
+    <div th:fragment="content" id="mycontent" class="container">
+        
+        <div class="dining-header">
+            <h2>DINING</h2>
+        </div>
+
+        <div class="filter-wrap">
+            <a th:href="@{/dining/all(hotel_id=${selectedHotel})}" 
+               class="btn-filter" th:classappend="${selectedType == null} ? 'active'">전체</a>
+        
+            <a th:href="@{/dining/all(hotel_id=${selectedHotel}, d_type='dining')}" 
+               class="btn-filter" th:classappend="${selectedType == 'dining'} ? 'active'">레스토랑</a>
+        
+            <a th:href="@{/dining/all(hotel_id=${selectedHotel}, d_type='bar')}" 
+               class="btn-filter" th:classappend="${selectedType == 'bar'} ? 'active'">라운지 & 바</a>
+        </div>
+
+	    <div class="hotel-select-wrap">
+	        <select class="custom-select-sm" onchange="location.href='/final_hotel/dining/all?hotel_id=' + this.value">
+	            <option value="">전체 호텔</option>
+	            <option value="1" th:selected="${selectedHotel == 1}">CIEL</option>
+	            <option value="2" th:selected="${selectedHotel == 2}">LE CIEL</option>
+	        </select>
+	    </div>
+	
+	    <div class="row" th:if="${not #lists.isEmpty(diningList)}">
+	        <div th:each="dining : ${diningList}" class="col-md-4">
+	            <a th:href="@{/dining/detail/{id}(id=${dining.dining_id})}" class="dining-card">
+	                
+	                <div class="img-wrapper shadow-sm">
+	                    <img th:src="@{/images/dining/{img}(img=${dining.main_img})}" 
+	                         th:alt="${dining.name}"
+	                         onerror="this.src='/final_hotel/images/dining/default_dining.jpg'">
+	                </div>
+	
+	                <div class="badge-container">
+					    <span class="badge-hotel" 
+						      th:text="${dining.fk_hotel_id == 1 ? 'CIEL' : (dining.fk_hotel_id == 2 ? 'LE CIEL' : 'LOTTE HOTEL WORLD')}">
+						    호텔명
+						</span>
+					    
+					    <span class="badge-type" 
+					          th:text="${dining.d_type == 'dining' ? '레스토랑' : (dining.d_type == 'bar' ? '라운지 & 바' : dining.d_type)}">
+					        타입
+					    </span>
+					</div>
+	
+	                <h3 class="res-name" th:text="${dining.name}">다이닝 명칭</h3>
+	                
+	                <div class="info-row">
+	                    <span class="info-label">위치</span>
+	                    <span class="info-content" th:text="${dining.floor}">층수 정보</span>
+	                </div>
+	                <div class="info-row">
+	                    <span class="info-label">문의</span>
+	                    <span class="info-content" th:text="${dining.tel}">전화번호</span>
+	                </div>
+	            </a>
+	        </div>
+	    </div>
+	
+	    <div class="no-data" th:if="${#lists.isEmpty(diningList)}">
+	        <p>선택하신 조건에 해당하는 다이닝 매장이 없습니다.</p>
+	        <a th:href="@{/dining/all}" class="btn btn-outline-dark btn-sm mt-3">전체보기</a>
+	    </div>
+
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>내 정보 | HQ</title>
+  <link rel="stylesheet" href="">
+  <style type="text/css">
+    .wrap{max-width:900px;margin:0 auto}
+    .card{border:1px solid #e8ddd7;border-radius:18px;padding:16px;background:#fff;box-shadow:0 18px 38px rgba(0,0,0,.06)}
+    .row{display:grid;grid-template-columns:180px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #eee}
+    .row:last-child{border-bottom:none}
+    .label{opacity:.75}
+    .btns{margin-top:14px;display:flex;gap:8px}
+    .btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #e8ddd7;text-decoration:none}
+  </style>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    /*]]>*/
+  </script>
+</head>
+
+<body>
+<div class="container">
+  <div class="wrap">
+    <h2 style="margin:16px 0">내 정보</h2>
+
+    <div class="card">
+      <!-- 실데이터: adminDto -->
+      <div th:if="${adminDto != null}">
+        <div class="row"><div class="label">관리자번호</div><div th:text="${adminDto.admin_no}">1</div></div>
+        <div class="row"><div class="label">아이디</div><div th:text="${adminDto.adminid}">admin01</div></div>
+        <div class="row"><div class="label">이름</div><div th:text="${adminDto.name}">홍길동</div></div>
+        <div class="row"><div class="label">이메일</div><div th:text="${adminDto.email}">test@test.com</div></div>
+        <div class="row"><div class="label">휴대폰</div><div th:text="${adminDto.mobile}">010-0000-0000</div></div>
+        <div class="row"><div class="label">타입</div><div th:text="${adminDto.admin_type}">HQ</div></div>
+        <div class="row">
+          <div class="label">호텔ID</div>
+          <div>HQ</div>
+        </div>
+      </div>
+
+      <!-- [DUMMY] -->
+      <!-- [DUMMY-START] -->
+      <div th:unless="${adminDto != null}">
+        <div class="row"><div class="label">관리자번호</div><div>1</div></div>
+        <div class="row"><div class="label">아이디</div><div>HQ_admin01</div></div>
+        <div class="row"><div class="label">이름</div><div>총괄관리자(더미)</div></div>
+        <div class="row"><div class="label">이메일</div><div>HQ01@ciel.co.kr</div></div>
+        <div class="row"><div class="label">휴대폰</div><div>010-1234-5678</div></div>
+        <div class="row"><div class="label">타입</div><div>HQ</div></div>
+        <div class="row"><div class="label">호텔ID</div><div>1</div></div>
+      </div>
+      <!-- [DUMMY-END] -->
+    </div>
+
+    <div class="btns">
+      <a class="btn" th:href="@{/admin/hq/dashboard}">대시보드</a>
+      <a class="btn" th:href="@{/admin/hq/account/profileEdit}">정보 수정</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

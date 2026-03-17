@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>로그인</title>
+
+<link rel="stylesheet" href="">
+
+<style>
+ :root{
+  --bg:#fff;
+  --line:#e9e9e9;
+  --text:#111;
+  --muted:#6f6f6f;
+  --danger:#c94b4b;
+}
+.login-bg{
+  background: var(--bg);
+  min-height: calc(100vh - 40px);
+  display:flex;
+  justify-content:center;
+  padding: 110px 16px 110px;
+}
+.wrap{
+  width: 920px;
+  max-width: 100%;
+}
+.header{
+  text-align:center;
+  margin: 0 0 42px;
+}
+.header h1{
+  margin:0;
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.header p{
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.card{
+  background:#fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 0;
+}
+.tabs{
+  width: 680px;
+  max-width: 100%;
+  margin: 0 auto;
+  display:flex;
+  justify-content:center;
+  gap: 140px;
+  position:relative;
+  padding: 18px 0 16px;
+}
+.tabs::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:1px;
+  background: var(--line);
+}
+.tab{
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width: 160px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--muted);
+  position:relative;
+}
+.tab[aria-selected="true"]{
+  color: var(--text);
+}
+.tab[aria-selected="true"]::after{
+  content:"";
+  position:absolute;
+  left: 18px;
+  right: 18px;
+  bottom: -17px;
+  height:3px;
+  background: var(--text);
+  border-radius: 999px;
+}
+.body{
+  width: 680px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding-top: 34px;
+  padding-bottom: 30px;
+}
+.form{ display:none; }
+.form.active{ display:block; }
+.label{
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.field{ margin-bottom: 16px; }
+.input{
+  width:100%;
+  height: 56px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  outline:none;
+  background:#fff;
+  font-size: 15px;
+  color: var(--text);
+}
+.input:focus{
+  border-color:#111;
+}
+.rowline{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin: 8px 0 18px;
+  gap: 12px;
+}
+.check{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  margin:0;
+  font-size: 14px;
+  color: var(--text);
+}
+.check input{
+  width:16px;
+  height:16px;
+  accent-color:#111;
+}
+.secure{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.lock{
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:#f4f4f4;
+  border:1px solid var(--line);
+}
+.admin-link{
+  cursor:pointer;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  text-decoration:none;
+}
+.admin-link:hover{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.btnx{
+  width:100%;
+  height: 58px;
+  border:0;
+  border-radius: 6px;
+  background:#111;
+  color:#fff;
+  font-size: 16px;
+  font-weight: 800;
+  cursor:pointer;
+}
+.btnx:active{ transform: translateY(1px); }
+.links{
+  margin-top: 24px;
+  padding-bottom: 14px;
+  display:flex;
+  justify-content:center;
+  gap: 14px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.links a{
+  color: var(--muted);
+  text-decoration:none;
+}
+.links a:hover{
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.socials{
+  margin-top: 18px;
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.social-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:52px;
+  border:1px solid var(--line);
+  border-radius:6px;
+  background:#fff;
+  color:var(--text);
+  text-decoration:none;
+  font-size:15px;
+  font-weight:700;
+}
+.social-btn:hover{
+  text-decoration:none;
+  border-color:#111;
+  color:var(--text);
+}
+.server-msg, .error{
+  width: 680px;
+  max-width: 100%;
+  margin: 0 auto 16px;
+  background: #fff1f1;
+  color: #8f2b2b;
+  border: 1px solid rgba(201,75,75,.25);
+  border-radius: 8px;
+  padding: 12px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.error{ display:none; margin-top: 16px; }
+.error.show{ display:block; }
+@media (max-width: 520px){
+  .login-bg{
+    padding-top: 86px;
+    padding-bottom: 90px;
+  }
+  .header h1{
+    font-size: 36px;
+  }
+  .tabs{
+    gap: 26px;
+  }
+  .tab{
+    min-width: 120px;
+    padding: 10px 16px;
+  }
+}
+</style>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+
+$(document).ready(function(){
+
+    // ===== 탭 전환 =====
+    function setTab(active){
+        const isMember = (active === "member");
+
+        $("#tab-member").attr("aria-selected", String(isMember));
+        $("#tab-guest").attr("aria-selected", String(!isMember));
+
+        $("#panel-member").toggleClass("active", isMember);
+        $("#panel-guest").toggleClass("active", !isMember);
+
+        $("#err-member").removeClass("show").text("");
+        $("#err-guest").removeClass("show").text("");
+    }
+
+    $("#tab-member").click(function(){ setTab("member"); });
+    $("#tab-guest").click(function(){ setTab("guest"); });
+
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
+    if(tab === "guest") setTab("guest");
+    else setTab("member");
+
+    // ===== 회원 로그인 버튼 =====
+    $("button#btnLOGIN").click(function(){
+        func_Login();
+    });
+
+    // ===== 회원 엔터 로그인 =====
+    $("input#passwd").keydown(function(event){
+        if(event.keyCode == 13) {
+            event.preventDefault();
+            func_Login();
+            return false;
+        }
+    });
+
+    // ===== form 기본 submit 차단 =====
+    $("#panel-member").submit(function(e){
+        e.preventDefault();
+        func_Login();
+        return false;
+    });
+
+    // ===== 비회원 로그인 유효성 =====
+    $("#panel-guest").submit(function(e){
+        const $err = $("#err-guest");
+        $err.removeClass("show").text("");
+
+        const phone = $.trim($("#guestPhone").val());
+        const name  = $.trim($("#guestName").val());
+
+        if(phone === ""){
+            e.preventDefault();
+            $err.text("휴대폰번호를 입력하세요.").addClass("show");
+            $("#guestPhone").focus();
+            return false;
+        }
+
+        const phoneNorm = phone.replace(/[^0-9]/g, "");
+        if(phoneNorm.length < 10){
+            e.preventDefault();
+            $err.text("휴대폰번호를 정확히 입력하세요. (숫자만)").addClass("show");
+            $("#guestPhone").focus();
+            return false;
+        }
+
+        if(name === ""){
+            e.preventDefault();
+            $err.text("고객명을 입력하세요.").addClass("show");
+            $("#guestName").focus();
+            return false;
+        }
+
+        return true;
+    });
+
+    // ===== 관리자 로그인 이동 =====
+    $("#goAdminLogin").click(function(){
+        location.href = contextPath + "admin/login";
+    });
+
+}); // end of $(document).ready(function(){})------------------------------
+
+
+// Function Declaration
+function func_Login() {
+
+    const memberid = $("input#memberid").val();
+    const passwd   = $("input#passwd").val();
+
+    if(memberid.trim() == "") {
+        alert("아이디를 입력하세요!!");
+        $("input#memberid").val("");
+        $("input#memberid").focus();
+        return;
+    }
+
+    if(passwd.trim() == "") {
+        alert("비밀번호를 입력하세요!!");
+        $("input#passwd").val("");
+        $("input#passwd").focus();
+        return;
+    }
+
+    const data = {
+        "memberid": memberid,
+        "passwd": passwd
+    };
+
+    const token  = $("meta[name='_csrf']").attr("content");
+    const header = $("meta[name='_csrf_header']").attr("content");
+
+    $.ajax({
+        url: contextPath + "api/auth/member/login",
+        type: "post",
+        data: JSON.stringify(data),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        beforeSend: function(xhr){
+            xhr.setRequestHeader(header, token);
+        },
+        success: function(json){
+
+            console.log("회원 로그인 결과 : ", JSON.stringify(json));
+
+            if(("accessToken" in json) && json.accessToken) {
+                alert("로그인 성공!!");
+                sessionStorage.setItem("JWT", JSON.stringify(json));
+            }
+            else {
+                alert("로그인 실패!! (accessToken 이 없어요)");
+                sessionStorage.removeItem("JWT");
+                return;
+            }
+
+            location.href = contextPath + "index";
+        },
+        error: function(request, status, error){
+
+            if(request.responseJSON && request.responseJSON.message) {
+                alert(request.responseJSON.message);
+                return;
+            }
+
+            switch(request.status) {
+                case 400:
+                    alert("로그인 요청이 올바르지 않습니다.");
+                    break;
+                case 401:
+                    alert("로그인 실패!!");
+                    break;
+                default:
+                    alert("code: " + request.status + "\n"
+                        + "message: " + request.responseText + "\n"
+                        + "error: " + error);
+                    break;
+            }
+        }
+    });
+}
+
+/*]]>*/
+</script>
+
+</head>
+
+<body>
+<div class="container">
+  <div class="login-bg">
+    <div class="wrap">
+
+      <div class="header">
+        <h1>로그인</h1>
+        <p>연갈색 테마 · 회원/비회원 탭</p>
+      </div>
+
+      <section class="card" aria-label="로그인 카드">
+
+        <div class="tabs" role="tablist" aria-label="로그인 방식 선택">
+          <button class="tab" id="tab-member" role="tab" aria-selected="true" aria-controls="panel-member" type="button">회원</button>
+          <button class="tab" id="tab-guest"  role="tab" aria-selected="false" aria-controls="panel-guest"  type="button">비회원</button>
+        </div>
+
+        <div class="body">
+
+          <div class="server-msg" th:if="${msg != null and #strings.length(msg) > 0}" th:text="${msg}"></div>
+
+          <!-- 회원 로그인 -->
+          <form class="form active"
+                id="panel-member"
+                name="loginFrm"
+                role="tabpanel"
+                aria-labelledby="tab-member"
+                onsubmit="return false;">
+
+            <div class="field">
+              <div class="label"><span>아이디 또는 이메일</span></div>
+              <input class="input" id="memberid" name="memberid" autocomplete="username" placeholder="아이디 또는 이메일" />
+            </div>
+
+            <div class="field">
+              <div class="label"><span>비밀번호</span></div>
+              <input class="input" id="passwd" name="passwd" type="password" autocomplete="current-password" placeholder="비밀번호" />
+            </div>
+
+            <div class="rowline">
+              <label class="check">
+                <input type="checkbox" name="rememberMe" />
+                로그인 상태 유지
+              </label>
+
+              <div class="secure" title="보안 로그인">
+                <span class="lock">🔒</span>
+                <span>보안</span>
+              </div>
+            </div>
+
+            <div class="rowline" style="margin-top:0;">
+              <span></span>
+              <span class="admin-link" id="goAdminLogin">관리자 로그인 →</span>
+            </div>
+
+            <button class="btnx" type="button" id="btnLOGIN">로그인</button>
+
+            <div class="socials">
+              <a class="social-btn" th:href="@{/oauth2/authorization/kakao}">카카오로 시작하기</a>
+              <a class="social-btn" th:href="@{/oauth2/authorization/naver}">네이버로 시작하기</a>
+            </div>
+
+            <div class="links">
+              <a th:href="@{/security/member_id_find}">아이디 찾기</a>
+              <span>|</span>
+              <a th:href="@{/security/member_pw_find}">비밀번호 찾기</a>
+              <span>|</span>
+              <a th:href="@{/security/memberRegister}">회원가입</a>
+            </div>
+
+            <div class="error" id="err-member"></div>
+          </form>
+
+          <!-- 비회원 로그인 -->
+          <form class="form"
+                id="panel-guest"
+                role="tabpanel"
+                aria-labelledby="tab-guest"
+                method="post"
+                th:action="@{/guest/loginEnd}">
+
+            <input type="hidden"
+                   th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}" />
+
+            <div class="field">
+              <div class="label"><span>휴대폰번호</span></div>
+              <input class="input"
+                     id="guestPhone"
+                     name="phone"
+                     inputmode="tel"
+                     autocomplete="tel"
+                     placeholder="휴대폰번호 (숫자만)" />
+            </div>
+
+            <div class="field">
+              <div class="label"><span>고객명</span></div>
+              <input class="input"
+                     id="guestName"
+                     name="name"
+                     type="text"
+                     autocomplete="name"
+                     placeholder="비회원 고객명" />
+            </div>
+
+            <button class="btnx" type="submit">비회원으로 계속</button>
+
+            <div class="error" id="err-guest"></div>
+          </form>
+
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+</body>
+</html>

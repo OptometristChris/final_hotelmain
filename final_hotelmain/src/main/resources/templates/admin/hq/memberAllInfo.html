@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>회원 전체 목록(HQ)</title>
+
+<link rel="stylesheet" href="">
+
+<style>
+  :root{
+    --bg:#f6f1ea;
+    --panel:#ffffff;
+    --line:#eadfd3;
+    --line-2:#d8c6b3;
+    --text:#2a2320;
+    --muted:#7a6a61;
+    --brand:#8b6a52;
+    --accent:#cda57a;
+    --danger:#c94b4b;
+    --ok:#2f7d4c;
+    --shadow:0 18px 45px rgba(54,38,25,.10);
+    --radius:18px;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", sans-serif;
+    background: radial-gradient(1200px 600px at 20% 10%, #fff, transparent 55%),
+                radial-gradient(900px 500px at 80% 90%, #fff, transparent 50%),
+                var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px 14px;
+  }
+
+  .wrap{ width: min(1100px, 100%); }
+  .brandbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+    gap:12px;
+  }
+  .brandbar .left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    letter-spacing:.14em;
+    font-weight:900;
+    color:var(--brand);
+  }
+  .brandbar .right{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid var(--line);
+    box-shadow:var(--shadow);
+    font-size:12.5px;
+    color:var(--muted);
+    font-weight:800;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .header{
+    padding:20px 18px 12px;
+    border-bottom:1px solid var(--line);
+    background: linear-gradient(180deg, #fff, #fff7ef);
+  }
+  .header h1{
+    margin:0;
+    font-size:20px;
+    letter-spacing:.04em;
+    font-weight:900;
+  }
+  .header p{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .body{ padding:18px; }
+
+  /* Search area */
+  .search{
+    display:grid;
+    grid-template-columns: 140px 1fr 140px 140px;
+    gap:10px;
+    align-items:end;
+    margin-bottom:14px;
+  }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .label{ font-size:12.5px; color:var(--muted); font-weight:800; }
+  .input, .select{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--line-2);
+    border-radius:12px;
+    outline:none;
+    background:#fff;
+    font-size:14px;
+  }
+  .input:focus, .select:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 4px rgba(205,165,122,.22);
+  }
+  .btn{
+    border:0;
+    border-radius:14px;
+    padding:12px 14px;
+    font-weight:900;
+    cursor:pointer;
+    letter-spacing:.04em;
+  }
+  .btn-main{ background: linear-gradient(180deg, var(--brand), #6f513f); color:#fff; }
+  .btn-sub{ background:#fff; color:var(--brand); border:1px solid var(--line-2); }
+
+  .tools{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .count{ color:var(--muted); font-size:12.5px; font-weight:800; }
+  .count b{ color:var(--text); }
+
+  /* Table */
+  .table-wrap{
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+  }
+  thead th{
+    text-align:left;
+    padding:12px 12px;
+    background:#fffaf5;
+    border-bottom:1px solid var(--line);
+    color:#443a34;
+    font-weight:900;
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:12px 12px;
+    border-bottom:1px solid #eee;
+    vertical-align:top;
+  }
+  tbody tr:hover{ background:#faf7f3; }
+  .muted{ color:var(--muted); font-size:12.5px; }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:12px;
+    border:1px solid var(--line);
+    background:#fff;
+    white-space:nowrap;
+  }
+  .badge-ok{ color:#1b5e34; border-color:#bfe6cc; background:#f2fbf5; }
+  .badge-off{ color:#8a3a3a; border-color:#f1c3c3; background:#fff4f4; }
+
+  .actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .linkbtn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 10px;
+    border-radius:12px;
+    border:1px solid var(--line-2);
+    background:#fff;
+    color:var(--brand);
+    font-weight:900;
+    font-size:12.5px;
+    text-decoration:none;
+  }
+  .linkbtn:hover{ background:#fffaf5; }
+
+  /* Paging (틀) */
+  .paging{
+    margin-top:14px;
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .page{
+    min-width:38px;
+    height:38px;
+    border-radius:12px;
+    border:1px solid var(--line-2);
+    background:#fff;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    text-decoration:none;
+    color:var(--brand);
+    font-weight:900;
+  }
+  .page.active{
+    background:linear-gradient(180deg, var(--brand), #6f513f);
+    color:#fff;
+    border:0;
+  }
+
+  @media (max-width: 980px){
+    .search{ grid-template-columns: 1fr; }
+    table{ font-size:13px; }
+  }
+</style>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+document.addEventListener('DOMContentLoaded', () => {
+
+  // 검색 버튼(틀): 지금은 GET 파라미터 연결 안 했으니, 나중에 필요하면 action 넣어서 처리
+  const btnSearch = document.getElementById('btnSearch');
+  const btnReset  = document.getElementById('btnReset');
+
+  if(btnSearch){
+    btnSearch.addEventListener('click', () => {
+      // TODO: 검색 파라미터 붙여서 이동하거나 form submit 처리
+      alert("검색 기능은 추후 연결 예정입니다. (현재는 목록 출력만 구현)");
+    });
+  }
+  if(btnReset){
+    btnReset.addEventListener('click', () => {
+      // TODO: 초기화 후 목록 재조회
+      location.reload();
+    });
+  }
+});
+/*]]>*/
+</script>
+
+<body>
+<div class="container">
+  <div class="wrap">
+    <div class="brandbar">
+      <div class="left">CIEL · HQ</div>
+      <div class="right">
+        <span class="chip">회원관리</span>
+        <a class="chip" th:href="@{/admin/hq/dashboard}" style="text-decoration:none;">대시보드</a>
+      </div>
+    </div>
+
+    <section class="card" aria-label="회원 전체 목록 카드">
+      <div class="header">
+        <h1>회원 전체 목록</h1>
+        <p>HQ 전용 기능 · 회원 계정 정보를 조회합니다.</p>
+      </div>
+
+      <div class="body">
+
+        <!-- 검색/필터 (틀) -->
+        <div class="search">
+          <div class="field">
+            <div class="label">검색 조건</div>
+            <select class="select" id="searchType">
+              <option value="memberid">아이디</option>
+              <option value="name">이름</option>
+              <option value="email">이메일</option>
+              <option value="mobile">휴대폰</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <div class="label">검색어</div>
+            <input class="input" id="keyword" placeholder="검색어를 입력하세요" />
+          </div>
+
+          <div class="field">
+            <div class="label">활성상태</div>
+            <select class="select" id="enabled">
+              <option value="ALL">전체</option>
+              <option value="1">활성(1)</option>
+              <option value="0">비활성(0)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <div class="label">작업</div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn btn-main" type="button" id="btnSearch" style="flex:1;">검색</button>
+              <button class="btn btn-sub" type="button" id="btnReset" style="flex:1;">초기화</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tools">
+          <div class="count">
+            총 <b th:text="${memberDtoList != null ? #lists.size(memberDtoList) : 0}">0</b>명
+          </div>
+          <div class="muted">* 상세/수정/정지 기능은 추후 단계적으로 연결</div>
+        </div>
+
+        <!-- 목록 테이블 -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:90px;">회원No</th>
+                <th style="width:140px;">아이디</th>
+                <th style="width:120px;">이름</th>
+                <th>이메일/휴대폰</th>
+                <th style="width:120px;">상태</th>
+                <th style="width:170px;">가입일</th>
+                <th style="width:180px;">액션</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr th:if="${memberDtoList == null or #lists.isEmpty(memberDtoList)}">
+                <td colspan="7" class="muted" style="text-align:center; padding:18px;">
+                  조회된 회원이 없습니다.
+                </td>
+              </tr>
+
+              <tr th:each="m : ${memberDtoList}">
+                <td th:text="${m.memberNo}">1</td>
+                <td>
+                  <div style="font-weight:900;" th:text="${m.memberid}">memberid</div>
+                  <div class="muted" th:text="|등급: ${m.gradeCode != null ? m.gradeCode : 'N/A'}|">등급: N/A</div>
+                </td>
+                <td th:text="${m.name}">홍길동</td>
+                <td>
+                  <div th:text="${m.email}">email</div>
+                  <div class="muted" th:text="${m.mobile}">mobile</div>
+                </td>
+                <td>
+                  <span class="badge badge-ok" th:if="${m.enabled == '1'}">활성</span>
+                  <span class="badge badge-off" th:if="${m.enabled != '1'}">비활성</span>
+                </td>
+                <td>
+                  <div th:text="${m.registerday}">2026-02-24</div>
+                  <div class="muted" th:text="|최근로그인: ${m.lastLoginDate != null ? m.lastLoginDate : '-'}|">최근로그인: -</div>
+                </td>
+                <td>
+                  <div class="actions">
+                    <!-- TODO: 회원 상세 페이지 연결 예정 -->
+                    <a class="linkbtn" th:href="@{/admin/hq/members/detail/{memberNo}(memberNo=${m.memberNo})}">상세</a>
+                    <!-- TODO: 활성/비활성 토글 연결 예정 -->
+                    <a class="linkbtn" href="javascript:void(0)">상태변경</a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 페이징(틀) -->
+        <div class="paging">
+          <a class="page" href="javascript:void(0)">«</a>
+          <a class="page active" href="javascript:void(0)">1</a>
+          <a class="page" href="javascript:void(0)">2</a>
+          <a class="page" href="javascript:void(0)">3</a>
+          <a class="page" href="javascript:void(0)">»</a>
+        </div>
+
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

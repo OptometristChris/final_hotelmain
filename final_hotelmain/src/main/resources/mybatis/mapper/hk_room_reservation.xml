@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="reservation">
+
+	<!-- 예약 페이지 내 객실 기본 정보 조회 -->
+	<select id="getRoomInfo" parameterType="int" resultType="map">	
+	    SELECT
+	        h.HOTEL_NAME,
+	        r.ROOM_NAME,
+	        r.BASE_PRICE,
+	        r.MAX_CAPACITY
+	    FROM ROOM_TYPE r
+	    JOIN TBL_HOTEL h
+	      ON r.FK_HOTEL_ID = h.HOTEL_ID
+	    WHERE r.ROOM_TYPE_ID = #{value}	
+	</select>
+
+	<!-- payment 테이블에 insert -->
+    <insert id="insertPayment" parameterType="map" useGeneratedKeys="false">
+	    <selectKey keyProperty="payment_id" resultType="long" order="BEFORE">
+	        SELECT SEQ_PAYMENT.NEXTVAL FROM DUAL
+	    </selectKey>
+	
+	    INSERT INTO PAYMENT (
+	        payment_id,
+	        member_no,
+	        payment_amount,
+	        payment_method,
+	        payment_status,
+	        imp_uid,
+	        paid_at,
+	        created_at
+	    )
+	    VALUES (
+	        #{payment_id},
+	        #{member_no},
+	        #{total_price},
+	        'CARD',
+	        'PAID',
+	        #{imp_uid, jdbcType=VARCHAR}, SYSDATE,
+	        SYSDATE
+	    )
+	</insert>
+	
+	<!-- reservation 테이블에 insert -->
+    <insert id="insertReservation" parameterType="map">
+	    <selectKey keyProperty="reservation_id"
+	               resultType="long"
+	               order="BEFORE">
+	        SELECT SEQ_RESERVATION.NEXTVAL FROM DUAL
+	    </selectKey>
+	
+	    INSERT INTO RESERVATION (
+	        reservation_id,
+	        reservation_code,
+	        member_no,
+	        room_type_id,
+	        payment_id,
+	        checkin_date,
+	        checkout_date,
+	        guest_count,
+	        total_price,
+	        reservation_status,
+	        created_at,
+	        cancel_deadline,
+	        refund_amount
+	        <if test="promotion_id != null and promotion_id != ''">
+	        , fk_promotion_id
+	        </if>
+	    )
+	    VALUES (
+	        #{reservation_id},
+	        'R' || TO_CHAR(SYSDATE,'YYYYMMDD') || '-' ||
+	        LPAD(#{reservation_id},4,'0'),
+	        #{member_no},
+	        #{room_type_id},
+	        #{payment_id},
+	        TO_DATE(#{check_in}, 'YYYY-MM-DD'),
+	        TO_DATE(#{check_out}, 'YYYY-MM-DD'),
+	        #{guest_count},
+	        #{total_price},
+	        'CONFIRMED',
+	        SYSDATE,
+	        #{cancel_deadline},
+	        #{refund_amount}
+	        <if test="promotion_id != null and promotion_id != ''">
+	        , #{promotion_id}
+	        </if>
+	    )
+	  </insert>
+	
+	  <!-- 예약 완료 페이지 -->
+	  <select id="findByReservationCode" parameterType="string" resultType="map">
+	    SELECT
+		    r.reservation_code,
+		    m.name,
+		    r.checkin_date,
+		    r.checkout_date,
+		    r.total_price,
+		    r.guest_count,
+		    rt.room_name,
+		    h.hotel_name
+		FROM reservation r
+		JOIN tbl_member_security m ON r.member_no = m.member_no
+		JOIN room_type rt ON r.room_type_id = rt.room_type_id
+		JOIN tbl_hotel h ON rt.fk_hotel_id = h.hotel_id
+		WHERE r.reservation_code = #{value}
+	  </select>
+	  
+	  
+	  
+	<!-- ========================================================= -->
+	<!-- 마이페이지 : 로그인 회원의 예약 목록 조회 -->
+	<!-- parameterType : 회원번호(member_no) -->
+	<!-- resultType : map (예약 정보들을 key-value 형태로 반환) -->
+	<!-- ========================================================= -->	
+	<select id="selectMyReservationList" parameterType="int" resultType="map">	
+	    SELECT
+	        r.RESERVATION_ID,        <!-- 예약 PK -->
+	        r.RESERVATION_CODE,      <!-- 예약 코드 -->
+	        r.CHECKIN_DATE,          <!-- 체크인 날짜 -->
+	        r.CHECKOUT_DATE,         <!-- 체크아웃 날짜 -->
+	        r.GUEST_COUNT,           <!-- 투숙 인원 -->
+	        r.TOTAL_PRICE,           <!-- 결제 금액 -->
+	        r.RESERVATION_STATUS,    <!-- 예약 상태 -->
+	        r.CANCEL_DEADLINE,       <!-- 취소 가능 기한 -->
+	        rt.ROOM_NAME,            <!-- 객실 이름 -->
+	        h.HOTEL_NAME             <!-- 호텔 이름 -->
+	
+	    FROM RESERVATION r
+	
+	    <!-- 객실 정보 -->
+	    JOIN ROOM_TYPE rt
+	      ON r.ROOM_TYPE_ID = rt.ROOM_TYPE_ID
+	
+	    <!-- 호텔 정보 -->
+	    JOIN TBL_HOTEL h
+	      ON rt.FK_HOTEL_ID = h.HOTEL_ID
+	
+	    <!-- 로그인한 회원의 예약만 조회 -->
+	    WHERE r.MEMBER_NO = #{memberNo}
+	
+	    <!-- 최신 예약이 위에 오도록 정렬 -->
+	    ORDER BY r.CREATED_AT DESC	
+	</select>
+	
+	
+	<!-- ========================================= -->
+	<!-- 예약 취소 -->
+	<!-- reservation_id로 상태를 CANCELLED로 변경 -->
+	<!-- ========================================= -->
+	<update id="cancelReservation">
+	    UPDATE RESERVATION
+	    SET RESERVATION_STATUS = 'CANCELLED'
+	    WHERE RESERVATION_ID = #{reservation_id}
+	    AND SYSDATE &lt;= CANCEL_DEADLINE
+	</update>
+	
+	
+	<!-- ========================================= -->
+	<!-- 비회원 예약 조회 -->
+	<!-- ========================================= -->
+	<select id="findGuestReservation" parameterType="map" resultType="map">
+		SELECT
+		    m.NAME,
+		    r.RESERVATION_CODE,
+		    r.CHECKIN_DATE,
+		    r.CHECKOUT_DATE,
+		    r.TOTAL_PRICE,
+		    r.RESERVATION_STATUS,
+		    rt.ROOM_NAME,
+		    h.HOTEL_NAME
+		
+		FROM RESERVATION r
+		
+		JOIN TBL_MEMBER_SECURITY m
+		ON r.MEMBER_NO = m.MEMBER_NO
+		
+		JOIN ROOM_TYPE rt
+		ON r.ROOM_TYPE_ID = rt.ROOM_TYPE_ID
+		
+		JOIN TBL_HOTEL h
+		ON rt.FK_HOTEL_ID = h.HOTEL_ID
+		
+		WHERE m.NAME = #{name}
+		AND m.MEMBER_TYPE = 'GUEST'
+		
+		ORDER BY r.CREATED_AT DESC
+	</select>
+	
+	
+	<!-- ========================================= -->
+	<!-- 비회원 예약 취소 -->
+	<!-- ========================================= -->
+	<update id="cancelGuestReservation">
+	    UPDATE RESERVATION
+	    SET RESERVATION_STATUS = 'CANCELLED'
+	    WHERE RESERVATION_CODE = #{reservation_code}
+	    AND TRUNC(SYSDATE) &lt;= TRUNC(CANCEL_DEADLINE)
+	</update>
+	  
+
+</mapper>

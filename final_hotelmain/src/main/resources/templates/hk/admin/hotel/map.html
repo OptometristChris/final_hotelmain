@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko"
+xmlns:th="http://www.thymeleaf.org"
+th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+
+<head>
+
+<meta charset="UTF-8">
+<title>호텔 위치</title>
+
+<link th:fragment="link">
+
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2014221291f1b63602c92cea5292906"></script>
+
+
+<style th:fragment="style">
+
+.page-title{
+margin:40px 0 20px;
+font-weight:700;
+text-align:center;
+}
+
+/* 전체 레이아웃 */
+.map-layout{
+display:flex;
+gap:20px;
+height:600px;
+}
+
+/* 좌측 패널 */
+.hotel-panel{
+width:260px;
+min-width:260px;
+background:#fff;
+border-radius:10px;
+border:1px solid #ddd;
+display:flex;
+flex-direction:column;
+overflow:hidden;
+}
+
+/* 검색 */
+.search-box{
+padding:15px;
+border-bottom:1px solid #eee;
+}
+
+/* 리스트 */
+.hotel-list{
+overflow-y:auto;
+flex:1;
+}
+
+/* 호텔 카드 */
+.hotel-card{
+padding:14px;
+border-bottom:1px solid #eee;
+cursor:pointer;
+transition:0.2s;
+font-size:14px;
+font-weight:600;
+}
+
+.hotel-card:hover{
+background:#f5f7fa;
+}
+
+/* 지도 */
+#map{
+flex:1;
+height:600px;
+border-radius:10px;
+}
+
+/* 인포윈도우 */
+.info-box{
+padding:10px;
+width:170px;
+}
+
+.info-title{
+font-weight:600;
+margin-bottom:6px;
+}
+
+</style>
+
+</head>
+
+
+
+<body>
+
+<div th:fragment="content" style="margin-top:180px; margin-bottom:140px;">
+
+<div class="container">
+
+<h2 class="page-title">호텔 위치</h2>
+
+<div class="map-layout">
+
+<!-- 좌측 호텔 리스트 -->
+<div class="hotel-panel">
+
+<div class="search-box">
+
+<input
+type="text"
+class="form-control"
+placeholder="호텔 검색"
+id="hotelSearch">
+
+</div>
+
+<div id="hotelList" class="hotel-list"></div>
+
+</div>
+
+
+<!-- 지도 -->
+<div id="map"></div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<script th:inline="javascript" th:fragment="script">
+
+let hotels = [[${hotelList}]];
+let markers=[];
+
+/* 지도 생성 */
+
+const mapContainer=document.getElementById("map");
+
+const mapOption={
+center:new kakao.maps.LatLng(37.5665,126.9780),
+level:7
+};
+
+const map=new kakao.maps.Map(mapContainer,mapOption);
+
+const listContainer=document.getElementById("hotelList");
+
+
+/* 호텔 렌더 */
+
+function renderHotels(data){
+
+listContainer.innerHTML="";
+
+markers.forEach(m=>m.setMap(null));
+markers=[];
+
+const bounds=new kakao.maps.LatLngBounds();
+
+data.forEach(function(hotel){
+
+const lat=hotel.LATITUDE;
+const lng=hotel.LONGITUDE;
+
+const position=new kakao.maps.LatLng(lat,lng);
+
+bounds.extend(position);
+
+
+/* 마커 */
+
+const markerImage=new kakao.maps.MarkerImage(
+"https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+new kakao.maps.Size(24,35)
+);
+
+const marker=new kakao.maps.Marker({
+position:position,
+image:markerImage
+});
+
+marker.setMap(map);
+markers.push(marker);
+
+
+/* 인포윈도우 */
+
+const infoWindow=new kakao.maps.InfoWindow({
+
+content:
+'<div class="info-box">'+
+'<div class="info-title">'+hotel.HOTEL_NAME+'</div>'+
+'<button class="btn btn-primary btn-sm" onclick="goDetail('+hotel.HOTEL_ID+')">상세보기</button>'+
+'</div>'
+
+});
+
+
+kakao.maps.event.addListener(marker,'click',function(){
+
+infoWindow.open(map,marker);
+map.setCenter(position);
+
+});
+
+
+/* 호텔 카드 */
+
+const div=document.createElement("div");
+
+div.className="hotel-card";
+
+div.innerHTML = hotel.HOTEL_NAME;
+
+div.onclick=function(){
+
+map.setCenter(position);
+infoWindow.open(map,marker);
+
+};
+
+listContainer.appendChild(div);
+
+});
+
+
+/* 지도 자동 zoom */
+
+if(data.length>0){
+map.setBounds(bounds);
+}
+
+}
+
+
+/* 상세페이지 이동 */
+
+function goDetail(id){
+
+location.href="/final_hotel/admin/hotel/detail?hotel_id="+id;
+
+}
+
+
+/* 검색 */
+
+document.getElementById("hotelSearch")
+.addEventListener("keyup",function(){
+
+const keyword=this.value.toLowerCase();
+
+const filtered=hotels.filter(function(h){
+
+return h.HOTEL_NAME.toLowerCase().includes(keyword);
+
+});
+
+renderHotels(filtered);
+
+});
+
+
+/* 초기 실행 */
+
+renderHotels(hotels);
+
+</script>
+
+</body>
+</html>

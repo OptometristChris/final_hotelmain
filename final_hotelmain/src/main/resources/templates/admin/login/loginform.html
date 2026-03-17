@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>관리자 로그인</title>
+
+<link rel="stylesheet" href="">
+
+<style>
+:root{
+  --bg:#fff;
+  --line:#e9e9e9;
+  --text:#111;
+  --muted:#6f6f6f;
+  --danger:#c94b4b;
+}
+
+/* 페이지 전체 여백/정렬 */
+.login-bg{
+  background: var(--bg);
+  min-height: calc(100vh - 40px);
+  display:flex;
+  justify-content:center;
+  padding: 110px 16px 110px;
+}
+
+/* 바깥 컨테이너(흰 여백 확보) */
+.wrap{
+  width: 920px;
+  max-width: 100%;
+}
+
+/* 상단 타이틀 */
+.header{
+  text-align:center;
+  margin: 0 0 42px;
+}
+.header h1{
+  margin:0;
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.header p{
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* 카드: 중앙 정렬 + 내부 좌우 패딩 확보 */
+.card{
+  width: 680px;
+  max-width: 100%;
+  margin: 0 auto;
+  background:#fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 34px 40px 30px;
+}
+
+/* form 영역은 카드 안에서 100% 사용 */
+.body{
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* 라벨 */
+.label{
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* 입력창 */
+.field{ margin-bottom: 16px; }
+
+.input{
+  width:100%;
+  height: 56px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  outline:none;
+  background:#fff;
+  font-size: 15px;
+  color: var(--text);
+}
+.input:focus{
+  border-color:#111;
+}
+
+/* 보안/링크 줄 */
+.rowline{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin: 10px 0 18px;
+  gap: 12px;
+}
+
+.secure{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.lock{
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:#f4f4f4;
+  border:1px solid var(--line);
+}
+
+/* 링크(회원 로그인) */
+.user-link{
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  text-decoration:none;
+}
+.user-link:hover{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 버튼 */
+.btnx{
+  width:100%;
+  height: 58px;
+  border:0;
+  border-radius: 6px;
+  background:#111;
+  color:#fff;
+  font-size: 16px;
+  font-weight: 800;
+  cursor:pointer;
+}
+.btnx:active{ transform: translateY(1px); }
+
+/* 하단 링크 */
+.links{
+  margin-top: 24px;
+  padding-bottom: 6px;
+  display:flex;
+  justify-content:center;
+  gap: 14px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.links a{
+  color: var(--muted);
+  text-decoration:none;
+}
+.links a:hover{
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 서버 메시지/에러 박스 */
+.server-msg, .error{
+  width: 100%;
+  margin: 0 0 16px;
+  background: #fff1f1;
+  color: #8f2b2b;
+  border: 1px solid rgba(201,75,75,.25);
+  border-radius: 8px;
+  padding: 12px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.error{ display:none; margin-top: 16px; }
+.error.show{ display:block; }
+
+/* 모바일 */
+@media (max-width: 520px){
+  .login-bg{
+    padding-top: 86px;
+    padding-bottom: 90px;
+  }
+  .header h1{
+    font-size: 36px;
+  }
+  .card{
+    padding: 28px 18px 26px;
+  }
+}
+</style>
+
+<!--/* 자바스크립트 인라인 */-->
+<script th:inline="javascript">
+/*<![CDATA[*/
+
+$(document).ready(function(){
+
+  $("button#btnAdminLOGIN").click(function(){
+    func_AdminLogin();
+  });
+
+  $("input#passwd").keydown(function(event){
+    if(event.keyCode == 13) {
+      event.preventDefault();
+      func_AdminLogin();
+      return false;
+    }
+  });
+
+  // ===== form 기본 submit 차단 =====
+  $("#adminLoginFrm").submit(function(e){
+    e.preventDefault();
+    func_AdminLogin();
+    return false;
+  });
+
+}); // end of $(document).ready(function(){})------------------------------
+
+
+// Function Declaration
+function func_AdminLogin() {
+
+  $("#err-admin").removeClass("show").text("");
+
+  const adminid = $("input#adminid").val();
+  const passwd  = $("input#passwd").val();
+
+  if(adminid.trim() == "") {
+    $("#err-admin").text("관리자 아이디를 입력하세요.").addClass("show");
+    $("input#adminid").val("");
+    $("input#adminid").focus();
+    return;
+  }
+
+  if(passwd.trim() == "") {
+    $("#err-admin").text("비밀번호를 입력하세요.").addClass("show");
+    $("input#passwd").val("");
+    $("input#passwd").focus();
+    return;
+  }
+
+  const data = {
+    "adminid": adminid,
+    "passwd": passwd
+  };
+
+  const token  = $("meta[name='_csrf']").attr("content");
+  const header = $("meta[name='_csrf_header']").attr("content");
+
+  $.ajax({
+    url: contextPath + "api/auth/admin/login",
+    type: "post",
+    data: JSON.stringify(data),
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    beforeSend: function(xhr) {
+      xhr.setRequestHeader(header, token);
+    },
+    success: function(json){
+
+      console.log("관리자 로그인 결과 : ", JSON.stringify(json));
+
+      if (("accessToken" in json) && json.accessToken) {
+        alert("관리자 로그인 성공!!");
+        sessionStorage.setItem("JWT", JSON.stringify(json));
+      }
+      else {
+        alert("관리자 로그인 실패!! (accessToken 이 없어요)");
+        sessionStorage.removeItem("JWT");
+        return;
+      }
+
+      if (json.adminType === "HQ") {
+        location.href = contextPath + "admin/hq/dashboard";
+      }
+      else if (json.adminType === "BRANCH") {
+        location.href = contextPath + "admin/branch/dashboard";
+      }
+      else {
+        alert("관리자 유형(adminType) 정보가 없습니다.");
+        sessionStorage.removeItem("JWT");
+      }
+    },
+    error: function(request, status, error){
+
+      if(request.responseJSON && request.responseJSON.message) {
+        $("#err-admin").text(request.responseJSON.message).addClass("show");
+        return;
+      }
+
+      switch(request.status) {
+        case 400:
+          $("#err-admin").text("로그인 요청이 올바르지 않습니다.").addClass("show");
+          break;
+
+        case 401:
+          $("#err-admin").text("관리자 로그인 실패!!").addClass("show");
+          break;
+
+        default:
+          alert("code: " + request.status + "\n"
+              + "message: " + request.responseText + "\n"
+              + "error: " + error);
+          break;
+      }
+    }
+  });
+
+} // end of function func_AdminLogin()------------------------
+
+/*]]>*/
+</script>
+</head>
+
+<body>
+<div class="container">
+  <div class="login-bg">
+    <div class="wrap">
+
+      <!-- 상단 타이틀 -->
+      <div class="header">
+        <h1>관리자 로그인</h1>
+        <p>HQ / BRANCH 계정으로 로그인합니다.</p>
+      </div>
+
+      <section class="card" aria-label="관리자 로그인 카드">
+        <div class="body">
+
+          <!-- Controller에서 request.setAttribute("msg", msg); 로 내려주는 메시지 -->
+          <div class="server-msg"
+               th:if="${msg != null and #strings.length(msg) > 0}"
+               th:text="${msg}"></div>
+
+          <form id="adminLoginFrm" onsubmit="return false;">
+
+            <div class="field">
+              <div class="label">관리자 아이디</div>
+              <input class="input"
+                     type="text"
+                     id="adminid"
+                     name="adminid"
+                     autocomplete="username"
+                     placeholder="관리자 아이디" />
+            </div>
+
+            <div class="field">
+              <div class="label">비밀번호</div>
+              <input class="input"
+                     type="password"
+                     id="passwd"
+                     name="passwd"
+                     autocomplete="current-password"
+                     placeholder="비밀번호" />
+            </div>
+
+            <div class="rowline">
+              <div class="secure" title="보안 로그인">
+                <span class="lock">🔒</span>
+                <span>보안</span>
+              </div>
+
+              <!-- 회원 로그인으로 이동 -->
+              <a class="user-link" th:href="@{/security/login}">회원 로그인 →</a>
+            </div>
+
+            <button class="btnx" type="button" id="btnAdminLOGIN">로그인</button>
+
+            <div class="error" id="err-admin"></div>
+
+            <div class="links">
+              <a th:href="@{/index}">메인으로</a>
+            </div>
+
+          </form>
+
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

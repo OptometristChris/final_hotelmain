@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<!--/* 타임리프는 백엔드 서버에서 HTML을 동적으로 렌더링하는 용도로 사용된다. */-->
+
+<head>
+<meta charset="UTF-8">
+<title>insert Title</title>
+</head>
+<body>
+	
+	<div th:fragment="header" style="font-family: 궁서;">
+		헤더 자리 입니다.
+	</div>
+	
+	<div th:fragment="headerParam(param1, param2)">
+       <p>헤더 자리 입니다.</p>
+       <p th:text="${param1}"></p>
+       <p th:text="${param2}"></p>
+    </div>
+    
+    
+	
+</body>
+</html>

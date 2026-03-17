@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.app.js.index.model.IndexDAO">
+
+    <select id="getMainBannerList" resultType="com.spring.app.js.promotion.domain.PromotionDTO">
+	    SELECT 
+	        B.banner_id, 
+	        B.title, 
+	        B.subtitle, 
+	        B.image_url,
+	        B.sort_order
+	    FROM PROMOTION_BANNER B
+	    LEFT JOIN PROMOTION_MASTER M ON B.fk_promotion_id = M.promotion_id
+	    WHERE B.active_yn = 'Y' 
+	      AND B.banner_type = 'MAIN'
+	    ORDER BY B.sort_order ASC
+	</select>
+
+    <select id="getMainRoomList" resultType="RoomTypeDTO">
+        <![CDATA[
+        SELECT * FROM (
+            SELECT 
+                RT.room_type_id, 
+                RT.fk_hotel_id AS brand_id, 
+                RT.room_grade, 
+                RT.room_name, 
+                RT.view_type,
+                RI.image_url 
+            FROM ROOM_TYPE RT
+            JOIN room_image RI ON RT.room_type_id = RI.room_type_id
+            WHERE RT.is_active = 'Y' 
+              AND RI.is_main = 'Y'
+            ORDER BY DBMS_RANDOM.VALUE
+        ) WHERE ROWNUM <= 2
+        ]]>
+    </select>
+
+    <select id="getMainDiningList" resultType="DiningDTO">
+        <![CDATA[
+        SELECT * FROM (
+            SELECT 
+                DINING_ID,        
+                FK_HOTEL_ID, 
+                NAME,             
+                MAIN_IMG          
+            FROM tbl_dining       
+            ORDER BY DBMS_RANDOM.VALUE
+        ) WHERE ROWNUM <= 3
+        ]]>
+    </select>
+
+    <select id="getPromoCardList" resultType="com.spring.app.js.promotion.domain.PromotionDTO">
+	    SELECT 
+	        B.banner_id,
+	        B.fk_promotion_id AS promotion_id,
+	        B.title, 
+	        B.image_url,                  
+	        B.benefits,             -- DB에 컬럼 추가 후 정상 작동함
+	        M.price,                
+	        M.end_date,             
+	        M.discount_rate         
+	    FROM PROMOTION_BANNER B
+	    LEFT JOIN PROMOTION_MASTER M ON B.fk_promotion_id = M.promotion_id
+	    WHERE B.active_yn = 'Y' 
+	      AND B.banner_type = 'CARD'
+	      AND (M.is_active = 1 OR M.is_active IS NULL)
+	    ORDER BY DBMS_RANDOM.VALUE
+	</select>
+
+	<select id="getAvailableRooms" parameterType="HashMap" resultType="RoomTypeDTO">
+	    SELECT 
+	        RT.room_type_id,
+	        RT.room_name,
+	        RT.room_grade,
+	        RT.bed_type,
+	        RT.view_type,
+	        RT.max_capacity,
+	        RT.base_price,
+	        (SELECT image_url FROM ROOM_IMAGE RI 
+	         WHERE RI.room_type_id = RT.room_type_id 
+	           AND RI.is_main = 'Y' 
+	           AND ROWNUM = 1) as image_url
+	    FROM ROOM_TYPE RT
+	    WHERE RT.fk_hotel_id = TO_NUMBER(#{hotelId})           
+	      AND RT.is_active = 'Y'
+	      
+	      <if test="bedType != null and bedType != ''">
+	      AND RT.bed_type = #{bedType}
+	      </if>
+	      
+	      AND RT.room_type_id IN (
+	          SELECT RS.room_type_id
+	          FROM ROOM_STOCK RS
+	          WHERE RS.stay_date &gt;= TO_DATE(#{checkIn}, 'YYYY-MM-DD')
+	            AND RS.stay_date &lt; TO_DATE(#{checkOut}, 'YYYY-MM-DD')
+	            AND RS.available_count > 0                           
+	            AND RS.is_closed = 'N'                             
+	          GROUP BY RS.room_type_id
+	          HAVING COUNT(*) = TO_DATE(#{checkOut}, 'YYYY-MM-DD') - TO_DATE(#{checkIn}, 'YYYY-MM-DD')
+	      )
+	</select>
+
+	<select id="getHotelList" resultType="HashMap">
+    SELECT hotel_id AS HOTEL_ID, 
+           hotel_name AS HOTEL_NAME
+    FROM tbl_hotel
+    ORDER BY hotel_id ASC
+</select>
+
+</mapper>

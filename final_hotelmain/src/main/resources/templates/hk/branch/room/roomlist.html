@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+<script
+src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<title>객실 관리 (지점관리자)</title>
+
+<style>
+
+/* 전체 페이지 */
+body{
+background:#f8f9fa;
+font-family:'Pretendard',sans-serif;
+}
+
+/* 카드 */
+.card{
+border:none;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.08);
+margin-bottom:40px;
+}
+
+/* 제목 */
+.page-title{
+font-weight:600;
+margin-bottom:30px;
+}
+
+.section-title{
+font-weight:600;
+margin-bottom:15px;
+}
+
+/* 이미지 */
+.room-img{
+width:120px;
+height:80px;
+object-fit:cover;
+border-radius:5px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+<h3 class="page-title">객실 관리 (지점관리자)</h3>
+
+<!-- 호텔 이름 표시 -->
+<h5 class="mb-3" th:text="'호텔 : ' + ${hotelName}"></h5>
+
+<!-- 객실 등록 버튼 -->
+<div class="mb-4 text-end">
+<a th:href="@{/admin/room/register}" class="btn btn-success">
+객실 등록 신청
+</a>
+</div>
+
+
+
+<!-- ======================================================
+     승인된 객실(운영중)
+====================================================== -->
+
+<div class="card p-4">
+
+<h5 class="section-title">승인된 객실 (운영중)</h5>
+
+<table class="table table-hover align-middle">
+
+<thead class="table-light">
+<tr>
+<th>호텔</th>
+<th>사진</th>
+<th>객실명</th>
+<th>등급</th>
+<th>침대</th>
+<th>뷰</th>
+<th>최대인원</th>
+<th>재고</th>
+<th>가격</th>
+<th>관리</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="room : ${approvedList}">
+
+<td th:text="${room.hotel_name}"></td>
+
+<!-- 객실 이미지 -->
+<td>
+<img th:src="@{${room.image_url}}" class="room-img">
+</td>
+
+<td th:text="${room.room_name}"></td>
+<td th:text="${room.room_grade}"></td>
+<td th:text="${room.bed_type}"></td>
+<td th:text="${room.view_type}"></td>
+<td th:text="${room.max_capacity}"></td>
+<td th:text="${room.total_count}"></td>
+<td th:text="${room.base_price}"></td>
+
+<td>
+
+<button type="button"
+class="btn btn-sm btn-primary"
+data-bs-toggle="modal"
+data-bs-target="#editModal"
+
+th:attr="data-id=${room.room_type_id},
+data-name=${room.room_name},
+data-grade=${room.room_grade},
+data-bed=${room.bed_type},
+data-view=${room.view_type},
+data-price=${room.base_price},
+data-count=${room.total_count},
+data-image=${room.image_url}">
+
+수정
+
+</button>
+
+<form th:action="@{/admin/room/deactivate}"
+method="post"
+style="display:inline"
+onsubmit="return confirm('객실을 비활성화 하시겠습니까?');">
+
+<input type="hidden"
+name="roomTypeId"
+th:value="${room.room_type_id}">
+
+<button type="submit"
+class="btn btn-sm btn-danger">
+비활성화
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+
+<!-- ======================================================
+     승인 대기 객실
+====================================================== -->
+
+<div class="card p-4">
+
+<h5 class="section-title">승인 대기 객실</h5>
+
+<table class="table table-hover align-middle">
+
+<thead class="table-light">
+<tr>
+<th>호텔</th>
+<th>사진</th>
+<th>객실명</th>
+<th>등급</th>
+<th>침대</th>
+<th>뷰</th>
+<th>최대인원</th>
+<th>재고</th>
+<th>가격</th>
+<th>상태</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="room : ${pendingList}">
+
+<td th:text="${room.hotel_name}"></td>
+
+<td>
+<img th:src="@{${room.image_url}}" class="room-img">
+</td>
+
+<td th:text="${room.room_name}"></td>
+<td th:text="${room.room_grade}"></td>
+<td th:text="${room.bed_type}"></td>
+<td th:text="${room.view_type}"></td>
+<td th:text="${room.max_capacity}"></td>
+<td th:text="${room.total_count}"></td>
+<td th:text="${room.base_price}"></td>
+
+<td>
+<span class="badge bg-warning text-dark">승인 대기</span>
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+
+<!-- ======================================================
+     반려된 객실
+====================================================== -->
+
+<div class="card p-4">
+
+<h5 class="section-title">반려된 객실</h5>
+
+<table class="table table-hover align-middle">
+
+<thead class="table-light">
+<tr>
+<th>호텔</th>
+<th>사진</th>
+<th>객실명</th>
+<th>등급</th>
+<th>침대</th>
+<th>뷰</th>
+<th>최대인원</th>
+<th>재고</th>
+<th>가격</th>
+<th>상태</th>
+<th>관리</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="room : ${rejectedList}">
+
+<td th:text="${room.hotel_name}"></td>
+
+<td>
+<img th:src="@{${room.image_url}}" class="room-img">
+</td>
+
+<td th:text="${room.room_name}"></td>
+<td th:text="${room.room_grade}"></td>
+<td th:text="${room.bed_type}"></td>
+<td th:text="${room.view_type}"></td>
+<td th:text="${room.max_capacity}"></td>
+<td th:text="${room.total_count}"></td>
+<td th:text="${room.base_price}"></td>
+
+<td>
+<span class="badge bg-danger">반려</span>
+</td>
+
+<td>
+
+<!-- 수정 모달 버튼 -->
+<button class="btn btn-sm btn-primary"
+data-bs-toggle="modal"
+data-bs-target="#editModal"
+
+th:attr="data-id=${room.room_type_id},
+data-name=${room.room_name},
+data-grade=${room.room_grade},
+data-bed=${room.bed_type},
+data-view=${room.view_type},
+data-price=${room.base_price},
+data-count=${room.total_count},
+data-image=${room.image_url}">
+
+수정
+
+</button>
+
+<form th:action="@{/admin/room/resubmit}"
+method="post"
+style="display:inline"
+onsubmit="return confirm('정말 재상신 하시겠습니까?');">
+
+<input type="hidden"
+name="roomTypeId"
+th:value="${room.room_type_id}">
+
+<button type="submit"
+class="btn btn-sm btn-warning">
+재상신
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+
+<!-- ======================================================
+     객실 승인 이력
+====================================================== -->
+
+<div class="card p-4">
+
+<h5 class="section-title">객실 승인 이력</h5>
+
+<table class="table table-hover">
+
+<thead class="table-light">
+<tr>
+<th>객실ID</th>
+<th>객실명</th>
+<th>상태</th>
+<th>반려사유</th>
+<th>처리자</th>
+<th>처리일</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="h : ${historyList}">
+
+<td th:text="${h['ROOM_TYPE_ID']}"></td>
+
+<td th:text="${h['ROOM_NAME']}"></td>
+
+<td>
+
+<span th:if="${h['STATUS']=='APPROVED'}"
+class="badge bg-success">
+승인
+</span>
+
+<span th:if="${h['STATUS']=='REJECTED'}"
+class="badge bg-danger">
+반려
+</span>
+
+</td>
+
+<td th:text="${h['REASON']}"></td>
+
+<td th:text="${h['DECIDED_BY']}"></td>
+
+<td th:text="${h['DECIDED_AT']}"></td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+
+<!-- ======================================================
+     비활성 객실
+====================================================== -->
+
+<div class="card p-4">
+
+<h5 class="section-title">비활성 객실</h5>
+
+<table class="table table-hover align-middle">
+
+<thead class="table-light">
+<tr>
+<th>호텔</th>
+<th>사진</th>
+<th>객실명</th>
+<th>등급</th>
+<th>침대</th>
+<th>뷰</th>
+<th>최대인원</th>
+<th>재고</th>
+<th>가격</th>
+<th>상태</th>
+<th>관리</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="room : ${inactiveList}">
+
+<td th:text="${room.hotel_name}"></td>
+
+<td>
+<img th:src="@{${room.image_url}}" class="room-img">
+</td>
+
+<td th:text="${room.room_name}"></td>
+<td th:text="${room.room_grade}"></td>
+<td th:text="${room.bed_type}"></td>
+<td th:text="${room.view_type}"></td>
+<td th:text="${room.max_capacity}"></td>
+<td th:text="${room.total_count}"></td>
+<td th:text="${room.base_price}"></td>
+
+<td>
+<span class="badge bg-secondary">비활성</span>
+</td>
+
+<td>
+
+<form th:action="@{/admin/room/restore}"
+method="post"
+style="display:inline"
+onsubmit="return confirm('객실을 복구하시겠습니까?');">
+
+<input type="hidden"
+name="roomTypeId"
+th:value="${room.room_type_id}">
+
+<button type="submit"
+class="btn btn-success btn-sm">
+복구
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+
+</div>
+
+<!-- 객실 수정 모달 -->
+<div class="modal fade" id="editModal">
+
+<div class="modal-dialog">
+
+<div class="modal-content">
+
+<!-- 수정 form -->
+<form th:action="@{/admin/room/modify}"
+      method="post"
+      enctype="multipart/form-data"
+      onsubmit="return confirm('정말 수정하시겠습니까?');">
+
+<div class="modal-header">
+<h5 class="modal-title">객실 정보 수정</h5>
+<button type="button"
+        class="btn-close"
+        data-bs-dismiss="modal"></button>
+</div>
+
+
+<div class="modal-body">
+
+<!-- 객실 ID -->
+<input type="hidden"
+       name="roomTypeId"
+       id="modalRoomId">
+
+
+<!-- ================= 현재 이미지 ================= -->
+<div class="mb-3">
+
+<label class="form-label">현재 이미지</label>
+
+<br>
+
+<img id="modalPreview"
+     style="width:200px;height:120px;object-fit:cover;border-radius:6px;">
+
+</div>
+
+
+<!-- ================= 이미지 변경 ================= -->
+<div class="mb-3">
+
+<label class="form-label">이미지 변경</label>
+
+<input type="file"
+       class="form-control"
+       name="roomImage"
+       accept="image/*"
+       onchange="previewModalImage(event)">
+
+</div>
+
+
+<!-- ================= 객실명 ================= -->
+<div class="mb-3">
+
+<label class="form-label">객실명</label>
+
+<input class="form-control"
+       name="room_name"
+       id="modalRoomName">
+
+</div>
+
+
+<!-- ================= 객실 등급 ================= -->
+<div class="mb-3">
+
+<label class="form-label">객실 등급</label>
+
+<select class="form-select"
+        name="room_grade"
+        id="modalRoomGrade">
+
+<option value="STANDARD">STANDARD</option>
+<option value="DELUXE">DELUXE</option>
+<option value="SUITE">SUITE</option>
+
+</select>
+
+</div>
+
+
+<!-- ================= 침대 타입 ================= -->
+<div class="mb-3">
+
+<label class="form-label">침대 타입</label>
+
+<select class="form-select"
+        name="bed_type"
+        id="modalBed">
+
+<option value="DOUBLE">DOUBLE</option>
+<option value="TWIN">TWIN</option>
+<option value="KING">KING</option>
+
+</select>
+
+</div>
+
+
+<!-- ================= 뷰 타입 ================= -->
+<div class="mb-3">
+
+<label class="form-label">뷰 타입</label>
+
+<select class="form-select"
+        name="view_type"
+        id="modalView">
+
+<option value="CITY">CITY</option>
+<option value="RIVER">RIVER</option>
+
+</select>
+
+</div>
+
+
+<!-- ================= 가격 ================= -->
+<div class="mb-3">
+
+<label class="form-label">가격</label>
+
+<input class="form-control"
+       name="base_price"
+       id="modalPrice"
+       type="number">
+
+</div>
+
+
+<!-- ================= 재고 ================= -->
+<div class="mb-3">
+
+<label class="form-label">재고</label>
+
+<input class="form-control"
+       name="total_count"
+       id="modalCount"
+       type="number">
+
+</div>
+
+</div>
+
+
+
+<div class="modal-footer">
+
+<button type="submit"
+        class="btn btn-success">
+저장
+</button>
+
+<button type="button"
+        class="btn btn-secondary"
+        data-bs-dismiss="modal">
+닫기
+</button>
+
+</div>
+
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* ==============================================
+   모달 데이터 세팅 JS
+============================================== */
+
+document.addEventListener("DOMContentLoaded", function(){
+
+const editModal = document.getElementById("editModal")
+
+editModal.addEventListener("show.bs.modal", function(event){
+
+const button = event.relatedTarget
+
+document.getElementById("modalRoomId").value = button.getAttribute("data-id")
+
+document.getElementById("modalRoomName").value = button.getAttribute("data-name")
+
+document.getElementById("modalRoomGrade").value = button.getAttribute("data-grade")
+
+document.getElementById("modalBed").value = button.getAttribute("data-bed")
+
+document.getElementById("modalView").value = button.getAttribute("data-view")
+
+document.getElementById("modalPrice").value = button.getAttribute("data-price")
+
+document.getElementById("modalCount").value = button.getAttribute("data-count")
+
+document.getElementById("modalPreview").src = button.getAttribute("data-image")
+
+})
+
+})
+
+</script>
+
+</body>
+</html>

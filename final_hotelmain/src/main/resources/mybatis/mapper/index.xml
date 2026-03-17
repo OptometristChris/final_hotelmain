@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ==== mapper 기본설정 ==== -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ==== 루트 엘리먼트 & 네임스페이스 설정(프로젝트 전체내에서 유일해야 한다.) ==== -->
+<mapper namespace="index">
+
+
+	<resultMap type="HashMap" id="getImgfilenameList_map">
+		<result property="productname" column="productname" javaType="String"/>
+		<result property="imgfilename" column="imgfilename" javaType="String"/>
+	</resultMap>
+	<select id="getImgfilenameList" resultMap="getImgfilenameList_map"> <!-- resultMap 작명은 자기마음 -->
+		select imgno, productname, imgfilename
+		from tbl_main_image_product
+		order by imgno asc
+	</select>
+</mapper>

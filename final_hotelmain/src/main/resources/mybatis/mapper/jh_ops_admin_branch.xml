@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="AdminBranchOpsDAO">
+
+	<!-- BRANCH: 내 정보 조회 -->
+	<select id="selectAdminDetail" parameterType="int"
+	        resultType="AdminDTO">
+	    SELECT
+	      admin_no            AS adminNo,
+	      adminid,
+	      passwd,
+	      enabled,
+	      name,
+	      email,
+	      mobile,
+	      admin_type          AS adminType,
+	      fk_hotel_id         AS fkHotelId,
+	      registerday,
+	      passwd_modify_date  AS passwdModifyDate,
+	      last_login_date     AS lastLoginDate
+	    FROM tbl_admin_security
+	    WHERE admin_no = #{adminNo}
+	</select>
+
+	<!-- BRANCH: 내 정보 수정 (필요 컬럼만) -->
+	<update id="updateAdminProfile" parameterType="AdminDTO">
+	    UPDATE tbl_admin_security
+	    SET
+	        name   = #{name},
+	        email  = #{email},
+	        mobile = #{mobile}
+	    WHERE admin_no = #{adminNo}
+	</update>
+
+</mapper>

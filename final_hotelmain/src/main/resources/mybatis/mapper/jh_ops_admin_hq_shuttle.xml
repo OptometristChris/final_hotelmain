@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.app.jh.ops.admin.model.AdminHqShuttleOpsDAO">
+
+  <!-- =============================================================== -->
+  <!-- 1. 호텔 목록                                                    -->
+  <!-- =============================================================== -->
+  <select id="selectHotelList"
+          resultType="HotelSimpleDTO">
+    SELECT
+      hotel_id   AS hotelId,
+      hotel_name AS hotelName
+    FROM tbl_hotel
+    WHERE active_yn = 'Y'
+    ORDER BY hotel_id
+  </select>
+
+
+  <!-- =============================================================== -->
+  <!-- 2. 장소 목록                                                    -->
+  <!-- =============================================================== -->
+  <select id="selectPlaceList"
+          resultType="ShuttlePlaceDTO">
+    SELECT
+      place_code AS placeCode,
+      place_name AS placeName,
+      active_yn  AS activeYn
+    FROM tbl_shuttle_place
+    WHERE active_yn = 'Y'
+    ORDER BY place_name
+  </select>
+
+
+  <!-- =============================================================== -->
+  <!-- 3. 노선 목록                                                    -->
+  <!-- =============================================================== -->
+  <select id="selectRouteList"
+          parameterType="int"
+          resultType="ShuttleRouteDTO">
+    SELECT
+      r.route_id          AS routeId,
+      r.fk_hotel_id       AS fkHotelId,
+      h.hotel_name        AS hotelName,
+      r.route_type        AS routeType,
+      r.start_place_code  AS startPlaceCode,
+      sp.place_name       AS startPlaceName,
+      r.end_place_code    AS endPlaceCode,
+      ep.place_name       AS endPlaceName,
+      r.route_name        AS routeName,
+      r.active_yn         AS activeYn
+    FROM tbl_shuttle_route r
+    JOIN tbl_hotel h
+      ON h.hotel_id = r.fk_hotel_id
+    JOIN tbl_shuttle_place sp
+      ON sp.place_code = r.start_place_code
+    JOIN tbl_shuttle_place ep
+      ON ep.place_code = r.end_place_code
+    WHERE r.fk_hotel_id = #{hotelId}
+    ORDER BY r.route_type, r.route_id
+  </select>
+
+
+  <!-- =============================================================== -->
+  <!-- 4. 시간표 목록                                                  -->
+  <!-- =============================================================== -->
+  <select id="selectTimetableList"
+          parameterType="int"
+          resultType="ShuttleAdminTimetableDTO">
+    SELECT
+      t.timetable_id       AS timetableId,
+      t.fk_route_id        AS fkRouteId,
+      r.fk_hotel_id        AS fkHotelId,
+      h.hotel_name         AS hotelName,
+      r.route_type         AS routeType,
+      r.route_name         AS routeName,
+      r.start_place_code   AS startPlaceCode,
+      sp.place_name        AS startPlaceName,
+      r.end_place_code     AS endPlaceCode,
+      ep.place_name        AS endPlaceName,
+      t.depart_time        AS departTime,
+      t.capacity           AS capacity,
+      t.active_yn          AS activeYn
+    FROM tbl_shuttle_timetable t
+    JOIN tbl_shuttle_route r
+      ON r.route_id = t.fk_route_id
+    JOIN tbl_hotel h
+      ON h.hotel_id = r.fk_hotel_id
+    JOIN tbl_shuttle_place sp
+      ON sp.place_code = r.start_place_code
+    JOIN tbl_shuttle_place ep
+      ON ep.place_code = r.end_place_code
+    WHERE r.fk_hotel_id = #{hotelId}
+    ORDER BY r.route_type, r.route_id, t.depart_time
+  </select>
+
+
+  <!-- =============================================================== -->
+  <!-- 5. 차단 목록                                                    -->
+  <!-- =============================================================== -->
+  <select id="selectBlockList"
+          parameterType="int"
+          resultType="ShuttleBlockDTO">
+    SELECT
+      b.shuttle_block_id   AS shuttleBlockId,
+      b.fk_hotel_id        AS fkHotelId,
+      b.fk_route_id        AS fkRouteId,
+      b.fk_timetable_id    AS fkTimetableId,
+      h.hotel_name         AS hotelName,
+      r.route_type         AS routeType,
+      r.route_name         AS routeName,
+      r.start_place_code   AS startPlaceCode,
+      sp.place_name        AS startPlaceName,
+      r.end_place_code     AS endPlaceCode,
+      ep.place_name        AS endPlaceName,
+      t.depart_time        AS departTime,
+      b.block_start_date   AS blockStartDate,
+      b.block_end_date     AS blockEndDate,
+      b.reason             AS reason,
+      b.active_yn          AS activeYn,
+      b.created_by_admin   AS createdByAdmin
+    FROM tbl_shuttle_block b
+    JOIN tbl_shuttle_route r
+      ON r.route_id = b.fk_route_id
+    JOIN tbl_hotel h
+      ON h.hotel_id = b.fk_hotel_id
+    JOIN tbl_shuttle_place sp
+      ON sp.place_code = r.start_place_code
+    JOIN tbl_shuttle_place ep
+      ON ep.place_code = r.end_place_code
+    LEFT JOIN tbl_shuttle_timetable t
+      ON t.timetable_id = b.fk_timetable_id
+    WHERE b.fk_hotel_id = #{hotelId}
+      AND b.active_yn = 'Y'
+    ORDER BY b.block_start_date DESC, b.shuttle_block_id DESC
+  </select>
+
+
+  <!-- =============================================================== -->
+  <!-- 6. 노선 추가                                                    -->
+  <!-- =============================================================== -->
+  <insert id="insertRoute">
+    INSERT INTO tbl_shuttle_route
+    (
+      route_id,
+      fk_hotel_id,
+      route_type,
+      start_place_code,
+      end_place_code,
+      route_name,
+      active_yn,
+      created_at
+    )
+    VALUES
+    (
+      seq_tbl_shuttle_route.NEXTVAL,
+      #{hotelId},
+      #{routeType},
+      #{startPlaceCode},
+      #{endPlaceCode},
+      #{routeName},
+      'Y',
+      SYSTIMESTAMP
+    )
+  </insert>
+
+
+  <!-- =============================================================== -->
+  <!-- 7. 노선 비활성화                                                -->
+  <!-- =============================================================== -->
+  <update id="deactivateRoute">
+    UPDATE tbl_shuttle_route
+    SET active_yn = 'N'
+    WHERE fk_hotel_id = #{hotelId}
+      AND route_id = #{routeId}
+      AND active_yn = 'Y'
+  </update>
+
+
+  <!-- =============================================================== -->
+  <!-- 8. 노선 소속 시간표 비활성화                                     -->
+  <!-- =============================================================== -->
+  <update id="deactivateTimetableByRoute">
+    UPDATE tbl_shuttle_timetable
+    SET active_yn = 'N'
+    WHERE fk_route_id IN (
+      SELECT route_id
+      FROM tbl_shuttle_route
+      WHERE fk_hotel_id = #{hotelId}
+        AND route_id = #{routeId}
+    )
+      AND active_yn = 'Y'
+  </update>
+
+
+  <!-- =============================================================== -->
+  <!-- 9. 차단 등록                                                    -->
+  <!-- =============================================================== -->
+  <insert id="insertBlock">
+    INSERT INTO tbl_shuttle_block
+    (
+      shuttle_block_id,
+      fk_hotel_id,
+      fk_route_id,
+      fk_timetable_id,
+      block_start_date,
+      block_end_date,
+      reason,
+      active_yn,
+      created_by_admin,
+      created_at
+    )
+    VALUES
+    (
+      seq_tbl_shuttle_block.NEXTVAL,
+      #{hotelId},
+      #{routeId},
+      #{timetableId},
+      #{startDate},
+      #{endDate},
+      #{reason},
+      'Y',
+      #{adminNo},
+      SYSTIMESTAMP
+    )
+  </insert>
+
+
+  <!-- =============================================================== -->
+  <!-- 10. 차단 비활성화                                               -->
+  <!-- =============================================================== -->
+  <update id="deactivateBlock">
+    UPDATE tbl_shuttle_block
+    SET active_yn = 'N'
+    WHERE fk_hotel_id = #{hotelId}
+      AND shuttle_block_id = #{blockId}
+      AND active_yn = 'Y'
+  </update>
+
+
+  <!-- =============================================================== -->
+  <!-- 11. slot_stock 기간 연장                                         -->
+  <!-- =============================================================== -->
+	<insert id="extendSlotStock">
+	  MERGE INTO tbl_shuttle_slot_stock s
+	  USING (
+	    SELECT
+	      seq_tbl_shuttle_slot_stock.NEXTVAL AS stock_id,
+	      t.timetable_id                     AS fk_timetable_id,
+	      d.ride_date                        AS ride_date,
+	      t.capacity                         AS capacity
+	    FROM tbl_shuttle_timetable t
+	    JOIN tbl_shuttle_route r
+	      ON r.route_id = t.fk_route_id
+	    CROSS JOIN (
+	      SELECT #{startDate} + LEVEL - 1 AS ride_date
+	      FROM dual
+	      CONNECT BY LEVEL &lt;= (#{endDate} - #{startDate}) + 1
+	    ) d
+	    WHERE r.fk_hotel_id = #{hotelId}
+	      AND r.active_yn = 'Y'
+	      AND t.active_yn = 'Y'
+	  ) src
+	  ON (
+	    s.fk_timetable_id = src.fk_timetable_id
+	    AND s.ride_date = src.ride_date
+	  )
+	  WHEN NOT MATCHED THEN
+	    INSERT
+	    (
+	      stock_id,
+	      fk_timetable_id,
+	      ride_date,
+	      capacity,
+	      booked_qty,
+	      updated_at
+	    )
+	    VALUES
+	    (
+	      src.stock_id,
+	      src.fk_timetable_id,
+	      src.ride_date,
+	      src.capacity,
+	      0,
+	      SYSTIMESTAMP
+	    )
+	</insert>
+
+
+	<!-- =============================================================== -->
+	<!-- 12. 1달 이전 booking 삭제                                        -->
+	<!-- =============================================================== -->
+	<delete id="deleteOldBooking">
+	  DELETE FROM tbl_shuttle_booking
+	  WHERE fk_hotel_id = #{hotelId}
+	    AND ride_date &lt; #{cutoffDate}
+	</delete>
+	
+	
+	<!-- =============================================================== -->
+	<!-- 13. 1달 이전 slot_stock 삭제                                     -->
+	<!-- =============================================================== -->
+	<delete id="deleteOldSlotStock">
+	  DELETE FROM tbl_shuttle_slot_stock
+	  WHERE fk_timetable_id IN (
+	    SELECT t.timetable_id
+	    FROM tbl_shuttle_timetable t
+	    JOIN tbl_shuttle_route r
+	      ON r.route_id = t.fk_route_id
+	    WHERE r.fk_hotel_id = #{hotelId}
+	  )
+	    AND ride_date &lt; #{cutoffDate}
+	</delete>
+
+</mapper>

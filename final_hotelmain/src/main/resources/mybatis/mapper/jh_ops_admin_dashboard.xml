@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.app.jh.ops.admin.model.AdminDashboardDAO">
+
+    <!-- =========================================================
+         BRANCH 대시보드 KPI
+         기준
+         - ROOM_STOCK.available_count = 총 공급 재고
+         - 월간매출 = 결제월 기준
+         - 취소율 = 예약 건수 기준
+         ========================================================= -->
+	
+	
+    <select id="selectBranchOccupancyRate" parameterType="Integer" resultType="String">
+        WITH month_days AS (
+            SELECT TRUNC(SYSDATE, 'MM') + LEVEL - 1 AS stay_date
+            FROM dual
+            CONNECT BY LEVEL <![CDATA[<=]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1) - TRUNC(SYSDATE, 'MM')
+        ),
+        sold_nights AS (
+            SELECT COUNT(*) AS sold_cnt
+            FROM reservation r
+            JOIN room_type rt
+              ON r.room_type_id = rt.room_type_id
+            JOIN month_days d
+              ON d.stay_date <![CDATA[>=]]> TRUNC(r.checkin_date)
+             AND d.stay_date <![CDATA[<]]> TRUNC(r.checkout_date)
+            WHERE rt.fk_hotel_id = #{hotelId}
+              AND rt.is_active = 'Y'
+              AND r.reservation_status IN ('CONFIRMED','CHECKED_IN','CHECKED_OUT')
+        ),
+        supply_nights AS (
+            SELECT NVL(SUM(rs.available_count), 0) AS supply_cnt
+            FROM room_stock rs
+            JOIN room_type rt
+              ON rs.room_type_id = rt.room_type_id
+            WHERE rt.fk_hotel_id = #{hotelId}
+              AND rt.is_active = 'Y'
+              AND rs.is_closed = 'N'
+              AND rs.stay_date <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+              AND rs.stay_date <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+        )
+        SELECT TO_CHAR(
+                 ROUND(
+                   NVL((SELECT sold_cnt FROM sold_nights), 0)
+                   / NULLIF(NVL((SELECT supply_cnt FROM supply_nights), 0), 0)
+                   * 100
+                 , 2)
+               )
+        FROM dual
+    </select>
+
+    <select id="selectBranchMonthlySales" parameterType="Integer" resultType="String">
+        SELECT TO_CHAR(
+                 NVL(SUM(
+                   CASE
+                     WHEN p.payment_status = 'PAID'
+                       THEN p.payment_amount
+                     WHEN p.payment_status = 'PARTIAL_CANCEL'
+                       THEN p.payment_amount - NVL(p.refunded_amount, 0)
+                     ELSE 0
+                   END
+                 ), 0)
+               )
+        FROM payment p
+        WHERE p.paid_at <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+          AND p.paid_at <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+          AND p.payment_status IN ('PAID','PARTIAL_CANCEL')
+          AND EXISTS (
+                SELECT 1
+                FROM reservation r
+                JOIN room_type rt
+                  ON r.room_type_id = rt.room_type_id
+                WHERE r.payment_id = p.payment_id
+                  AND rt.fk_hotel_id = #{hotelId}
+          )
+    </select>
+
+    <select id="selectBranchCancelRate" parameterType="Integer" resultType="String">
+        SELECT TO_CHAR(
+                 ROUND(
+                   NVL(SUM(CASE WHEN r.reservation_status = 'CANCELLED' THEN 1 ELSE 0 END), 0)
+                   / NULLIF(
+                       SUM(
+                         CASE
+                           WHEN r.reservation_status IN ('CONFIRMED','CANCELLED','CHECKED_IN','CHECKED_OUT','NO_SHOW')
+                             THEN 1
+                           ELSE 0
+                         END
+                       ), 0
+                     )
+                   * 100
+                 , 2)
+               )
+        FROM reservation r
+        JOIN room_type rt
+          ON r.room_type_id = rt.room_type_id
+        WHERE rt.fk_hotel_id = #{hotelId}
+          AND r.created_at <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+          AND r.created_at <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+    </select>
+
+    <select id="selectBranchRevpar" parameterType="Integer" resultType="String">
+        WITH sales_data AS (
+            SELECT NVL(SUM(
+                     CASE
+                       WHEN p.payment_status = 'PAID'
+                         THEN p.payment_amount
+                       WHEN p.payment_status = 'PARTIAL_CANCEL'
+                         THEN p.payment_amount - NVL(p.refunded_amount, 0)
+                       ELSE 0
+                     END
+                   ), 0) AS sales_amt
+            FROM payment p
+            WHERE p.paid_at <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+              AND p.paid_at <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+              AND p.payment_status IN ('PAID','PARTIAL_CANCEL')
+              AND EXISTS (
+                    SELECT 1
+                    FROM reservation r
+                    JOIN room_type rt
+                      ON r.room_type_id = rt.room_type_id
+                    WHERE r.payment_id = p.payment_id
+                      AND rt.fk_hotel_id = #{hotelId}
+              )
+        ),
+        supply_data AS (
+            SELECT NVL(SUM(rs.available_count), 0) AS supply_cnt
+            FROM room_stock rs
+            JOIN room_type rt
+              ON rs.room_type_id = rt.room_type_id
+            WHERE rt.fk_hotel_id = #{hotelId}
+              AND rt.is_active = 'Y'
+              AND rs.is_closed = 'N'
+              AND rs.stay_date <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+              AND rs.stay_date <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+        )
+        SELECT TO_CHAR(
+                 ROUND(
+                   NVL((SELECT sales_amt FROM sales_data), 0)
+                   / NULLIF(NVL((SELECT supply_cnt FROM supply_data), 0), 0)
+                 , 0)
+               )
+        FROM dual
+    </select>
+
+    <select id="selectHqOccupancyRate" resultType="String">
+        WITH month_days AS (
+            SELECT TRUNC(SYSDATE, 'MM') + LEVEL - 1 AS stay_date
+            FROM dual
+            CONNECT BY LEVEL <![CDATA[<=]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1) - TRUNC(SYSDATE, 'MM')
+        ),
+        sold_nights AS (
+            SELECT COUNT(*) AS sold_cnt
+            FROM reservation r
+            JOIN room_type rt
+              ON r.room_type_id = rt.room_type_id
+            JOIN tbl_hotel h
+              ON rt.fk_hotel_id = h.hotel_id
+            JOIN month_days d
+              ON d.stay_date <![CDATA[>=]]> TRUNC(r.checkin_date)
+             AND d.stay_date <![CDATA[<]]> TRUNC(r.checkout_date)
+            WHERE rt.is_active = 'Y'
+              AND h.active_yn = 'Y'
+              AND r.reservation_status IN ('CONFIRMED','CHECKED_IN','CHECKED_OUT')
+        ),
+        supply_nights AS (
+            SELECT NVL(SUM(rs.available_count), 0) AS supply_cnt
+            FROM room_stock rs
+            JOIN room_type rt
+              ON rs.room_type_id = rt.room_type_id
+            JOIN tbl_hotel h
+              ON rt.fk_hotel_id = h.hotel_id
+            WHERE rt.is_active = 'Y'
+              AND h.active_yn = 'Y'
+              AND rs.is_closed = 'N'
+              AND rs.stay_date <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+              AND rs.stay_date <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+        )
+        SELECT TO_CHAR(
+                 ROUND(
+                   NVL((SELECT sold_cnt FROM sold_nights), 0)
+                   / NULLIF(NVL((SELECT supply_cnt FROM supply_nights), 0), 0)
+                   * 100
+                 , 2)
+               )
+        FROM dual
+    </select>
+
+    <select id="selectHqMonthlySales" resultType="String">
+        SELECT TO_CHAR(
+                 NVL(SUM(
+                   CASE
+                     WHEN p.payment_status = 'PAID'
+                       THEN p.payment_amount
+                     WHEN p.payment_status = 'PARTIAL_CANCEL'
+                       THEN p.payment_amount - NVL(p.refunded_amount, 0)
+                     ELSE 0
+                   END
+                 ), 0)
+               )
+        FROM payment p
+        WHERE p.paid_at <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+          AND p.paid_at <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+          AND p.payment_status IN ('PAID','PARTIAL_CANCEL')
+          AND EXISTS (
+                SELECT 1
+                FROM reservation r
+                JOIN room_type rt
+                  ON r.room_type_id = rt.room_type_id
+                JOIN tbl_hotel h
+                  ON rt.fk_hotel_id = h.hotel_id
+                WHERE r.payment_id = p.payment_id
+                  AND h.active_yn = 'Y'
+          )
+    </select>
+
+    <select id="selectHqCancelRate" resultType="String">
+        SELECT TO_CHAR(
+                 ROUND(
+                   NVL(SUM(CASE WHEN r.reservation_status = 'CANCELLED' THEN 1 ELSE 0 END), 0)
+                   / NULLIF(
+                       SUM(
+                         CASE
+                           WHEN r.reservation_status IN ('CONFIRMED','CANCELLED','CHECKED_IN','CHECKED_OUT','NO_SHOW')
+                             THEN 1
+                           ELSE 0
+                         END
+                       ), 0
+                     )
+                   * 100
+                 , 2)
+               )
+        FROM reservation r
+        JOIN room_type rt
+          ON r.room_type_id = rt.room_type_id
+        JOIN tbl_hotel h
+          ON rt.fk_hotel_id = h.hotel_id
+        WHERE h.active_yn = 'Y'
+          AND r.created_at <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+          AND r.created_at <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+    </select>
+
+    <select id="selectHqRevpar" resultType="String">
+        WITH sales_data AS (
+            SELECT NVL(SUM(
+                     CASE
+                       WHEN p.payment_status = 'PAID'
+                         THEN p.payment_amount
+                       WHEN p.payment_status = 'PARTIAL_CANCEL'
+                         THEN p.payment_amount - NVL(p.refunded_amount, 0)
+                       ELSE 0
+                     END
+                   ), 0) AS sales_amt
+            FROM payment p
+            WHERE p.paid_at <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+              AND p.paid_at <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+              AND p.payment_status IN ('PAID','PARTIAL_CANCEL')
+              AND EXISTS (
+                    SELECT 1
+                    FROM reservation r
+                    JOIN room_type rt
+                      ON r.room_type_id = rt.room_type_id
+                    JOIN tbl_hotel h
+                      ON rt.fk_hotel_id = h.hotel_id
+                    WHERE r.payment_id = p.payment_id
+                      AND h.active_yn = 'Y'
+              )
+        ),
+        supply_data AS (
+            SELECT NVL(SUM(rs.available_count), 0) AS supply_cnt
+            FROM room_stock rs
+            JOIN room_type rt
+              ON rs.room_type_id = rt.room_type_id
+            JOIN tbl_hotel h
+              ON rt.fk_hotel_id = h.hotel_id
+            WHERE rt.is_active = 'Y'
+              AND h.active_yn = 'Y'
+              AND rs.is_closed = 'N'
+              AND rs.stay_date <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+              AND rs.stay_date <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+        )
+        SELECT TO_CHAR(
+                 ROUND(
+                   NVL((SELECT sales_amt FROM sales_data), 0)
+                   / NULLIF(NVL((SELECT supply_cnt FROM supply_data), 0), 0)
+                 , 0)
+               )
+        FROM dual
+    </select>
+
+    <!-- =========================================================
+         BRANCH 월간 예약 요약
+         - 현재 구조상 PAYMENT 는 예약 시점에 곧바로 PAID 로 들어가므로
+           결제완료 예약 건수는 payment.paid_at 기준으로 계산
+         - 취소 건수는 reservation_status='CANCELLED' 의 created_at 월 기준
+           (cancelled_at 컬럼이 생기면 그 기준으로 교체하는 것이 더 정확함)
+         ========================================================= -->
+    <select id="selectBranchMonthlyReservationSummary"
+	        parameterType="Integer"
+	        resultType="com.spring.app.jh.ops.admin.common.domain.MonthlyReservationSummaryDTO">
+	
+	    WITH curr_paid AS (
+	        SELECT COUNT(*) AS cnt
+	        FROM payment p
+	        WHERE p.paid_at <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+	          AND p.paid_at <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+	          AND p.payment_status IN ('PAID', 'PARTIAL_CANCEL')
+	          AND EXISTS (
+	                SELECT 1
+	                FROM reservation r
+	                JOIN room_type rt
+	                  ON r.room_type_id = rt.room_type_id
+	                WHERE r.payment_id = p.payment_id
+	                  AND rt.fk_hotel_id = #{hotelId}
+	          )
+	    ),
+	    curr_cancel AS (
+	        SELECT COUNT(*) AS cnt
+	        FROM reservation r
+	        JOIN room_type rt
+	          ON r.room_type_id = rt.room_type_id
+	        WHERE rt.fk_hotel_id = #{hotelId}
+	          AND r.reservation_status = 'CANCELLED'
+	          AND r.created_at <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+	          AND r.created_at <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+	    ),
+	    prev_paid AS (
+	        SELECT COUNT(*) AS cnt
+	        FROM payment p
+	        WHERE p.paid_at <![CDATA[>=]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+	          AND p.paid_at <![CDATA[<]]> TRUNC(SYSDATE, 'MM')
+	          AND p.payment_status IN ('PAID', 'PARTIAL_CANCEL')
+	          AND EXISTS (
+	                SELECT 1
+	                FROM reservation r
+	                JOIN room_type rt
+	                  ON r.room_type_id = rt.room_type_id
+	                WHERE r.payment_id = p.payment_id
+	                  AND rt.fk_hotel_id = #{hotelId}
+	          )
+	    ),
+	    prev_cancel AS (
+	        SELECT COUNT(*) AS cnt
+	        FROM reservation r
+	        JOIN room_type rt
+	          ON r.room_type_id = rt.room_type_id
+	        WHERE rt.fk_hotel_id = #{hotelId}
+	          AND r.reservation_status = 'CANCELLED'
+	          AND r.created_at <![CDATA[>=]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+	          AND r.created_at <![CDATA[<]]> TRUNC(SYSDATE, 'MM')
+	    )
+	    SELECT
+	        NVL((SELECT cnt FROM curr_paid), 0) AS paidCount,
+	        NVL((SELECT cnt FROM prev_paid), 0) AS prevPaidCount,
+	        NVL((SELECT cnt FROM curr_paid), 0) - NVL((SELECT cnt FROM prev_paid), 0) AS paidDiffCount,
+	        CASE
+	            WHEN NVL((SELECT cnt FROM prev_paid), 0) = 0 THEN '0'
+	            ELSE TO_CHAR(
+	                ROUND(
+	                    ((NVL((SELECT cnt FROM curr_paid), 0) - NVL((SELECT cnt FROM prev_paid), 0))
+	                    / NVL((SELECT cnt FROM prev_paid), 0)) * 100
+	                , 2)
+	            )
+	        END AS paidDiffRate,
+	
+	        NVL((SELECT cnt FROM curr_cancel), 0) AS cancelCount,
+	        NVL((SELECT cnt FROM prev_cancel), 0) AS prevCancelCount,
+	        NVL((SELECT cnt FROM curr_cancel), 0) - NVL((SELECT cnt FROM prev_cancel), 0) AS cancelDiffCount,
+	        CASE
+	            WHEN NVL((SELECT cnt FROM prev_cancel), 0) = 0 THEN '0'
+	            ELSE TO_CHAR(
+	                ROUND(
+	                    ((NVL((SELECT cnt FROM curr_cancel), 0) - NVL((SELECT cnt FROM prev_cancel), 0))
+	                    / NVL((SELECT cnt FROM prev_cancel), 0)) * 100
+	                , 2)
+	            )
+	        END AS cancelDiffRate,
+	
+	        NVL((SELECT cnt FROM curr_paid), 0) - NVL((SELECT cnt FROM curr_cancel), 0) AS netCount
+	    FROM dual
+	</select>
+
+    <select id="selectHqMonthlyReservationSummary"
+	        resultType="com.spring.app.jh.ops.admin.common.domain.MonthlyReservationSummaryDTO">
+	
+	    WITH curr_paid AS (
+	        SELECT COUNT(*) AS cnt
+	        FROM payment p
+	        WHERE p.paid_at <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+	          AND p.paid_at <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+	          AND p.payment_status IN ('PAID', 'PARTIAL_CANCEL')
+	          AND EXISTS (
+	                SELECT 1
+	                FROM reservation r
+	                JOIN room_type rt
+	                  ON r.room_type_id = rt.room_type_id
+	                JOIN tbl_hotel h
+	                  ON rt.fk_hotel_id = h.hotel_id
+	                WHERE r.payment_id = p.payment_id
+	                  AND h.active_yn = 'Y'
+	          )
+	    ),
+	    curr_cancel AS (
+	        SELECT COUNT(*) AS cnt
+	        FROM reservation r
+	        JOIN room_type rt
+	          ON r.room_type_id = rt.room_type_id
+	        JOIN tbl_hotel h
+	          ON rt.fk_hotel_id = h.hotel_id
+	        WHERE h.active_yn = 'Y'
+	          AND r.reservation_status = 'CANCELLED'
+	          AND r.created_at <![CDATA[>=]]> TRUNC(SYSDATE, 'MM')
+	          AND r.created_at <![CDATA[<]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+	    ),
+	    prev_paid AS (
+	        SELECT COUNT(*) AS cnt
+	        FROM payment p
+	        WHERE p.paid_at <![CDATA[>=]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+	          AND p.paid_at <![CDATA[<]]> TRUNC(SYSDATE, 'MM')
+	          AND p.payment_status IN ('PAID', 'PARTIAL_CANCEL')
+	          AND EXISTS (
+	                SELECT 1
+	                FROM reservation r
+	                JOIN room_type rt
+	                  ON r.room_type_id = rt.room_type_id
+	                JOIN tbl_hotel h
+	                  ON rt.fk_hotel_id = h.hotel_id
+	                WHERE r.payment_id = p.payment_id
+	                  AND h.active_yn = 'Y'
+	          )
+	    ),
+	    prev_cancel AS (
+	        SELECT COUNT(*) AS cnt
+	        FROM reservation r
+	        JOIN room_type rt
+	          ON r.room_type_id = rt.room_type_id
+	        JOIN tbl_hotel h
+	          ON rt.fk_hotel_id = h.hotel_id
+	        WHERE h.active_yn = 'Y'
+	          AND r.reservation_status = 'CANCELLED'
+	          AND r.created_at <![CDATA[>=]]> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+	          AND r.created_at <![CDATA[<]]> TRUNC(SYSDATE, 'MM')
+	    )
+	    SELECT
+	        NVL((SELECT cnt FROM curr_paid), 0) AS paidCount,
+	        NVL((SELECT cnt FROM prev_paid), 0) AS prevPaidCount,
+	        NVL((SELECT cnt FROM curr_paid), 0) - NVL((SELECT cnt FROM prev_paid), 0) AS paidDiffCount,
+	        CASE
+	            WHEN NVL((SELECT cnt FROM prev_paid), 0) = 0 THEN '0'
+	            ELSE TO_CHAR(
+	                ROUND(
+	                    ((NVL((SELECT cnt FROM curr_paid), 0) - NVL((SELECT cnt FROM prev_paid), 0))
+	                    / NVL((SELECT cnt FROM prev_paid), 0)) * 100
+	                , 2)
+	            )
+	        END AS paidDiffRate,
+	
+	        NVL((SELECT cnt FROM curr_cancel), 0) AS cancelCount,
+	        NVL((SELECT cnt FROM prev_cancel), 0) AS prevCancelCount,
+	        NVL((SELECT cnt FROM curr_cancel), 0) - NVL((SELECT cnt FROM prev_cancel), 0) AS cancelDiffCount,
+	        CASE
+	            WHEN NVL((SELECT cnt FROM prev_cancel), 0) = 0 THEN '0'
+	            ELSE TO_CHAR(
+	                ROUND(
+	                    ((NVL((SELECT cnt FROM curr_cancel), 0) - NVL((SELECT cnt FROM prev_cancel), 0))
+	                    / NVL((SELECT cnt FROM prev_cancel), 0)) * 100
+	                , 2)
+	            )
+	        END AS cancelDiffRate,
+	
+	        NVL((SELECT cnt FROM curr_paid), 0) - NVL((SELECT cnt FROM curr_cancel), 0) AS netCount
+	    FROM dual
+	</select>
+
+    <select id="selectBranchTodayReservationCount" parameterType="Integer" resultType="int">
+        SELECT COUNT(*)
+        FROM reservation r
+        JOIN room_type rt
+          ON r.room_type_id = rt.room_type_id
+        WHERE rt.fk_hotel_id = #{hotelId}
+          AND r.reservation_status IN ('CONFIRMED','CHECKED_IN','CHECKED_OUT')
+          AND TRUNC(r.created_at) = TRUNC(SYSDATE)
+    </select>
+
+    <select id="selectBranchTodayCancelCount" parameterType="Integer" resultType="int">
+        SELECT COUNT(*)
+        FROM reservation r
+        JOIN room_type rt
+          ON r.room_type_id = rt.room_type_id
+        WHERE rt.fk_hotel_id = #{hotelId}
+          AND r.reservation_status = 'CANCELLED'
+          AND TRUNC(r.created_at) = TRUNC(SYSDATE)
+    </select>
+
+
+</mapper>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>비밀번호 찾기 결과</title>
+
+<link rel="stylesheet" href="">
+
+<style>
+:root{
+  --bg:#ffffff;
+  --panel:#ffffff;
+  --line:#e7e7e7;
+  --line-2:#d9d9d9;
+  --text:#111111;
+  --muted:#6f6f6f;
+  --danger:#c94b4b;
+  --ok:#2f6b48;
+  --header-offset:165px;
+  --page-bottom:90px;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Noto Sans KR', sans-serif;
+  background:#fff;
+  color:#111;
+}
+.container{
+  min-height:calc(100vh - 40px);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:var(--header-offset) 16px var(--page-bottom);
+}
+.wrap{ width:460px; max-width:100%; }
+.brandbar{
+  display:flex;
+  justify-content:center;
+  margin-bottom:18px;
+  font-size:.92rem;
+  letter-spacing:.24em;
+  color:#111;
+  font-weight:700;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+}
+.header{
+  padding:24px 22px 18px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  background:#fafafa;
+}
+.header h1{
+  margin:0;
+  font-size:1.4rem;
+  font-weight:700;
+}
+.header p{
+  margin:10px 0 0;
+  color:var(--muted);
+  font-size:.9rem;
+}
+.body{ padding:22px; }
+.ok,.fail{
+  border-radius:8px;
+  padding:13px 14px;
+  font-weight:700;
+  margin-bottom:14px;
+  font-size:.92rem;
+}
+.ok{ color:#fff; background:var(--ok); }
+.fail{ color:#fff; background:var(--danger); }
+.box{
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:16px;
+  background:#fafafa;
+  line-height:1.6;
+  color:var(--muted);
+  font-size:.9rem;
+}
+.warn{
+  margin-top:10px;
+  font-size:.82rem;
+  color:var(--muted);
+  line-height:1.6;
+}
+.btnrow{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+}
+.btn{
+  flex:1;
+  border-radius:999px;
+  padding:13px 14px;
+  font-weight:700;
+  cursor:pointer;
+  font-size:.92rem;
+}
+.btn-main{
+  background:#111;
+  color:#fff;
+  border:1px solid #111;
+}
+.btn-sub{
+  background:#fff;
+  color:#111;
+  border:1px solid var(--line-2);
+}
+.links{
+  margin-top:14px;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  color:var(--muted);
+  font-size:.82rem;
+}
+.links a{
+  color:var(--muted);
+  text-decoration:none;
+}
+.links a:hover{ color:#111; }
+@media (max-width:480px){
+  .btnrow{ flex-direction:column; }
+}
+</style>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+/*]]>*/
+</script>
+
+<body>
+<div class="container">
+  <div class="wrap">
+    <div class="brandbar">CIEL</div>
+
+    <section class="card" aria-label="비밀번호 찾기 결과 카드">
+      <div class="header">
+        <h1>비밀번호 찾기 결과</h1>
+        <p>임시 비밀번호 발급 결과입니다.</p>
+      </div>
+
+      <div class="body">
+
+        <div th:if="${isSuccess}">
+          <div class="ok">임시 비밀번호가 이메일로 발송되었습니다.</div>
+
+          <div class="box">
+            <div th:text="${message}">
+              임시 비밀번호를 이메일로 발송했습니다. 메일 확인 후 로그인하세요.
+            </div>
+
+            <div class="warn">
+              * 메일이 보이지 않으면 스팸함/프로모션함을 확인하세요.<br/>
+              * 임시 비밀번호로 로그인한 뒤, <b>마이페이지에서 비밀번호 변경을 권장합니다.</b>
+            </div>
+          </div>
+
+          <div class="btnrow">
+            <button class="btn btn-main" type="button"
+                    th:onclick="|location.href='@{/security/login}'|">로그인 하러가기</button>
+          </div>
+        </div>
+
+        <div th:if="${!isSuccess}">
+          <div class="fail">임시 비밀번호 발급 실패</div>
+
+          <div class="box">
+            <div th:text="${message}">
+              입력하신 정보와 일치하는 회원이 없거나 이메일 발송에 실패했습니다.
+            </div>
+          </div>
+
+          <div class="btnrow">
+            <button class="btn btn-main" type="button"
+                    th:onclick="|location.href='@{/security/member_pw_find}'|">다시 시도</button>
+            <button class="btn btn-sub" type="button"
+                    th:onclick="|location.href='@{/security/member_id_find}'|">아이디 찾기</button>
+          </div>
+        </div>
+
+        <div class="links">
+          <a th:href="@{/index}">메인</a>
+          <span>|</span>
+          <a th:href="@{/security/login}">로그인</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

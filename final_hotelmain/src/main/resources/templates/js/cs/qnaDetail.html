@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+<head>
+    <title>1:1 문의 상세 - CIEL HOTEL</title>
+    <th:block th:fragment="link"></th:block>
+    <th:block th:fragment="style">
+        <style>
+            .detail-container { padding: 150px 0 100px; max-width: 900px; margin: 0 auto; }
+            .detail-title { font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 50px; letter-spacing: 1px; }
+            .qna-header { border-top: 2px solid #1a1a1a; padding: 30px 20px; background: #fff; border-bottom: 1px solid #eee; }
+            .qna-info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+            .qna-subject { font-size: 1.4rem; font-weight: 600; color: #1a1a1a; margin-bottom: 10px; word-break: break-all; }
+            .meta-info { font-size: 0.9rem; color: #777; display: flex; gap: 20px; }
+            .status-badge { padding: 4px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 20px; }
+            .status-waiting { background: #eee; color: #666; }
+            .status-complete { background: #1a1a1a; color: #fff; }
+            .qna-content-box { padding: 40px 20px; line-height: 1.8; color: #444; min-height: 200px; white-space: pre-wrap; font-size: 1.05rem; }
+            .answer-wrap { background: #f9f9f9; border: 1px solid #eee; padding: 40px; margin-top: 30px; position: relative; }
+            .answer-wrap::before { content: 'A'; position: absolute; top: 20px; left: 20px; font-size: 2.5rem; font-weight: 800; color: #d4af37; opacity: 0.2; }
+            .answer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+            .admin-name { font-weight: 700; color: #1a1a1a; font-size: 1.1rem; }
+            .answer-date { font-size: 0.85rem; color: #999; }
+            .answer-body { line-height: 1.7; color: #333; }
+            .no-answer { text-align: center; color: #999; padding: 20px 0; font-style: italic; }
+            .btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 50px; border-top: 1px solid #eee; padding-top: 30px; }
+            .btn-custom { padding: 12px 40px; font-size: 0.95rem; border-radius: 0; transition: 0.3s; text-decoration: none; display: inline-block; text-align: center; cursor: pointer; }
+            .btn-list { background: #f4f4f4; color: #666; border: 1px solid #eee; }
+            .btn-list:hover { background: #e8e8e8; }
+            .btn-delete { background: #fff; color: #cc0000; border: 1px solid #cc0000; }
+            .btn-delete:hover { background: #cc0000; color: #fff; }
+            .hotel-tag { color: #b08d2b; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; display: block; }
+        </style>
+    </th:block>
+</head>
+<body>
+
+<th:block th:fragment="content">
+    <div class="container detail-container">
+        <h2 class="detail-title">문의 내용 확인</h2>
+
+        <div class="qna-detail-wrap" th:if="${qna != null}">
+            <div class="qna-header">
+                <span class="hotel-tag" th:text="${qna['FK_HOTEL_ID'] == '1' ? '호텔 시엘 (CIEL)' : '르 시엘 (LE CIEL)'}">호텔명</span>
+                <h3 class="qna-subject">
+                    <i th:if="${qna['IS_SECRET'] == '1'}" class="bi bi-lock-fill" style="font-size: 1.1rem; margin-right: 5px;"></i>
+                    <span th:text="${qna['TITLE']}">문의 제목</span>
+                </h3>
+                <div class="qna-info-row">
+                    <div class="meta-info">
+                        <span><strong style="color:#333;">작성자</strong> [[${qna['WRITER_NAME']}]]</span>
+                        <span><strong style="color:#333;">작성일</strong> [[${qna['Q_DATE']}]]</span>
+                    </div>
+                    <span th:classappend="${qna['ANS_CONTENT'] == null ? 'status-waiting' : 'status-complete'}" 
+                          class="status-badge"
+                          th:text="${qna['ANS_CONTENT'] == null ? '답변대기' : '답변완료'}">상태</span>
+                </div>
+            </div>
+
+            <div class="qna-content-box" th:text="${qna['CONTENT']}">문의 내용</div>
+
+            <div class="answer-wrap" th:if="${qna['ANS_CONTENT'] != null}">
+                <div class="answer-header">
+                    <span class="admin-name"><i class="bi bi-chat-dots-fill"></i> CIEL HOTEL 답변</span>
+                    <span class="answer-date" th:text="${qna['A_DATE']}">답변 날짜</span>
+                </div>
+                <div class="answer-body" th:text="${qna['ANS_CONTENT']}">답변 내용</div>
+            </div>
+            
+            <div class="answer-wrap" th:if="${qna['ANS_CONTENT'] == null}">
+                <p class="no-answer">담당자가 문의 내용을 확인 중입니다. 빠른 시일 내에 답변 드리겠습니다.</p>
+            </div>
+
+            <div class="btn-group">
+			    <a th:href="@{/cs/list(hotelId=${qna['FK_HOTEL_ID']})}" class="btn-custom btn-list">목록으로</a>
+			
+			    <a th:if="${isMemberOwner or isGuestOwner}" 
+			       th:href="@{/cs/qnaUpdate(qnaId=${qna['QNA_ID']}, hotelId=${qna['FK_HOTEL_ID']})}" 
+			       class="btn-custom btn-list" style="border: 1px solid #1a1a1a; color: #1a1a1a;">
+			        수정하기
+			    </a>
+			
+			    <button type="button" 
+			            class="btn-custom btn-delete" 
+			            onclick="goDelete()"
+			            th:if="${isAdmin or isMemberOwner or isGuestOwner}">
+			        삭제하기
+			    </button>
+			</div>
+        
+        <div th:if="${qna == null}" class="text-center py-5">
+            <p>해당 게시글을 찾을 수 없거나 접근 권한이 없습니다.</p>
+            <a th:href="@{/}" class="btn-custom btn-list">홈으로</a>
+        </div>
+    </div>
+</th:block>
+
+<th:block th:fragment="script">
+    <script th:inline="javascript">
+	    function goDelete() {
+	        /* Thymeleaf 주석 인라인 문법을 사용하여 에디터 오류 방지.
+	           뒤에 붙은 '0'이나 '1'은 정적 환경(서버 미실행)일 때 사용될 기본값입니다.
+	        */
+	        const qnaId = /*[[${qna['QNA_ID']}]]*/ 0;
+	        const hotelId = /*[[${qna['FK_HOTEL_ID']}]]*/ '1';
+	
+	        if(confirm("정말로 이 문의글을 삭제하시겠습니까?")) {
+	            // hotelId를 함께 넘겨주어야 삭제 후 해당 호텔 목록으로 돌아갈 수 있습니다.
+	            location.href = "/final_hotel/cs/qnaDelete?qna_id=" + qnaId + "&hotelId=" + hotelId;
+	        }
+	    }
+    </script>
+</th:block>
+</body>
+</html>

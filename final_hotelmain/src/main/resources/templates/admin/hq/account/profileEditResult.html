@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>수정 결과 | hq</title>
+  <link rel="stylesheet" href="">
+  <style type="text/css">
+    .wrap{max-width:900px;margin:0 auto}
+    .card{border:1px solid #e8ddd7;border-radius:18px;padding:16px;background:#fff;box-shadow:0 18px 38px rgba(0,0,0,.06)}
+    .ok{font-weight:800;font-size:18px}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid #e8ddd7;text-decoration:none}
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <div class="wrap">
+    <h2 style="margin:16px 0">수정 결과</h2>
+
+    <div class="card">
+      <div class="ok" th:if="${result != null and result > 0}">정상적으로 수정되었습니다.</div>
+      <div class="ok" th:if="${result == null or result == 0}">수정에 실패했습니다.</div>
+
+      <!-- [DUMMY] result가 아직 안 내려올 수도 있으니 메시지 보장 -->
+      <!-- [DUMMY-START] -->
+      <div style="margin-top:10px" th:if="${result == null}">
+        (더미) 결과값(result)이 아직 연결되지 않았습니다. 연결되면 위 메시지가 자동으로 정상 표시됩니다.
+      </div>
+      <!-- [DUMMY-END] -->
+
+      <div style="margin-top:14px">
+        <a class="btn" th:href="@{/admin/hq/account/myInfo}">내 정보로</a>
+        <a class="btn" th:href="@{/admin/hq/dashboard}" style="margin-left:6px">대시보드</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

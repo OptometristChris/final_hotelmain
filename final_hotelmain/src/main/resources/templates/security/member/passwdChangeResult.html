@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>비밀번호 변경 결과</title>
+
+<link rel="stylesheet" href="">
+
+<style>
+:root{
+  --bg:#ffffff;
+  --panel:#ffffff;
+  --line:#e7e7e7;
+  --line-2:#d9d9d9;
+  --text:#111111;
+  --muted:#6f6f6f;
+  --danger:#c94b4b;
+  --ok:#2f6b48;
+  --header-offset:165px;
+  --page-bottom:90px;
+  --radius:10px;
+  --shadow:0 10px 24px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Noto Sans KR', sans-serif;
+  background:#fff;
+  color:var(--text);
+}
+.container{
+  min-height:calc(100vh - 40px);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:var(--header-offset) 16px var(--page-bottom);
+}
+.wrap{
+  width:460px;
+  max-width:100%;
+}
+.brandbar{
+  display:flex;
+  justify-content:center;
+  margin-bottom:18px;
+  font-size:.92rem;
+  letter-spacing:.24em;
+  color:#111;
+  font-weight:700;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.header{
+  padding:24px 22px 18px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  background:#fafafa;
+}
+.header h1{
+  margin:0;
+  font-size:1.4rem;
+  font-weight:700;
+}
+.body{padding:22px;}
+.ok,.fail{
+  border-radius:8px;
+  padding:13px 14px;
+  font-weight:700;
+  margin-bottom:14px;
+  font-size:.92rem;
+}
+.ok{color:#fff;background:var(--ok);}
+.fail{color:#fff;background:var(--danger);}
+.box{
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:16px;
+  background:#fafafa;
+  color:var(--muted);
+  line-height:1.7;
+  font-size:.9rem;
+}
+.btnrow{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+}
+.btn{
+  flex:1;
+  border-radius:999px;
+  padding:13px 14px;
+  font-weight:700;
+  cursor:pointer;
+  font-size:.92rem;
+  transition:.2s ease;
+}
+.btn:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--shadow);
+}
+.btn-main{
+  background:#111;
+  color:#fff;
+  border:1px solid #111;
+}
+.btn-sub{
+  background:#fff;
+  color:#111;
+  border:1px solid var(--line-2);
+}
+@media (max-width:480px){
+  .btnrow{flex-direction:column;}
+}
+</style>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+/*]]>*/
+</script>
+</head>
+
+<body>
+<div class="container">
+  <div class="wrap">
+    <div class="brandbar">CIEL</div>
+
+    <section class="card" aria-label="비밀번호 변경 결과 카드">
+      <div class="header">
+        <h1>비밀번호 변경 결과</h1>
+      </div>
+
+      <div class="body">
+        <div th:if="${result == 1}">
+          <div class="ok">비밀번호가 변경되었습니다.</div>
+          <div class="box">
+            보안을 위해 정기적으로 비밀번호를 변경하는 것을 권장합니다.
+          </div>
+          <div class="btnrow">
+            <button class="btn btn-main" type="button" th:onclick="|location.href='@{/index}'|">메인으로</button>
+            <button class="btn btn-sub" type="button" th:onclick="|location.href='@{/security/member/mypage}'|">마이페이지</button>
+          </div>
+        </div>
+
+        <div th:if="${result != 1}">
+          <div class="fail">비밀번호 변경에 실패했습니다.</div>
+          <div class="box">
+            입력값을 다시 확인한 후 재시도해주세요.
+          </div>
+          <div class="btnrow">
+            <button class="btn btn-main" type="button" th:onclick="|history.back()|">이전으로</button>
+            <button class="btn btn-sub" type="button" th:onclick="|location.href='@{/security/member/mypage}'|">마이페이지</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

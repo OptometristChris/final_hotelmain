@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.app.jh.security.model.RefreshTokenDAO">
+
+    <!-- ================================================================== -->
+    <!-- 1) refresh token 신규 저장                                          -->
+    <!-- ================================================================== -->
+    <insert id="insertRefreshToken"
+	        parameterType="com.spring.app.jh.security.domain.RefreshTokenDTO">
+	    INSERT INTO tbl_refreshtoken (
+	        refresh_token_id,
+	        principal_type,
+	        principal_no,
+	        login_id,
+	        token_value,
+	        expires_at,
+	        revoked_yn,
+	        created_at,
+	        updated_at
+	    )
+	    VALUES (
+	        seq_tbl_refreshtoken.nextval,
+	        #{principalType},
+	        #{principalNo},
+	        #{loginId},
+	        #{tokenValue},
+	        #{expiresAt},
+	        NVL(#{revokedYn}, 'N'),
+	        SYSDATE,
+	        SYSDATE
+	    )
+	</insert>
+
+
+    <!-- ================================================================== -->
+    <!-- 2) 사용자 기준 refresh token 조회                                   -->
+    <!-- ================================================================== -->
+    <!--
+        principalType + principalNo 조합으로 1건 조회한다.
+        현재 정책이 "사용자 1명당 refresh token 1개" 이므로 selectOne 대상이다.
+    -->
+    <select id="selectRefreshTokenByPrincipal"
+            resultType="com.spring.app.jh.security.domain.RefreshTokenDTO">
+        SELECT
+            refresh_token_id AS refreshTokenId,
+            principal_type   AS principalType,
+            principal_no     AS principalNo,
+            login_id         AS loginId,
+            token_value      AS tokenValue,
+            expires_at       AS expiresAt,
+            revoked_yn       AS revokedYn,
+            created_at       AS createdAt,
+            updated_at       AS updatedAt
+        FROM tbl_refreshtoken
+        WHERE principal_type = #{principalType}
+          AND principal_no   = #{principalNo}
+    </select>
+
+
+    <!-- ================================================================== -->
+    <!-- 3) token 문자열 기준 refresh token 조회                              -->
+    <!-- ================================================================== -->
+    <select id="selectRefreshTokenByTokenValue"
+            resultType="com.spring.app.jh.security.domain.RefreshTokenDTO">
+        SELECT
+            refresh_token_id AS refreshTokenId,
+            principal_type   AS principalType,
+            principal_no     AS principalNo,
+            login_id         AS loginId,
+            token_value      AS tokenValue,
+            expires_at       AS expiresAt,
+            revoked_yn       AS revokedYn,
+            created_at       AS createdAt,
+            updated_at       AS updatedAt
+        FROM tbl_refreshtoken
+        WHERE token_value = #{tokenValue}
+    </select>
+
+
+    <!-- ================================================================== -->
+    <!-- 4) refresh token 갱신                                               -->
+    <!-- ================================================================== -->
+    <update id="updateRefreshToken"
+            parameterType="com.spring.app.jh.security.domain.RefreshTokenDTO">
+        UPDATE tbl_refreshtoken
+           SET login_id    = #{loginId},
+               token_value = #{tokenValue},
+               expires_at  = #{expiresAt},
+               revoked_yn  = NVL(#{revokedYn}, 'N'),
+               updated_at  = SYSDATE
+         WHERE principal_type = #{principalType}
+           AND principal_no   = #{principalNo}
+    </update>
+
+
+    <!-- ================================================================== -->
+    <!-- 5) refresh token revoke 처리                                        -->
+    <!-- ================================================================== -->
+    <update id="revokeRefreshToken">
+        UPDATE tbl_refreshtoken
+           SET revoked_yn = 'Y',
+               updated_at = SYSDATE
+         WHERE principal_type = #{principalType}
+           AND principal_no   = #{principalNo}
+    </update>
+
+
+    <!-- ================================================================== -->
+    <!-- 6) refresh token 실제 삭제                                          -->
+    <!-- ================================================================== -->
+    <delete id="deleteRefreshToken">
+        DELETE
+          FROM tbl_refreshtoken
+         WHERE principal_type = #{principalType}
+           AND principal_no   = #{principalNo}
+    </delete>
+
+</mapper>

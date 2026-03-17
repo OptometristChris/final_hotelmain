@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.app.jh.ops.admin.model.AdminHqOpsDAO">
+
+	<!-- 권한 리스트: admin_no 기준 -->
+	<select id="authorityListByAdminNo" parameterType="Integer" resultType="String">
+	    SELECT authority
+	    FROM tbl_admin_authorities
+	    WHERE admin_no = #{admin_no}
+	</select>
+
+	<!-- 관리자 PK(admin_no)로 상세 조회 -->
+	<select id="findByAdminNo" parameterType="Integer" resultType="AdminDTO">
+	    SELECT
+	      admin_no            AS admin_no,
+	      adminid,
+	      passwd,
+	      enabled,
+	      name,
+	      email,
+	      mobile,
+	      admin_type          AS admin_type,
+	      fk_hotel_id         AS fk_hotel_id,
+	      registerday         AS registerday,
+	      passwd_modify_date  AS passwd_modify_date,
+	      last_login_date     AS last_login_date
+	    FROM tbl_admin_security
+	    WHERE admin_no = #{admin_no}
+	</select>
+
+	<!-- 내 프로필 수정(HQ/BRANCH 공통) : 보통 name/email/mobile만 -->
+	<update id="updateAdminProfile" parameterType="AdminDTO">
+	    UPDATE tbl_admin_security
+	       SET name   = #{name}
+	         , email  = #{email}
+	         , mobile = #{mobile}
+	     WHERE admin_no = #{admin_no}
+	</update>
+
+	<!-- BRANCH 관리자 목록(검색/페이징) -->
+	<select id="getBranchAdminList" parameterType="map" resultType="AdminDTO">
+	    SELECT *
+	    FROM (
+	        SELECT
+	            ROWNUM AS rno,
+	            A.*
+	        FROM (
+	            SELECT
+	               admin_no            AS admin_no,
+	               adminid,
+	               enabled,
+	               name,
+	               email,
+	               mobile,
+	               admin_type          AS admin_type,
+	               fk_hotel_id         AS fk_hotel_id,
+	               registerday         AS registerday,
+	               passwd_modify_date  AS passwd_modify_date,
+	               last_login_date     AS last_login_date
+	            FROM tbl_admin_security
+	            WHERE admin_type = 'BRANCH'
+
+	              <if test="hotelId != null and hotelId != '' and hotelId != '0'">
+	                  AND fk_hotel_id = #{hotelId}
+	              </if>
+
+	              <if test="enabled != null and enabled != '' and enabled != 'ALL'">
+	                  AND enabled = #{enabled}
+	              </if>
+
+	              <if test="keyword != null and keyword != ''">
+	                  AND (
+	                        adminid LIKE '%'||#{keyword}||'%'
+	                     OR name    LIKE '%'||#{keyword}||'%'
+	                     OR email   LIKE '%'||#{keyword}||'%'
+	                  )
+	              </if>
+
+	            ORDER BY admin_no DESC
+	        ) A
+	        WHERE ROWNUM &lt;= (#{pageNo} * #{sizePerPage})
+	    )
+	    WHERE rno &gt; ((#{pageNo}-1) * #{sizePerPage})
+	</select>
+
+	<!-- BRANCH 관리자 목록 총개수 -->
+	<select id="getBranchAdminTotalCount" parameterType="map" resultType="int">
+	    SELECT COUNT(*)
+	    FROM tbl_admin_security
+	    WHERE admin_type = 'BRANCH'
+
+	      <if test="hotelId != null and hotelId != '' and hotelId != '0'">
+	          AND fk_hotel_id = #{hotelId}
+	      </if>
+
+	      <if test="enabled != null and enabled != '' and enabled != 'ALL'">
+	          AND enabled = #{enabled}
+	      </if>
+
+	      <if test="keyword != null and keyword != ''">
+	          AND (
+	                adminid LIKE '%'||#{keyword}||'%'
+	             OR name    LIKE '%'||#{keyword}||'%'
+	             OR email   LIKE '%'||#{keyword}||'%'
+	          )
+	      </if>
+	</select>
+
+	<!-- BRANCH 관리자 발급(INSERT) : selectKey로 admin_no 채워넣기 -->
+	<insert id="insertBranchAdmin" parameterType="AdminDTO">
+	    <selectKey keyProperty="admin_no" resultType="int" order="BEFORE">
+	        SELECT seq_tbl_admin_security.NEXTVAL FROM dual
+	    </selectKey>
+
+	    INSERT INTO tbl_admin_security(
+	        admin_no, adminid, passwd, enabled,
+	        name, email, mobile,
+	        admin_type, fk_hotel_id,
+	        registerday, passwd_modify_date, last_login_date
+	    )
+	    VALUES(
+	        #{admin_no}, #{adminid}, #{passwd}, #{enabled},
+	        #{name}, #{email}, #{mobile},
+	        #{admin_type}, #{fk_hotel_id},
+	        SYSDATE, SYSDATE, SYSDATE
+	    )
+	</insert>
+
+	<!-- BRANCH 기본 권한(ROLE_*) 부여 -->
+	<insert id="insertBranchAdminAuthority" parameterType="map">
+	    INSERT INTO tbl_admin_authorities(
+	        admin_auth_no, admin_no, authority
+	    )
+	    VALUES(
+	        seq_tbl_admin_authorities.NEXTVAL,
+	        #{admin_no},
+	        #{string}
+	    )
+	</insert>
+
+	<!-- HQ가 BRANCH 계정 정보 수정 -->
+	<update id="updateAdminByHq" parameterType="AdminDTO">
+	    UPDATE tbl_admin_security
+	       SET name   = #{name}
+	         , email  = #{email}
+	         , mobile = #{mobile}
+	         , enabled = #{enabled}
+	         , fk_hotel_id = #{fk_hotel_id}
+	     WHERE admin_no = #{admin_no}
+	       AND admin_type = 'BRANCH'
+	</update>
+
+	<!-- HQ 전용: 회원 전체 조회 -->
+	<select id="getAllMember" resultType="MemberDTO">
+	  SELECT
+	    member_no              AS memberNo,
+	    memberid,
+	    passwd,
+	    enabled,
+	    name,
+	    birthday,
+	    email,
+	    mobile,
+	    postcode,
+	    address,
+	    detail_address,
+	    extra_address,
+	    point,
+	    point_earned_total     AS pointEarnedTotal,
+	    registerday,
+	    passwd_modify_date     AS passwdModifyDate,
+	    last_login_date        AS lastLoginDate,
+	    grade_code             AS gradeCode
+	  FROM tbl_member_security
+	  ORDER BY memberid ASC
+	</select>
+
+	<!-- enabled 변경(활성/중지) -->
+	<update id="updateAdminEnabled" parameterType="map">
+	    UPDATE tbl_admin_security
+	       SET enabled = #{enabled}
+	     WHERE admin_no = #{admin_no}
+	</update>
+
+</mapper>

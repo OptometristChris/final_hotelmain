@@ -1,0 +1,635 @@
+<!doctype html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <title>셔틀 예약 확인</title>
+  <link rel="stylesheet" href="">
+
+  <style>
+    :root{
+      --bg:#ffffff;
+      --card:#ffffff;
+      --line:#e7e7e7;
+      --text:#111111;
+      --muted:#6f6f6f;
+      --brand:#111111;
+      --brand-sub:#333333;
+      --soft:#fafafa;
+      --danger:#c94b4b;
+      --ok:#2f6b48;
+      --wait:#8a6a16;
+      --header-offset:165px;
+      --page-bottom:90px;
+      --radius:10px;
+      --shadow:0 10px 24px rgba(0,0,0,.04);
+      --max:1200px;
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:'Noto Sans KR', sans-serif;
+    }
+
+    .container{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:var(--header-offset) 18px var(--page-bottom);
+    }
+
+    .pageTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:18px;
+      flex-wrap:wrap;
+      margin-bottom:20px;
+    }
+
+    .pageTitle{
+      font-size:30px;
+      font-weight:700;
+      line-height:1.25;
+      margin:0 0 8px 0;
+      letter-spacing:-.4px;
+      color:#111;
+    }
+
+    .pageDesc{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .userMini{
+      min-width:280px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px 18px;
+    }
+
+    .userMini .label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .userMini .name{
+      font-size:18px;
+      font-weight:700;
+      margin-bottom:10px;
+      color:#111;
+    }
+
+    .userMeta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:12px;
+      color:var(--text);
+      font-weight:500;
+    }
+
+    .emptyBox{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:40px 24px;
+      text-align:center;
+    }
+
+    .emptyTitle{
+      font-size:20px;
+      font-weight:700;
+      margin-bottom:8px;
+      color:#111;
+    }
+
+    .emptyDesc{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+      margin-bottom:18px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      border-radius:999px;
+      padding:11px 16px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .btn:hover{
+      text-decoration:none;
+      color:inherit;
+      transform:translateY(-1px);
+    }
+
+    .btn-primary{
+      background:#111;
+      border-color:#111;
+      color:#fff;
+    }
+
+    .btn-primary:hover{
+      color:#fff;
+    }
+
+    .cardList{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .bookingCard{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      overflow:hidden;
+    }
+
+    .bookingHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      background:#fafafa;
+    }
+
+    .bookingHeadLeft{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#333;
+    }
+
+    .badge-ok{
+      color:var(--ok);
+      border-color:#cfe3d5;
+      background:#f4fbf6;
+    }
+
+    .badge-wait{
+      color:var(--wait);
+      border-color:#eadca8;
+      background:#fffbea;
+    }
+
+    .headTitle{
+      font-size:18px;
+      font-weight:700;
+      color:#111;
+    }
+
+    .headSub{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    .bookingBody{
+      display:grid;
+      grid-template-columns:1fr 2fr;
+      gap:0;
+    }
+
+    @media (max-width:980px){
+      .bookingBody{
+        grid-template-columns:1fr;
+      }
+    }
+
+    .leftPane{
+      border-right:1px solid var(--line);
+      padding:18px;
+      background:#fff;
+    }
+
+    @media (max-width:980px){
+      .leftPane{
+        border-right:none;
+        border-bottom:1px solid var(--line);
+      }
+    }
+
+    .roomThumb{
+      width:100%;
+      aspect-ratio:16 / 10;
+      border-radius:8px;
+      overflow:hidden;
+      background:#f2f2f2;
+      border:1px solid var(--line);
+      margin-bottom:14px;
+    }
+
+    .roomThumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .roomName{
+      font-size:18px;
+      font-weight:700;
+      margin-bottom:10px;
+      line-height:1.4;
+      color:#111;
+    }
+
+    .infoTable{
+      display:grid;
+      grid-template-columns:86px 1fr;
+      row-gap:8px;
+      column-gap:8px;
+      font-size:13px;
+    }
+
+    .infoTable .k{
+      color:var(--muted);
+    }
+
+    .infoTable .v{
+      color:var(--text);
+      font-weight:700;
+    }
+
+    .actionLink{
+      color:#111;
+      font-weight:700;
+      text-decoration:none;
+    }
+
+    .actionLink:hover{
+      text-decoration:underline;
+      color:#111;
+    }
+
+    .rightPane{
+      padding:18px;
+      background:#fff;
+    }
+
+    .sectionTitle{
+      font-size:16px;
+      font-weight:700;
+      margin-bottom:12px;
+      color:#111;
+    }
+
+    .routeWrap{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .routeBox{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:8px;
+      padding:14px;
+    }
+
+    .routeTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .routeName{
+      font-size:15px;
+      font-weight:700;
+      color:#111;
+    }
+
+    .routeDate{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .routeEmpty{
+      font-size:13px;
+      color:var(--muted);
+      padding:8px 0 2px;
+      line-height:1.7;
+    }
+
+    .legList{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .legItem{
+      border:1px solid var(--line);
+      background:var(--soft);
+      border-radius:8px;
+      padding:12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .legMain{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .legTime{
+      font-size:16px;
+      font-weight:700;
+      color:#111;
+    }
+
+    .legPlace{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .legQty{
+      align-self:center;
+      font-size:14px;
+      font-weight:700;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 12px;
+      min-width:72px;
+      text-align:center;
+      color:#111;
+    }
+
+    .cardBottom{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:0 18px 18px;
+      background:#fff;
+    }
+
+    .subtle{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:10px;
+      line-height:1.7;
+    }
+  </style>
+
+  <script th:inline="javascript">
+	/*<![CDATA[*/
+	  // 필요 시 추후 스크립트 추가
+	/*]]>*/
+  </script>
+</head>
+<body>
+<div class="container">
+
+  <div class="pageTop">
+    <div>
+      <h1 class="pageTitle">셔틀 예약 내역</h1>
+      <div class="pageDesc">
+        오늘 기준으로 아직 유효한 객실 예약만 표시합니다.<br>
+        체크아웃이 지난 객실예약은 목록에서 제외되며,
+        셔틀을 아직 예약하지 않은 객실도 여기에서 바로 예약하러 갈 수 있습니다.
+      </div>
+    </div>
+
+    <div class="userMini">
+      <div class="label">예약자 정보</div>
+      <div class="name">
+        <span th:text="${memberName}">홍길동</span>님의 셔틀예약 내역
+      </div>
+      <div class="userMeta">
+        <span class="pill">회원번호 <b th:text="${memberNo}">4</b></span>
+        <span class="pill">유효 예약 <b th:text="${validCount}">2</b>건</span>
+        <span class="pill">기준시각 <b th:text="${nowText}">2026-03-06 16:10</b></span>
+      </div>
+    </div>
+  </div>
+
+  <div th:if="${#lists.isEmpty(cards)}" class="emptyBox">
+    <div class="emptyTitle">표시할 셔틀 대상 예약이 없습니다.</div>
+    <div class="emptyDesc">
+      오늘 기준으로 아직 유효한 객실 예약이 없거나,<br>
+      셔틀 예약 대상이 되는 일정이 없는 상태입니다.
+    </div>
+    <a class="btn btn-primary" th:href="@{/mypage/reservations}">객실 예약 보러가기</a>
+  </div>
+
+  <div th:if="${not #lists.isEmpty(cards)}" class="cardList">
+
+    <div class="bookingCard" th:each="card : ${cards}">
+      <div class="bookingHead">
+        <div>
+          <div class="headTitle">
+            예약번호 <span th:text="${card.reservationId}">101</span>
+          </div>
+          <div class="headSub">
+            <span th:text="${card.hotelName}">CIEL HOTEL</span>
+            · 객실예약 상태
+            <b th:text="${card.reservationStatus}">CONFIRMED</b>
+          </div>
+        </div>
+
+        <div class="bookingHeadLeft">
+          <span class="badge badge-ok" th:if="${card.shuttleBookingId != null}">
+            유효한 셔틀 예약
+          </span>
+
+          <span class="badge badge-wait" th:if="${card.shuttleBookingId == null}">
+            셔틀 미예약
+          </span>
+
+          <span class="badge" th:if="${card.shuttleBookingId != null}">
+            셔틀예약번호 <b th:text="${card.shuttleBookingId}">3</b>
+          </span>
+        </div>
+      </div>
+
+      <div class="bookingBody">
+
+        <div class="leftPane">
+          <div class="roomThumb">
+            <img th:if="${card.roomImageUrl != null and card.roomImageUrl != ''}"
+                 th:src="${card.roomImageUrl}"
+                 alt="객실 이미지">
+            <img th:if="${card.roomImageUrl == null or card.roomImageUrl == ''}"
+                 th:src="@{/images/noimage.png}"
+                 alt="객실 이미지">
+          </div>
+
+          <div class="roomName" th:text="${card.roomName}">디럭스 더블</div>
+
+          <div class="infoTable">
+            <div class="k">호텔</div>
+            <div class="v" th:text="${card.hotelName}">CIEL</div>
+
+            <div class="k">체크인</div>
+            <div class="v" th:text="${card.checkinText}">2026-05-04</div>
+
+            <div class="k">체크아웃</div>
+            <div class="v" th:text="${card.checkoutText}">2026-05-07</div>
+
+            <div class="k">투숙인원</div>
+            <div class="v"><span th:text="${card.guestCount}">3</span>명</div>
+
+            <div class="k">셔틀 이동</div>
+            <div class="v">
+              <a class="actionLink"
+                 th:if="${card.shuttleBookingId != null}"
+                 th:href="@{/shuttle/reserve(reservationId=${card.reservationId})}">
+                셔틀 수정하러 가기
+              </a>
+
+              <a class="actionLink"
+                 th:if="${card.shuttleBookingId == null}"
+                 th:href="@{/shuttle/reserve(reservationId=${card.reservationId})}">
+                셔틀 예약 하러가기
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="rightPane">
+          <div class="sectionTitle">셔틀 예약 상세</div>
+
+          <div class="routeWrap">
+
+            <div class="routeBox" th:if="${card.shuttleBookingId == null}">
+              <div class="routeEmpty">
+                아직 셔틀 예약을 하지 않았습니다.<br>
+                아래 버튼 또는 좌측 링크를 눌러 셔틀 예약 화면으로 이동할 수 있습니다.
+              </div>
+            </div>
+
+            <div class="routeBox" th:if="${card.shuttleBookingId != null and card.showTo}">
+              <div class="routeTop">
+                <div class="routeName">호텔행</div>
+                <div class="routeDate" th:text="${card.toRideDateText}">2026-05-04</div>
+              </div>
+
+              <div class="legList" th:if="${not #lists.isEmpty(card.toLegs)}">
+                <div class="legItem" th:each="leg : ${card.toLegs}">
+                  <div class="legMain">
+                    <div class="legTime" th:text="${leg.departTime}">12:00</div>
+                    <div class="legPlace" th:text="${leg.placeName}">서울역</div>
+                  </div>
+                  <div class="legQty">
+                    <span th:text="${leg.ticketQty}">3</span>명
+                  </div>
+                </div>
+              </div>
+
+              <div class="routeEmpty" th:if="${#lists.isEmpty(card.toLegs)}">
+                등록된 호텔행 셔틀 예약이 없습니다.
+              </div>
+            </div>
+
+            <div class="routeBox" th:if="${card.shuttleBookingId != null and card.showFrom}">
+              <div class="routeTop">
+                <div class="routeName">행선지행</div>
+                <div class="routeDate" th:text="${card.fromRideDateText}">2026-05-07</div>
+              </div>
+
+              <div class="legList" th:if="${not #lists.isEmpty(card.fromLegs)}">
+                <div class="legItem" th:each="leg : ${card.fromLegs}">
+                  <div class="legMain">
+                    <div class="legTime" th:text="${leg.departTime}">13:00</div>
+                    <div class="legPlace" th:text="${leg.placeName}">서울역</div>
+                  </div>
+                  <div class="legQty">
+                    <span th:text="${leg.ticketQty}">1</span>명
+                  </div>
+                </div>
+              </div>
+
+              <div class="routeEmpty" th:if="${#lists.isEmpty(card.fromLegs)}">
+                등록된 행선지행 셔틀 예약이 없습니다.
+              </div>
+            </div>
+
+            <div class="routeBox"
+                 th:if="${card.shuttleBookingId != null and !card.showTo and !card.showFrom}">
+              <div class="routeEmpty">
+                표시할 유효 셔틀 일정이 없습니다.
+              </div>
+            </div>
+
+          </div>
+
+          <div class="subtle" th:if="${card.shuttleBookingId != null}">
+            유효한 객실 예약 기준으로 표시한 화면이며,
+            셔틀 예약이 있는 경우에만 상세 시간표가 노출됩니다.
+          </div>
+
+          <div class="subtle" th:if="${card.shuttleBookingId == null}">
+            이 객실 예약은 아직 유효하지만, 셔틀 예약은 아직 등록되지 않은 상태입니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="cardBottom">
+        <a class="btn"
+           th:if="${card.shuttleBookingId != null}"
+           th:href="@{/shuttle/reserve(reservationId=${card.reservationId})}">
+          셔틀 수정
+        </a>
+
+        <a class="btn btn-primary"
+           th:if="${card.shuttleBookingId == null}"
+           th:href="@{/shuttle/reserve(reservationId=${card.reservationId})}">
+          셔틀 예약 하러가기
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

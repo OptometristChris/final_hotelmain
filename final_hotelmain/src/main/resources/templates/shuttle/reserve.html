@@ -1,0 +1,394 @@
+<!doctype html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <title>셔틀 예약</title>
+  <link rel="stylesheet" href="">
+
+  <style>
+    :root{
+      --bg:#ffffff;
+      --card:#ffffff;
+      --line:#e7e7e7;
+      --text:#111111;
+      --muted:#6f6f6f;
+      --brand:#111111;
+      --danger:#c94b4b;
+      --warn-bg:#fff8ef;
+      --warn-text:#b15500;
+      --header-offset:165px;
+      --page-bottom:90px;
+      --radius:10px;
+      --max:1100px;
+      --shadow:0 10px 24px rgba(0,0,0,.04);
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:'Noto Sans KR', sans-serif;
+    }
+
+    .container{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:var(--header-offset) 18px var(--page-bottom);
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      margin-bottom:16px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+
+    @media (max-width:980px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      border:1px solid var(--line);
+      border-radius:8px;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    th,td{
+      padding:12px 10px;
+      border-bottom:1px solid var(--line);
+      font-size:13px;
+      vertical-align:middle;
+    }
+
+    th{
+      background:#fafafa;
+      text-align:left;
+      color:#333;
+      font-weight:700;
+    }
+
+    tr:last-child td{
+      border-bottom:none;
+    }
+
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:7px 11px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-size:13px;
+      font-weight:500;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      padding:11px 16px;
+      font-weight:700;
+      cursor:pointer;
+      color:#111;
+      transition:.18s ease;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .btn-primary{
+      background:#111;
+      color:#fff;
+      border-color:#111;
+    }
+
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .qty{
+      width:90px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:9px 10px;
+      background:#fff;
+      color:#111;
+      font-family:inherit;
+    }
+
+    .qty:focus{
+      outline:none;
+      border-color:#111;
+      box-shadow:0 0 0 4px rgba(17,17,17,.05);
+    }
+
+    .warn{
+      display:none;
+      margin-top:10px;
+      padding:11px 12px;
+      border-radius:8px;
+      border:1px solid #f1d7b8;
+      background:var(--warn-bg);
+      color:var(--warn-text);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .footerRow{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .sectionTitle{
+      font-size:18px;
+      font-weight:700;
+      margin-bottom:2px;
+      color:#111;
+    }
+  </style>
+
+  <script>
+    /*<![CDATA[*/
+    function toInt(v){
+      const n = parseInt(v, 10);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function sumInputs(selector){
+      let s = 0;
+      document.querySelectorAll(selector).forEach(el => s += toInt(el.value));
+      return s;
+    }
+
+    function clampInput(el, max){
+      let v = toInt(el.value);
+      if (v < 0) v = 0;
+      if (v > max) v = max;
+      el.value = v;
+      return v;
+    }
+
+    function updateBlock(leg){
+      const maxTicket = toInt(document.getElementById("maxTicket").value);
+      const inputs = document.querySelectorAll(`input[data-leg="${leg}"]`);
+      const warnEl = document.getElementById(`${leg}Warn`);
+      const sumEl  = document.getElementById(`${leg}Sum`);
+
+      inputs.forEach(el => el.max = maxTicket);
+
+      const total = sumInputs(`input[data-leg="${leg}"]`);
+      if (sumEl) sumEl.textContent = total;
+
+      const ok = total <= maxTicket;
+      if (!ok){
+        warnEl.style.display = "block";
+        warnEl.innerText = `현재 합계 ${total}명 → 최대 ${maxTicket}명 초과입니다. (같은 방향 합계는 최대 티켓을 넘을 수 없음)`;
+      }
+      else{
+        warnEl.style.display = "none";
+      }
+      return ok;
+    }
+
+    function onQtyInput(e){
+      const el = e.target;
+      const leg = el.dataset.leg;
+      const maxTicket = toInt(document.getElementById("maxTicket").value);
+
+      clampInput(el, maxTicket);
+
+      const ok = updateBlock(leg);
+      if(!ok){
+        const prev = toInt(el.dataset.prev);
+        el.value = prev;
+        updateBlock(leg);
+        alert("같은 방향 합계가 최대 티켓 수를 초과할 수 없습니다.");
+      }
+      else{
+        el.dataset.prev = el.value;
+      }
+
+      const okTo = updateBlock("TO");
+      const okFrom = updateBlock("FROM");
+      document.getElementById("confirmBtn").disabled = !(okTo && okFrom);
+    }
+
+    function initQtyValidation(){
+      document.querySelectorAll('input[data-leg="TO"], input[data-leg="FROM"]').forEach(el => {
+        el.dataset.prev = el.value || "0";
+        el.addEventListener("input", onQtyInput);
+      });
+
+      const okTo = updateBlock("TO");
+      const okFrom = updateBlock("FROM");
+      document.getElementById("confirmBtn").disabled = !(okTo && okFrom);
+    }
+
+    document.addEventListener("DOMContentLoaded", initQtyValidation);
+    /*]]>*/
+  </script>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div>
+        <div class="sectionTitle">셔틀 예약</div>
+        <div class="muted">
+          예약번호: <b th:text="${page.reservation.reservationId}"></b> /
+          호텔: <b th:text="${page.reservation.hotelName}"></b>
+        </div>
+      </div>
+      <div class="pill">
+        최대 티켓:
+        <b th:text="${page.reservation.guestCount}"></b>
+      </div>
+    </div>
+    <div class="muted" style="margin-top:10px;">
+      안내: 같은 방향(호텔행/행선지행) 합계는 최대 티켓 수를 넘을 수 없습니다. / 시간 변경은 “입력 수정 후 예약 확정”으로 반영됩니다.
+    </div>
+  </div>
+
+  <form th:action="@{/shuttle/confirm}" method="post">
+    <input type="hidden" name="reservationId" th:value="${page.reservation.reservationId}">
+    <input type="hidden" id="maxTicket" th:value="${page.reservation.guestCount}">
+    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+    <div class="grid">
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap;">
+          <b>호텔행 (체크인)</b>
+          <span class="pill">
+            탑승일: <b th:text="${#dates.format(page.toRideDate,'yyyy-MM-dd')}"></b>
+          </span>
+        </div>
+
+        <div class="muted" style="margin-bottom:8px;">
+          현재 합계: <b id="TOSum">0</b> 명
+        </div>
+        <div id="TOWarn" class="warn"></div>
+
+        <table>
+          <thead>
+          <tr>
+            <th style="width:90px;">시간</th>
+            <th>픽업</th>
+            <th style="width:90px;">잔여</th>
+            <th style="width:140px;">인원</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="t : ${page.toList}">
+            <td>
+              <input type="hidden" name="toTimetableIds" th:value="${t.timetableId}">
+              <span th:text="${t.departTime}"></span>
+            </td>
+            <td th:text="${t.placeName}"></td>
+            <td>
+              <b th:text="${t.remaining}"></b>
+              <span class="muted"> / </span>
+              <span class="muted" th:text="${t.capacity}"></span>
+            </td>
+            <td>
+              <input class="qty"
+                     type="number"
+                     name="toQtys"
+                     min="0"
+                     th:attr="max=${page.reservation.guestCount}"
+                     th:value="${t.myQty != null ? t.myQty : 0}"
+                     data-leg="TO">
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap;">
+          <b>행선지행 (체크아웃)</b>
+          <span class="pill">
+            탑승일: <b th:text="${#dates.format(page.fromRideDate,'yyyy-MM-dd')}"></b>
+          </span>
+        </div>
+
+        <div class="muted" style="margin-bottom:8px;">
+          현재 합계: <b id="FROMSum">0</b> 명
+        </div>
+        <div id="FROMWarn" class="warn"></div>
+
+        <table>
+          <thead>
+          <tr>
+            <th style="width:90px;">시간</th>
+            <th>도착지</th>
+            <th style="width:90px;">잔여</th>
+            <th style="width:140px;">인원</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="t : ${page.fromList}">
+            <td>
+              <input type="hidden" name="fromTimetableIds" th:value="${t.timetableId}">
+              <span th:text="${t.departTime}"></span>
+            </td>
+            <td th:text="${t.placeName}"></td>
+            <td>
+              <b th:text="${t.remaining}"></b>
+              <span class="muted"> / </span>
+              <span class="muted" th:text="${t.capacity}"></span>
+            </td>
+            <td>
+              <input class="qty"
+                     type="number"
+                     name="fromQtys"
+                     min="0"
+                     th:attr="max=${page.reservation.guestCount}"
+                     th:value="${t.myQty != null ? t.myQty : 0}"
+                     data-leg="FROM">
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+        <div class="footerRow">
+          <button id="confirmBtn" class="btn btn-primary" type="submit">예약 확정</button>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+</body>
+</html>

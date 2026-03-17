@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+<head>
+    <title>나의 예약 내역 - 호텔 다이닝</title>
+
+    <th:block th:fragment="link"></th:block>
+
+    <th:block th:fragment="style">
+        <style>
+            #mycontent { padding-top: 180px !important; padding-bottom: 100px; min-height: 100vh; background: #fff; }
+            .res-card { border: 1px solid #e0e0e0; padding: 25px; margin-bottom: 20px; transition: 0.3s; }
+            .res-card:hover { border-color: #9d815d; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+            .status-badge { padding: 4px 12px; font-size: 12px; font-weight: bold; border-radius: 20px; }
+            .status-reserved { background: #e3f2fd; color: #1976d2; }
+            .status-cancelled { background: #ffebee; color: #d32f2f; }
+            .btn-cancel { border: 1px solid #d32f2f; color: #d32f2f; background: none; padding: 5px 15px; cursor: pointer; transition: 0.2s; }
+            .btn-cancel:hover { background: #d32f2f; color: #fff; }
+            .user-name { color: #9d815d; font-weight: bold; }
+        </style>
+    </th:block>
+
+    <th:block th:fragment="script">
+        <script th:inline="javascript">
+            function cancelRes(resId) {
+                if(confirm("정말로 예약을 취소하시겠습니까?")) {
+                    // 취소 후 다시 조회 페이지로 리다이렉트 (컨트롤러 설정에 따라 분기 가능)
+                    location.href = "/final_hotel/dining/cancel?id=" + resId;
+                }
+            }
+        </script>
+    </th:block>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div id="mycontent">
+            <div class="container">
+                <div class="mb-5 text-center">
+                    <h2 style="font-family: 'Noto Serif KR', serif;">My Reservations</h2>
+                    
+                    <p th:if="${isMember}" class="text-muted">
+                        <span class="user-name" th:text="${session.sessionMemberDTO.name}">회원</span> 님의 소중한 다이닝 예약 내역입니다.
+                    </p>
+                    <p th:unless="${isMember}" class="text-muted">비회원 전용 예약 조회 결과입니다.</p>
+                </div>
+
+                <div th:if="${#lists.isEmpty(reservations)}" class="text-center py-5" style="border: 1px dashed #eee;">
+                    <p class="text-muted">조회된 예약 내역이 없습니다.</p>
+                    <a th:href="@{/dining/reservation_search}" class="btn btn-outline-dark mt-3">조회 페이지로 돌아가기</a>
+                </div>
+
+                <div th:each="res : ${reservations}" class="res-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 th:text="${res.diningName}" style="color: #9d815d; font-family: 'Noto Serif KR', serif;">레스토랑 이름</h4>
+                            <p class="mb-1">
+                                <strong th:text="${res.resDate}">2026-03-13</strong> | 
+                                <span th:text="${res.resTime}">18:00</span>
+                            </p>
+                            <p class="small text-muted mb-0">
+                                성인 <span th:text="${res.adultCount}">0</span> / 
+                                어린이 <span th:text="${res.childCount}">0</span> / 
+                                유아 <span th:text="${res.infantCount}">0</span>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <div class="mb-2">
+                                <span th:if="${res.status == 'RESERVED'}" class="status-badge status-reserved">예약확정</span>
+                                <span th:if="${res.status == 'CANCELLED'}" class="status-badge status-cancelled">예약취소</span>
+                            </div>
+                            <button th:if="${res.status == 'RESERVED'}" 
+                                    th:onclick="cancelRes([[${res.diningReservationId}]])" 
+                                    class="btn-cancel">예약취소</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-5">
+                    <a th:href="@{/dining/all}" class="btn btn-dark px-5" style="border-radius: 0;">레스토랑 더보기</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

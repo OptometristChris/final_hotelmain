@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+<head>
+    <title>예약 조회 - 호텔 다이닝</title>
+
+    <th:block th:fragment="link"></th:block>
+
+    <th:block th:fragment="style">
+        <style>
+            #mycontent { 
+                background-color: #f8f9fa; 
+                padding-top: 180px !important; 
+                padding-bottom: 100px; 
+                min-height: 100vh; 
+            }
+            .lookup-box { 
+                max-width: 500px; 
+                margin: 0 auto; 
+                background: white; 
+                padding: 60px 50px; 
+                box-shadow: 0 10px 40px rgba(0,0,0,0.05); 
+                text-align: center;
+            }
+            .form-control { 
+                border-radius: 0; 
+                padding: 12px; 
+                margin-bottom: 20px; 
+                border: 1px solid #ddd;
+            }
+            .btn-lookup { 
+                background: #222; 
+                color: #fff !important; 
+                border: none; 
+                width: 100%; 
+                padding: 16px; 
+                font-weight: bold; 
+                letter-spacing: 2px;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+            .btn-lookup:hover { background: #000; }
+            .search-title { font-family: 'Noto Serif KR', serif; font-weight: 500; color: #333; }
+        </style>
+    </th:block>
+    
+    <th:block th:fragment="script"></th:block>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div id="mycontent">
+            <div class="container">
+                <div class="lookup-box">
+                    <div class="mb-5">
+                        <h2 class="search-title">비회원 다이닝 예약 조회</h2>
+                        <div style="width: 30px; height: 1px; background: #9d815d; margin: 20px auto;"></div>
+                        <p class="text-muted small">예약 시 입력하신 정보로 조회가 가능합니다.</p>
+                    </div>
+
+                    <form th:action="@{/dining/my_reservations}" method="post">
+                        <div class="text-left mb-4">
+                            <label class="small font-weight-bold" style="color: #9d815d; margin-bottom: 8px; display: block;">비회원 예약 정보</label>
+                            <input type="text" name="guestName" class="form-control" placeholder="성함" required>
+                            <input type="email" name="guestEmail" class="form-control" placeholder="이메일 주소" required>
+                            <input type="password" name="resPassword" class="form-control" placeholder="비밀번호 (4자리)" maxlength="4" required>
+                        </div>
+                        <button type="submit" class="btn-lookup">조회하기</button>
+                    </form>
+
+                    <div class="mt-4 text-center pt-3" style="border-top: 1px dashed #eee;">
+                        <p class="text-muted small" style="margin-top: 20px;">
+                        	회원 예약 내역은 로그인 후 확인 가능합니다.<br>
+                        	<a th:href="@{/security/login}" 
+							   style="color: #9d815d; font-weight: bold; text-decoration: underline;">
+							   로그인하기
+							</a>
+					    </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

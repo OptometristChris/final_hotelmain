@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="hotel">
+
+    <!-- 1. 호텔 CRUD  -->
+	<!-- 호텔 리스트 가져오기 -->
+	<!-- 운영중 -->
+	<select id="selectApprovedHotelList" resultType="map">
+		SELECT
+		h.hotel_id,
+			h.hotel_name,
+			h.approve_status,
+			i.image_url
+		FROM tbl_hotel h
+		LEFT JOIN hotel_image i
+		ON h.hotel_id = i.fk_hotel_id
+		AND i.is_main='Y'
+		
+		WHERE h.active_yn='Y'
+		
+		
+		ORDER BY h.hotel_id
+	</select>
+		
+	<!-- 심사대기 -->
+	<select id="selectPendingHotelList" resultType="map">
+		SELECT
+			h.hotel_id,
+			h.hotel_name,
+			h.approve_status,
+			i.image_url
+		FROM tbl_hotel h
+		LEFT JOIN hotel_image i
+		ON h.hotel_id = i.fk_hotel_id
+		AND i.is_main='Y'
+		
+		WHERE h.active_yn='Y'
+		AND h.approve_status!='APPROVED'
+		
+		ORDER BY h.hotel_id		
+	</select>
+
+
+	<!-- 비활성화 -->
+	<select id="selectDisabledHotelList" resultType="map">
+		SELECT 
+		    H.HOTEL_ID,
+		    H.HOTEL_NAME,
+		    H.APPROVE_STATUS,
+		    H.ACTIVE_YN,
+		    I.IMAGE_URL
+		FROM TBL_HOTEL H
+		LEFT JOIN HOTEL_IMAGE I
+		       ON H.HOTEL_ID = I.FK_HOTEL_ID
+		      AND I.IS_MAIN = 'Y'
+		WHERE H.ACTIVE_YN = 'N'
+		ORDER BY H.HOTEL_ID DESC
+	</select>
+	
+	<!-- 호텔 다시 활성화시키기 -->
+	<update id="restoreHotel">
+	    UPDATE tbl_hotel
+	    SET active_yn = 'Y'
+	    WHERE hotel_id = #{hotel_id}
+	</update>
+
+	
+	<!-- 호텔 상세페이지 -->
+	<select id="selectHotelDetail" resultType="map">
+	
+		SELECT
+		    H.HOTEL_ID,
+		    H.HOTEL_NAME,
+		    H.ADDRESS,
+		    H.CONTACT,
+		    H.HOTEL_DESC,
+		    H.APPROVE_STATUS,
+		    H.LATITUDE,
+		    H.LONGITUDE,
+		    I.IMAGE_URL
+		
+		FROM TBL_HOTEL H
+		
+		LEFT JOIN HOTEL_IMAGE I
+		ON H.HOTEL_ID = I.FK_HOTEL_ID
+		AND I.IS_MAIN = 'Y'
+		
+		WHERE H.HOTEL_ID = #{hotelId}
+		AND H.ACTIVE_YN = 'Y'
+	
+	</select>
+		
+		
+	<!-- 호텔 상세페이지 내 수정하기 -->	
+	<update id="updateHotel">
+		UPDATE TBL_HOTEL
+		SET
+		    HOTEL_NAME = #{hotel_name},
+		    ADDRESS = #{address},
+		    CONTACT = #{contact},
+		    HOTEL_DESC = #{hotel_desc}
+		WHERE HOTEL_ID = #{hotel_id}		
+	</update>	
+	
+	
+	<!-- 호텔 상세페이지 내 비활성화하기 -->
+	<update id="deleteHotel">		
+		UPDATE tbl_hotel
+		SET active_yn = 'N'
+		WHERE hotel_id = #{hotel_id}	
+	</update>
+		
+	
+    <!-- 호텔 DB insert -->
+  <insert id="insertHotel">
+
+    <selectKey keyProperty="hotel_id" resultType="int" order="BEFORE">
+        select seq_hotel.nextval from dual
+    </selectKey>
+
+    insert into tbl_hotel
+        (hotel_id,
+         hotel_name,
+         address,
+         
+         LATITUDE,
+    	 LONGITUDE,
+         
+         contact,
+         hotel_desc,
+         approve_status,
+         active_yn,
+         admin_no)
+    values
+        (#{hotel_id},
+         #{hotel_name},
+         #{address},
+         
+          #{latitude},
+    	  #{longitude},
+         
+         #{contact},
+         #{hotel_desc},
+         #{approve_status},
+         #{active_yn},
+         #{admin_no})
+	</insert>
+
+
+    <!-- 이미지 insert -->
+    <insert id="insertHotelImage">
+        insert into HOTEL_IMAGE
+        (image_id,
+         fk_hotel_id,
+         image_url,
+         is_main,
+         sort_order)
+        values
+        (SEQ_HOTEL_IMAGE.nextval,
+         #{fk_hotel_id},
+         #{image_url},
+         #{is_main},
+         #{sort_order})
+    </insert>
+    
+    
+    <!-- 2. 호텔 승인관리 -->
+	<!-- 지점관리자 호텔 조회 -->
+	<select id="selectHotelListByManager" parameterType="int" resultType="map">
+
+		SELECT
+		    h.hotel_id,
+		    h.hotel_name,
+		    h.approve_status,
+		    i.image_url
+		
+		FROM tbl_hotel h
+		
+		LEFT JOIN hotel_image i
+		ON h.hotel_id = i.fk_hotel_id
+		AND i.is_main = 'Y'
+		
+		WHERE h.admin_no = #{adminNo}
+		AND h.active_yn = 'Y'
+		
+		ORDER BY h.hotel_id DESC
+		
+		</select>
+		
+	<!-- 호텔 위치 -->
+	<select id="selectAllHotelLocation" resultType="map">
+
+		SELECT
+		    HOTEL_ID,
+		    HOTEL_NAME,
+		    LATITUDE,
+		    LONGITUDE
+		FROM TBL_HOTEL
+		WHERE ACTIVE_YN = 'Y'
+	
+	</select>
+	
+</mapper>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>예약 완료</title>
+
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f6f7f9;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #222;
+        }
+
+        .reservation-code {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c7be5;
+            margin-bottom: 30px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .value {
+            color: #222;
+        }
+
+        .price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .btn-group {
+            margin-top: 35px;
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            margin: 0 8px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #2c7be5;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #1a5edb;
+        }
+
+        .btn-outline {
+            border: 2px solid #2c7be5;
+            color: #2c7be5;
+        }
+
+        .btn-outline:hover {
+            background-color: #2c7be5;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+	
+    <h2> 예약이 완료되었습니다</h2>
+
+    <div class="reservation-code">
+        예약 번호 :
+        <span th:text="${reservation['RESERVATION_CODE']}"></span>
+    </div>
+
+<!--     <div class="info-row">
+        <div class="label">숙소명</div>
+        <div class="value" th:text="${reservation['HOTEL_NAME']}"></div>
+    </div>
+
+    <div class="info-row">
+        <div class="label">객실명</div>
+        <div class="value" th:text="${reservation['ROOM_NAME']}"></div>
+    </div>
+ -->
+ 
+ 	<div class="info-row">
+	    <div class="label">예약자</div>
+	    <div class="value"
+	         th:text="${reservation['NAME']}"></div>
+	</div>
+	
+    <div class="info-row">
+        <div class="label">체크인</div>
+        <div class="value"
+             th:text="${#dates.format(reservation['CHECKIN_DATE'], 'yyyy-MM-dd')}">
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="label">체크아웃</div>
+        <div class="value"
+             th:text="${#dates.format(reservation['CHECKOUT_DATE'], 'yyyy-MM-dd')}">
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="label">인원</div>
+        <div class="value" th:text="${reservation['GUEST_COUNT']} + '명'"></div>
+    </div>
+
+    <div class="info-row">
+        <div class="label">총 결제 금액</div>
+        <div class="price"
+             th:text="${#numbers.formatInteger(reservation['TOTAL_PRICE'], 3, 'COMMA')} + '원'">
+        </div>
+    </div>
+
+	<!-- 수정필요함 -->
+    <div class="btn-group">
+    	<a th:href="@{/shuttle/reserve(reservationId=31)}"
+		   class="btn btn-primary">
+		    셔틀 예약하기
+		</a>
+    
+        <a th:href="@{/security/member/mypage}" class="btn btn-primary">
+            마이페이지 이동
+        </a>
+
+        <a th:href="@{/}" class="btn btn-outline">
+            메인으로 이동
+        </a>
+    </div>
+
+</div>
+
+</body>
+</html>

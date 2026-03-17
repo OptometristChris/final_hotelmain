@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="roomStock">
+	  
+	<!-- 재고차감 -->  
+    <update id="decreaseStock">
+
+        UPDATE room_stock
+        SET available_count = available_count - 1
+        WHERE room_type_id = #{room_type_id}
+          AND stay_date = #{stay_date}
+          AND available_count > 0
+    </update>
+    
+    <!-- 재고 0일 시 예약 막기 -->
+    <select id="selectStockForUpdate" resultType="int">
+
+	    SELECT available_count
+	    FROM room_stock
+	    WHERE room_type_id = #{room_type_id}
+	      AND stay_date = #{stay_date}
+	    FOR UPDATE
+	
+	</select>
+	
+</mapper>

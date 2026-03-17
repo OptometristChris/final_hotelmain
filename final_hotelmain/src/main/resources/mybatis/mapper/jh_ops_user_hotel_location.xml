@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.app.jh.ops.user.model.HotelLocationOpsDAO">
+
+    <select id="selectActiveHotelLocationList" resultType="com.spring.app.jh.ops.user.domain.HotelLocationDTO">
+        SELECT
+            h.hotel_id      AS hotelId,
+            h.hotel_name    AS hotelName,
+            h.address       AS address,
+            h.contact       AS contact,
+            h.hotel_desc    AS hotelDesc,
+            h.latitude      AS latitude,
+            h.longitude     AS longitude,
+            hi.image_url    AS mainImageUrl
+        FROM tbl_hotel h
+        LEFT JOIN hotel_image hi
+               ON hi.fk_hotel_id = h.hotel_id
+              AND hi.is_main = 'Y'
+        WHERE h.active_yn = 'Y'
+          AND h.approve_status = 'APPROVED'
+          AND h.latitude IS NOT NULL
+          AND h.longitude IS NOT NULL
+        ORDER BY h.hotel_id ASC
+    </select>
+
+</mapper>

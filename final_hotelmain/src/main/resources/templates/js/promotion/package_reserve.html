@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+<head>
+    <title>패키지 예약 | CIEL HOTEL</title>
+    
+    <th:block th:fragment="link">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </th:block>
+
+    <th:block th:fragment="style">
+        <style>
+            .package-reserve-wrap { padding: 150px 0 100px; max-width: 900px; margin: 0 auto; background-color: #fff; }
+            .reserve-header { border-bottom: 2px solid #1a1a1a; padding-bottom: 25px; margin-bottom: 50px; }
+            .reserve-header h2 { font-size: 2.2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 10px; }
+            .reserve-header p { color: #d4af37; font-size: 1.1rem; font-weight: 600; letter-spacing: 1px; }
+
+            .section-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; color: #333; display: flex; align-items: center; }
+            .section-title span { display: inline-block; width: 24px; height: 24px; background: #1a1a1a; color: #fff; border-radius: 50%; text-align: center; line-height: 24px; font-size: 0.9rem; margin-right: 10px; }
+
+            .room-selection-list { display: flex; flex-direction: column; gap: 15px; }
+            .room-card { border: 1px solid #eee; padding: 25px; cursor: pointer; display: flex; align-items: center; gap: 20px; transition: 0.3s; border-radius: 4px; position: relative; margin-bottom: 0; }
+            .room-card:hover { border-color: #d4af37; background: #fdfbf5; }
+            .room-card.active { border-color: #d4af37; background: #fdfbf5; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1); }
+            
+            .room-card input[type="radio"] { width: 20px; height: 20px; accent-color: #1a1a1a; }
+            
+            .date-selection-box { display: flex; gap: 30px; background: #f9f9f9; padding: 40px; border: 1px solid #eee; align-items: center; justify-content: center; }
+            .date-input-group { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+            .date-input-group label { font-weight: 700; color: #666; font-size: 0.9rem; }
+            .date-input-group input { padding: 12px; border: 1px solid #ddd; font-family: inherit; font-size: 1rem; outline: none; }
+
+            .benefit-summary-box { border: 1px solid #ddd; padding: 40px; background: #fff; box-shadow: 0 5px 20px rgba(0,0,0,0.03); }
+            .total-price-area { text-align: right; margin-top: 30px; padding-top: 20px; }
+            .total-price-area .label { font-size: 1.1rem; color: #888; }
+            .total-price-area .price { font-size: 2.2rem; color: #d4af37; font-weight: 700; margin-left: 15px; }
+
+            .btn-submit { width: 100%; padding: 22px; background: #1a1a1a; color: #fff; border: none; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 40px; }
+            .btn-submit:hover { background: #d4af37; }
+        </style>
+    </th:block>
+</head>
+<body>
+
+<th:block th:fragment="content">
+    <div class="container package-reserve-wrap">
+        <div class="reserve-header">
+            <h2><i class="bi bi-calendar-check mr-2"></i>프로모션 예약</h2>
+            <p th:text="${promo.title}">패키지 제목</p>
+        </div>
+
+        <form id="packageReserveForm">
+            
+            <input type="hidden" name="promotion_id" th:value="${promo.promotion_id}">
+            <input type="hidden" name="discount_amount" id="inputDiscPrice" value="0">
+            <input type="hidden" name="applied_price" id="inputFinalPrice"> 
+            <input type="hidden" name="fk_hotel_id" th:value="${promo.fk_hotel_id}">
+            <input type="hidden" name="guest_count" id="guestCount" value="1">
+
+            <div class="section" style="margin-bottom: 60px;">
+                <h3 class="section-title"><span>1</span> 투숙 기간 선택</h3>
+                <div class="date-selection-box">
+                    <div class="date-input-group">
+                        <label>CHECK-IN</label>
+                        <input type="date" name="check_in" id="checkIn" 
+                               th:min="${promo.start_date}" th:max="${promo.end_date}" 
+                               onchange="recalculatePrice()" required>
+                    </div>
+                    <div style="font-size: 1.5rem; color: #ccc; margin-top: 25px;">~</div>
+                    <div class="date-input-group">
+                        <label>CHECK-OUT</label>
+                        <input type="date" name="check_out" id="checkOut" 
+                               th:min="${promo.start_date}" th:max="${promo.end_date}" 
+                               onchange="recalculatePrice()" required>
+                    </div>
+                </div>
+                <small class="text-muted mt-2 d-block">* 본 프로모션은 <span th:text="${promo.start_date}"></span> ~ <span th:text="${promo.end_date}"></span> 기간 내 투숙 시에만 적용됩니다.</small>
+            </div>
+
+            <div class="section" style="margin-bottom: 60px;">
+                <h3 class="section-title"><span>2</span> 적용 가능 객실 선택</h3>
+                <div class="room-selection-list">
+				    <th:block th:each="room : ${roomList}">
+				        <label class="room-card" th:for="'room_' + ${room.ROOM_TYPE_ID}">
+				            <input type="radio" name="room_type_id" th:id="'room_' + ${room.ROOM_TYPE_ID}" 
+				                   th:value="${room.ROOM_TYPE_ID}" th:data-price="${room.BASE_PRICE}"
+                                   th:data-name="${room.ROOM_NAME}"
+				                   onchange="updatePrice(this)" required>
+				            <div class="room-info">
+				                <strong style="font-size: 1.1rem;" th:text="${room.ROOM_NAME}">객실명</strong>
+				                <div style="color: #888; font-size: 0.85rem; margin-top: 5px;">
+				                    <i class="bi bi-door-open mr-1"></i> <span th:text="${room.ROOM_GRADE}"></span> / 
+				                    <i class="bi bi-hypnotize mr-1"></i> <span th:text="${room.BED_TYPE}"></span>
+				                </div>
+				            </div>
+				            <div style="margin-left: auto; text-align: right;">
+				                <span style="font-weight: 700; color: #1a1a1a; font-size: 1.2rem;" 
+				                      th:text="|${#numbers.formatInteger(room.BASE_PRICE, 0, 'COMMA')}원 / 1박|"></span>
+				            </div>
+				        </label>
+				    </th:block>
+				</div>
+            </div>
+
+            <div class="section">
+                <h3 class="section-title"><span>3</span> 할인 및 예약 확인</h3>
+                <div class="benefit-summary-box">
+                    <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed #eee;">
+                        <strong style="display: block; margin-bottom: 10px; color: #d4af37;">
+                            <i class="bi bi-gift-fill mr-1"></i> 포함 혜택
+                        </strong>
+                        <div style="color: #666; line-height: 1.6;" th:utext="${#strings.replace(promo.benefits, '\n', '<br/>')}"></div>
+                    </div>
+                    
+                    <div class="total-price-area">
+                        <div id="calcDetail" style="display:none; margin-bottom: 15px; font-size: 1.1rem; color: #666;">
+                            <span id="txtNights" style="font-weight:bold; color:#1a1a1a;">0</span>박 총 요금 
+                            <span id="txtBase" style="text-decoration: line-through; color:#999;">0</span>원 
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            프로모션 할인 <span id="txtDisc" style="color:#e74c3c; font-weight:bold;">0</span>원
+                        </div>
+                        <span class="label">최종 결제 금액</span>
+                        <span class="price"><span id="txtFinal">0</span> <small style="font-size: 1rem;">KRW</small></span>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" onclick="requestPay()" class="btn-submit">
+                <i class="bi bi-check2-circle mr-2"></i>예약하기
+            </button>
+
+        </form>
+    </div>
+</th:block>
+
+<th:block th:fragment="script">
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+    <script th:inline="javascript">
+        const dRate = [[${promo.discount_rate}]] || 0;   
+        const dAmount = [[${promo.discount_amount}]] || 0;
+        let calendarData = [];
+
+        async function recalculatePrice() {
+            const checkInVal = document.getElementById('checkIn').value;
+            const checkOutVal = document.getElementById('checkOut').value;
+            const selectedRadio = document.querySelector('input[name="room_type_id"]:checked');
+
+            if (!checkInVal || !checkOutVal || !selectedRadio) return;
+
+            const roomId = selectedRadio.value;
+            try {
+                const response = await fetch(`/final_hotel/room/calendar?room_id=${roomId}`);
+                calendarData = await response.json();
+                updateFinalDisplay(checkInVal, checkOutVal);
+            } catch (error) {
+                console.error("가격 정보를 가져오는데 실패했습니다.", error);
+            }
+        }
+
+        function updateFinalDisplay(checkIn, checkOut) {
+            const inDate = new Date(checkIn);
+            const outDate = new Date(checkOut);
+            const nights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24));
+
+            if (nights <= 0) {
+                alert("체크아웃 날짜는 체크인 이후여야 합니다.");
+                document.getElementById('calcDetail').style.display = 'none';
+                return;
+            }
+
+            let totalBase = 0;
+            let foundDays = 0;
+
+            calendarData.forEach(day => {
+                if (day.STAY_DATE >= checkIn && day.STAY_DATE < checkOut) {
+                    totalBase += day.FINAL_PRICE;
+                    foundDays++;
+                }
+            });
+
+            if (foundDays < nights) {
+                const radio = document.querySelector('input[name="room_type_id"]:checked');
+                totalBase = parseInt(radio.dataset.price) * nights;
+            }
+
+            let disc = (dRate > 0) ? Math.floor(totalBase * (dRate / 100)) : dAmount;
+            const final = totalBase - disc;
+
+            document.getElementById('calcDetail').style.display = 'block';
+            document.getElementById('txtNights').innerText = nights;
+            document.getElementById('txtBase').innerText = totalBase.toLocaleString(); 
+            document.getElementById('txtDisc').innerText = disc.toLocaleString();      
+            document.getElementById('txtFinal').innerText = final.toLocaleString();    
+
+            document.getElementById('inputFinalPrice').value = final;
+            document.getElementById('inputDiscPrice').value = disc;
+        }
+
+        function updatePrice(radio) {
+            document.querySelectorAll('.room-card').forEach(card => card.classList.remove('active'));
+            radio.closest('.room-card').classList.add('active');
+            recalculatePrice();
+        }
+
+        function requestPay() {
+            const finalPrice = document.getElementById('inputFinalPrice').value;
+            if(!finalPrice || finalPrice == 0) {
+                alert("예약 정보를 선택해 주세요.");
+                return;
+            }
+
+            const selectedRadio = document.querySelector('input[name="room_type_id"]:checked');
+
+            IMP.init("imp76388561"); // 실제 연동된 가맹점 식별코드를 입력하세요
+            IMP.request_pay({
+                pg: "html5_inicis",
+                pay_method: "card",
+                merchant_uid: "hotel_" + new Date().getTime(),
+                name: "프로모션: " + [[${promo.title}]],
+                amount: 100, // 테스트 결제금액
+                buyer_name: [[${memberName}]],
+                buyer_tel: [[${memberMobile}]]
+            }, function (rsp) {
+                if (rsp.success) {
+                    const token = document.querySelector("meta[name='_csrf']").content;
+                    const header = document.querySelector("meta[name='_csrf_header']").content;
+                    
+                    fetch("/final_hotel/payment/verify", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            [header]: token
+                        },
+                        body: JSON.stringify({
+                            imp_uid: rsp.imp_uid,
+                            merchant_uid: rsp.merchant_uid,
+                            member_no: [[${memberNo}]],
+                            room_type_id: selectedRadio.value,
+                            check_in: document.getElementById('checkIn').value,
+                            check_out: document.getElementById('checkOut').value,
+                            guest_count: document.getElementById("guestCount").value,
+                            total_price: finalPrice,
+                            hotel_name: "CIEL HOTEL",
+                            room_name: selectedRadio.dataset.name
+                        })
+                    })
+                    .then(async res => {
+
+                        const text = await res.text();
+
+                        console.log("==== /payment/verify status ====", res.status);
+                        console.log("==== /payment/verify response ====", text);
+
+                        if (!res.ok) {
+                            alert("예약 저장 중 오류가 발생했습니다.\n\n" + text);
+                            return;
+                        }
+
+                        alert("예약이 완료되었습니다.");
+                        location.href = "/final_hotel/reservation/complete?code=" + encodeURIComponent(text);
+                    })
+                    .catch(err => {
+                        console.error("==== /payment/verify fetch 오류 ====", err);
+                        alert("서버 통신 중 오류가 발생했습니다.");
+                    });
+                } else {
+                    alert("결제 실패: " + rsp.error_msg);
+                }
+            });
+        }
+    </script>
+</th:block>
+
+</body>
+</html>

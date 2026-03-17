@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+<head>
+    <title th:if="${promo != null}">[[${promo.title}]] | CIEL HOTEL</title>
+    <title th:unless="${promo != null}">Promotion | CIEL HOTEL</title>
+    
+    <th:block th:fragment="link">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </th:block>
+
+    <th:block th:fragment="style">
+        <style>
+            .promo-detail-container { 
+                margin-top: 150px; 
+                padding-bottom: 50px;
+                max-width: 1200px; 
+                margin-left: auto;
+                margin-right: auto;
+                background-color: #fff;
+                display: flow-root; 
+            }
+
+            /* 헤더 영역 */
+            .promo-header { 
+                border-bottom: 2px solid #1a1a1a; 
+                padding-bottom: 25px; 
+                margin-bottom: 50px; 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: flex-end; 
+            }
+            .promo-header h2 { font-size: 2.2rem; font-weight: 700; margin: 0; color: #1a1a1a; }
+            .price-info { text-align: right; }
+            .price-info .original-price { font-size: 1rem; color: #999; text-decoration: line-through; display: block; margin-bottom: 5px; }
+            .price-info .final-price { font-size: 1.3rem; color: #1a1a1a; }
+            .price-info .final-price b { font-size: 2rem; color: #d4af37; }
+
+            /* 요약 섹션 */
+            .main-summary { display: flex; gap: 60px; margin-bottom: 80px; align-items: flex-start; }
+            .summary-img { flex: 1.3; border: 1px solid #eee; overflow: hidden; }
+            .summary-img img { width: 100%; height: auto; display: block; transition: 0.5s; }
+            .summary-img:hover img { transform: scale(1.05); }
+            
+            .summary-text { flex: 1; }
+            .tag-group { margin-bottom: 20px; }
+            .tag { display: inline-block; padding: 5px 15px; font-size: 0.85rem; font-weight: 600; border: 1px solid #ddd; color: #666; margin-right: 8px; }
+            .tag.special { background: #d4af37; color: #fff; border-color: #d4af37; }
+            
+            .summary-title { font-size: 1.8rem; font-weight: 700; margin-top: 5px; margin-bottom: 30px; color: #1a1a1a; line-height: 1.4; }
+
+            .info-list { list-style: none; padding: 0; border-top: 1px solid #eee; padding-top: 30px; }
+            .info-list li { margin-bottom: 20px; display: flex; align-items: center; }
+            .info-list .label { width: 110px; font-weight: 700; color: #888; font-size: 0.95rem; }
+
+            /* 상세 내용 섹션 */
+            .benefit-section { background: #f9f9f9; padding: 60px; border: 1px solid #eee; }
+            .card-inner { background: #fff; padding: 45px; border: 1px solid #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+            .card-inner-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #1a1a1a; }
+            
+            .benefit-grid { display: grid; grid-template-columns: 130px 1fr; gap: 20px; margin-bottom: 30px; }
+            .benefit-label { font-weight: 700; color: #333; }
+            .benefit-content { line-height: 1.8; color: #666; white-space: pre-wrap; }
+
+            .btn-area { text-align: center; margin-top: 80px; }
+            .btn-reserve { display: inline-block; padding: 18px 100px; background: #1a1a1a; color: #fff; font-weight: 700; text-decoration: none; transition: 0.3s; }
+            .btn-reserve:hover { background: #d4af37; color: #fff; }
+            
+            .footer-pusher { clear: both; display: block; height: 100px; width: 100%; }
+        </style>
+    </th:block>
+</head>
+<body>
+
+<th:block th:fragment="content">
+    <div th:if="${promo != null}" class="container promo-detail-container">
+        <div class="promo-header">
+            <div>
+                <span th:text="${promo.fk_hotel_id == 1 ? 'CIEL HOTEL' : 'LE CIEL'}" 
+                      style="color:#d4af37; font-weight:700; font-size:0.9rem; letter-spacing:1px;">지점명</span>
+                <h2 th:text="${promo.title}">패키지 제목</h2>
+            </div>
+            <div class="price-info">
+			    <span class="original-price"
+			          th:if="${promo.discount_rate > 0 and promo.price > 0}"
+			          th:text="${#numbers.formatInteger(promo.price, 3, 'COMMA')} + ' KRW'">
+			    </span>
+			    <span class="final-price" th:if="${promo.price > 0}">
+			        특별가 
+			        <b th:text="${#numbers.formatInteger(finalPrice, 3, 'COMMA')}">0</b> KRW
+			    </span>
+			    <span class="final-price" th:if="${promo.price == 0}">
+			        최대 <b th:text="${promo.discount_rate}">0</b>% 할인
+			    </span>
+			</div>
+        </div>
+    
+        <div class="main-summary">
+            <div class="summary-img">
+                <img th:src="@{'/images/js/' + ${promo.image_url}}" th:alt="${promo.title}">
+            </div>
+            <div class="summary-text">
+                <div class="tag-group">
+                    <span class="tag special" th:if="${promo.discount_rate > 0}" th:text="${#numbers.formatDecimal(promo.discount_rate, 0, 0) + '% OFF'}">할인율</span>
+                    <span class="tag">EXCLUSIVE</span>
+                </div>
+                <h3 class="summary-title" th:text="${promo.subtitle}">서브 타이틀</h3>
+                
+                <ul class="info-list">
+                    <li><span class="label">이용 기간</span><span th:text="|${promo.start_date} ~ ${promo.end_date}|">2024.01.01 ~ 2024.12.31</span></li>
+                    <li><span class="label">포함 혜택</span><span>프로모션 전용 상세 혜택 제공</span></li>
+                    <li><span class="label">예약 문의</span><span>02-123-4567</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="benefit-section">
+		    <div class="card-inner">
+		        <div class="card-inner-title" th:text="${promo.title}">패키지 상세 설명</div>
+		        
+		        <div class="benefit-grid">
+		            <div class="benefit-label">특별 혜택</div>
+		            <div class="benefit-content" th:utext="${promo.benefits}">
+		                상세 혜택 내용이 이곳에 출력됩니다.
+		            </div>
+		        </div>
+		
+		        <div class="benefit-grid" style="margin-top:40px; padding-top:20px; border-top:1px solid #f0f0f0;">
+		            <div class="benefit-label">적용 대상</div>
+		            <div class="benefit-content">
+		                <div style="display: flex; gap: 25px; flex-wrap: wrap;">
+		                    <div style="display: flex; align-items: center; gap: 8px;">
+							    <i class="bi bi-door-open" style="color: #d4af37;"></i>
+							    <span style="font-weight: 600; color: #333;">객실 :</span>
+							    <span th:text="${(promo.target_room_type != null and promo.target_room_type != '') ? promo.target_room_type : '모든 객실'}"></span>
+							</div>
+							
+							<div style="display: flex; align-items: center; gap: 8px;">
+							    <i class="bi bi-briefcase" style="color: #d4af37;"></i>
+							    <span style="font-weight: 600; color: #333;">침대 :</span>
+							    <span th:text="${(promo.target_bed_type != null and promo.target_bed_type != '') ? promo.target_bed_type : '타입 무관'}"></span>
+							</div>
+							
+							<div style="display: flex; align-items: center; gap: 8px;">
+							    <i class="bi bi-image" style="color: #d4af37;"></i>
+							    <span style="font-weight: 600; color: #333;">전망 :</span>
+							    <span th:text="${(promo.target_view_type != null and promo.target_view_type != '') ? promo.target_view_type : '뷰 무관'}"></span>
+							</div>
+		                </div>
+		                <p style="font-size: 0.85rem; color: #999; margin-top: 10px;">* 해당 조건 충족 시 프로모션 혜택이 적용됩니다.</p>
+		            </div>
+		        </div>
+		
+		        <div class="benefit-grid" style="margin-top:30px; border-top:1px dashed #ddd; padding-top:30px;">
+		            <div class="benefit-label">공통 안내</div>
+		            <div class="benefit-content" style="font-size:0.9rem; color:#999;">
+		                - 본 패키지는 선착순 한정 판매 상품입니다.<br>
+		                - 체크인 3일 전까지 취소 시 위약금이 발생하지 않습니다.<br>
+		                - 타 프로모션 및 할인 혜택과 중복 적용되지 않습니다.
+		            </div>
+		        </div>
+		    </div>
+
+            <div class="btn-area">
+		    <div style="display: flex; justify-content: center; gap: 15px; max-width: 850px; margin: 0 auto;">
+		        
+		        <a th:href="@{/promotion/reserve(promoId=${promo.promotion_id})}" 
+		           class="btn-reserve" 
+		           style="flex: 1.5; display: flex; align-items: center; justify-content: center; height: 60px;">
+		            이 패키지로 예약하기
+		        </a>
+		        
+		        <div th:if="${promo != null}" sec:authorize="hasAnyRole('ADMIN_BRANCH', 'ROLE_ADMIN_BRANCH', 'ROLE_ADMIN', 'ADMIN')" 
+		             style="flex: 1; display: flex; gap: 10px;">
+		            
+		            <button type="button" 
+		                    th:onclick="|location.href='@{/promotion/edit(promoId=${promo.promotion_id})}'|"
+		                    style="flex: 1; height: 60px; background: #2e7d32; border: 1px solid #2e7d32; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;"
+		                    onmouseover="this.style.background='#1b5e20'; this.style.borderColor='#1b5e20';"
+		                    onmouseout="this.style.background='#2e7d32'; this.style.borderColor='#2e7d32';">
+		                <i class="bi bi-pencil-square"></i> 수정
+		            </button>
+		
+		            <button type="button" 
+		                    th:onclick="goDelete([[${promo.promotion_id}]], [[${promo.fk_hotel_id}]])"
+		                    style="flex: 1; height: 60px; background: #fff; border: 1px solid #e74c3c; color: #e74c3c; font-weight: 700; cursor: pointer; transition: all 0.3s ease;"
+		                    onmouseover="this.style.background='#e74c3c'; this.style.color='#fff';"
+		                    onmouseout="this.style.background='#fff'; this.style.color='#e74c3c';">
+		                삭제
+		            </button>
+		        </div>
+		    </div>
+		    
+		    <a th:href="@{/promotion/list(hotelId=${promo.fk_hotel_id})}" 
+		       style="display:block; margin-top:35px; color:#888; text-decoration:none; font-size: 0.95rem; transition: 0.3s;"
+		       onmouseover="this.style.color='#1a1a1a';"
+		       onmouseout="this.style.color='#888';">
+		        ← 다른 프로모션 보기
+		    </a>
+		</div>
+
+    <div class="footer-pusher"></div>
+</th:block>
+
+<th:block th:fragment="script">
+    <script th:inline="javascript">
+        /**
+         * 프로모션 삭제 함수
+         * Spring Security CSRF 토큰을 동적으로 추가하여 인증 문제를 해결합니다.
+         */
+        function goDelete(promoId, hotelId) {
+            if(confirm("정말로 이 프로모션을 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.")) {
+                
+                // 1. 가상의 폼(Form) 생성
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = /*[[@{/promotion/delete}]]*/ '/promotion/delete';
+                
+                // 2. 파라미터 추가 (프로모션 ID)
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'promotion_id';
+                idInput.value = promoId;
+                form.appendChild(idInput);
+                
+                // 3. 파라미터 추가 (삭제 후 돌아갈 호텔 ID)
+                const hotelInput = document.createElement('input');
+                hotelInput.type = 'hidden';
+                hotelInput.name = 'hotelId';
+                hotelInput.value = hotelId;
+                form.appendChild(hotelInput);
+
+                // ★ 4. CSRF 토큰 추가 (인증 문제 해결의 핵심) ★
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = /*[[${_csrf.parameterName}]]*/ '_csrf';
+                csrfInput.value = /*[[${_csrf.token}]]*/ '';
+                form.appendChild(csrfInput);
+
+                // 5. 문서에 폼 추가 후 전송
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</th:block>
+</body>
+</html>

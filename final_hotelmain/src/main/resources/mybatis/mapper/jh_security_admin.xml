@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ==== mapper 기본설정 ==== -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ===== (#스프링시큐리티11-ADMIN) =====  -->
+
+<!-- ==== 루트 엘리먼트 & 네임스페이스 설정(프로젝트 전체내에서 유일해야 한다.) ==== -->
+<mapper namespace="com.spring.app.jh.security.model.AdminDAO">
+
+
+	<!-- =========================================================
+	     로그인 처리를 위해 사용되어지는 것임
+	     - adminid 로 관리자 정보 조회
+	     ========================================================= -->
+	<select id="findByAdminid" parameterType="String" resultType="AdminDTO">
+	    SELECT
+	      admin_no            AS admin_no,
+	      adminid,
+	      passwd,
+	      enabled,
+	      name,
+	      email,
+	      mobile,
+	      admin_type          AS admin_type,
+	      fk_hotel_id         AS fk_hotel_id,
+	      registerday         AS registerday,
+	      passwd_modify_date  AS passwd_modify_date,
+	      last_login_date     AS last_login_date
+	    FROM tbl_admin_security
+	    WHERE adminid = #{adminid}
+	</select>
+
+
+	<!-- 권한 리스트: admin_no 기준 -->
+	<select id="authorityListByAdminNo" parameterType="Integer" resultType="String">
+	    SELECT authority
+	    FROM tbl_admin_authorities
+	    WHERE admin_no = #{admin_no}
+	</select>
+
+
+	<!-- =========================================================
+	     관리자 "내 계정" 관리(내 정보 조회/수정)에서 사용하는 것임
+	     ========================================================= -->
+
+	<!-- 관리자 PK(admin_no)로 상세 조회 -->
+	<select id="findByAdminNo" parameterType="Integer" resultType="AdminDTO">
+	    SELECT
+	      admin_no            AS admin_no,
+	      adminid,
+	      passwd,
+	      enabled,
+	      name,
+	      email,
+	      mobile,
+	      admin_type          AS admin_type,
+	      fk_hotel_id         AS fk_hotel_id,
+	      registerday         AS registerday,
+	      passwd_modify_date  AS passwd_modify_date,
+	      last_login_date     AS last_login_date
+	    FROM tbl_admin_security
+	    WHERE admin_no = #{admin_no}
+	</select>
+
+
+	<!-- 내 프로필 수정(HQ/BRANCH 공통) : 보통 name/email/mobile만 -->
+	<update id="updateAdminProfile" parameterType="AdminDTO">
+	    UPDATE tbl_admin_security
+	       SET name   = #{name}
+	         , email  = #{email}
+	         , mobile = #{mobile}
+	     WHERE admin_no = #{admin_no}
+	</update>
+
+
+</mapper>

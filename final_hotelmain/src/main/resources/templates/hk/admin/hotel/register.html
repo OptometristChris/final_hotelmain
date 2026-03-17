@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<title>호텔 등록</title>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- 지도 -->
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2014221291f1b63602c92cea5292906&libraries=services"></script>
+
+<!-- 주소검색 -->
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+
+$(document).ready(function(){
+
+    /* 호텔 등록 */
+    $("#btnRegister").click(function(){
+
+        const formData =
+            new FormData($("form[name='hotelFrm']").get(0));
+
+        const token = $("meta[name='_csrf']").attr("content");
+        const header = $("meta[name='_csrf_header']").attr("content");
+
+        $.ajax({
+            url: "[[@{/admin/hotel/register}]]",
+            type: "post",
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            beforeSend: function(xhr){
+                xhr.setRequestHeader(header, token);
+            },
+            success: function(json){
+
+                if(json.result == 1){
+                    alert("호텔 등록 성공");
+                    location.href = "/final_hotel/admin/hotel/list";
+                }
+                else{
+                    alert("등록 실패");
+                }
+            }
+        });
+
+    });
+
+
+    /* 지도 + 주소검색 */
+    let map;
+	let marker;
+	let geocoder;
+
+	/* 지도 생성 */
+    const mapContainer = document.getElementById('map');
+
+    const mapOption = {
+        center: new kakao.maps.LatLng(37.5665, 126.9780),
+        level: 5
+    };
+
+    map = new kakao.maps.Map(mapContainer, mapOption);
+
+    marker = new kakao.maps.Marker({
+        position: map.getCenter()
+    });
+
+    marker.setMap(map);
+
+    geocoder = new kakao.maps.services.Geocoder();
+
+
+    /* 지도 클릭 시 좌표 변경 */
+    kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+
+        const latlng = mouseEvent.latLng;
+
+        marker.setPosition(latlng);
+
+        $("#latitude").val(latlng.getLat());
+        $("#longitude").val(latlng.getLng());
+
+    });
+    
+    
+    /* 주소 검색 버튼 */
+    $("#btnSearchAddr").click(function(){
+
+        new daum.Postcode({
+
+            oncomplete: function(data){
+
+                const addr = data.address;
+
+                $("#address").val(addr);
+
+                /* 주소 → 좌표 변환 */
+                geocoder.addressSearch(addr, function(result, status){
+
+                    if(status === kakao.maps.services.Status.OK){
+
+                        const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                        map.setCenter(coords);
+                        marker.setPosition(coords);
+
+                        $("#latitude").val(result[0].y);
+                        $("#longitude").val(result[0].x);
+
+                    }
+
+                });
+
+            }
+
+        }).open();
+
+    });
+
+});
+
+
+</script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>호텔 등록</h2>
+
+    <form name="hotelFrm" enctype="multipart/form-data">
+
+        호텔명 <br>
+        <input type="text" name="hotel_name" required><br><br>
+
+        주소 <br>
+		<input type="text" id="address" name="address" readonly>
+		
+		<button type="button" id="btnSearchAddr">
+		주소 검색
+		</button>
+		
+		<br><br>
+		
+		<div id="map" style="width:500px;height:300px;"></div>
+		
+		<input type="hidden" name="latitude" id="latitude">
+		<input type="hidden" name="longitude" id="longitude">
+
+        연락처 <br>
+        <input type="text" name="contact"><br><br>
+
+        설명 <br>
+        <textarea name="hotel_desc" rows="5" cols="50"></textarea><br><br>
+
+        대표 이미지 <br>
+        <input type="file" name="mainImage" accept="image/*"><br><br>
+
+        <input type="button" id="btnRegister" value="등록">
+        <input type="reset" value="취소">
+
+    </form>
+
+</div>
+
+</body>
+</html>

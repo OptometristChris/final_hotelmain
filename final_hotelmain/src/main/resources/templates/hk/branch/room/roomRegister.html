@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>객실 등록</title>
+
+<style>
+
+/* ================= 페이지 기본 스타일 ================= */
+
+body{
+font-family: Arial;
+width:800px;
+margin:auto;
+}
+
+/* 라벨 */
+label{
+display:block;
+margin-top:15px;
+font-weight:bold;
+}
+
+/* input 스타일 */
+input, select{
+width:100%;
+padding:8px;
+}
+
+/* 등록 버튼 */
+button{
+margin-top:20px;
+padding:10px;
+width:200px;
+cursor:pointer;
+}
+
+/* 이미지 미리보기 */
+.preview{
+margin-top:15px;
+}
+
+.preview img{
+width:200px;
+height:130px;
+object-fit:cover;
+border-radius:6px;
+border:1px solid #ddd;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>객실 등록 신청</h2>
+
+<!-- 
+중요
+이미지 업로드하려면 반드시 multipart/form-data 필요
+-->
+
+<form th:action="@{/admin/room/register}"
+      method="post"
+      enctype="multipart/form-data">
+
+<!-- ================= 객실명 ================= -->
+<label>객실명</label>
+<input type="text" name="room_name" required>
+
+
+<!-- ================= 객실 등급 ================= -->
+<label>객실 등급</label>
+<select name="room_grade">
+<option value="STANDARD">STANDARD</option>
+<option value="DELUXE">DELUXE</option>
+<option value="SUITE">SUITE</option>
+</select>
+
+
+<!-- ================= 침대 타입 ================= -->
+<label>침대 타입</label>
+<select name="bed_type">
+<option value="DOUBLE">DOUBLE</option>
+<option value="TWIN">TWIN</option>
+<option value="KING">KING</option>
+</select>
+
+
+<!-- ================= 뷰 타입 ================= -->
+<label>뷰 타입</label>
+<select name="view_type">
+<option value="CITY">CITY</option>
+<option value="RIVER">RIVER</option>
+</select>
+
+
+<!-- ================= 객실 크기 ================= -->
+<label>객실 크기 (㎡)</label>
+<input type="number" name="room_size">
+
+
+<!-- ================= 최대 인원 ================= -->
+<label>최대 인원</label>
+<input type="number" name="max_capacity">
+
+
+<!-- ================= 객실 수 ================= -->
+<label>객실 수</label>
+<input type="number" name="total_count">
+
+
+<!-- ================= 기본 가격 ================= -->
+<label>기본 가격</label>
+<input type="number" name="base_price">
+
+
+<!-- ================= 객실 이미지 ================= -->
+<label>객실 이미지</label>
+<input type="file"
+       name="roomImage"
+       accept="image/*"
+       onchange="previewImage(event)">
+
+
+<!-- 이미지 미리보기 -->
+<div class="preview">
+<img id="previewImg"
+     src="/images/noimage.png">
+</div>
+
+
+<!-- ================= 등록 버튼 ================= -->
+<button type="submit">객실 등록</button>
+
+</form>
+
+
+<script>
+
+/* ================= 이미지 미리보기 ================= */
+
+function previewImage(event){
+
+const reader = new FileReader();
+
+reader.onload = function(){
+document.getElementById("previewImg").src = reader.result;
+};
+
+reader.readAsDataURL(event.target.files[0]);
+
+}
+
+</script>
+
+
+</body>
+</html>
+

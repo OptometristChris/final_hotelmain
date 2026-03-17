@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.app.js.promotion.model.PromotionDAO">
+
+    <select id="getPromotionList" parameterType="HashMap" resultType="com.spring.app.js.promotion.domain.PromotionDTO">
+        SELECT 
+            m.promotion_id,
+            b.title,
+            b.benefits,              
+            b.image_url,
+            m.fk_hotel_id,
+            m.discount_rate,
+            m.price,
+            m.is_active,  
+            TO_CHAR(m.start_date, 'YYYY-MM-DD') AS start_date, 
+            TO_CHAR(m.end_date, 'YYYY-MM-DD') AS end_date
+        FROM PROMOTION_MASTER m
+        INNER JOIN PROMOTION_BANNER b ON m.promotion_id = b.fk_promotion_id 
+        WHERE m.fk_hotel_id = #{hotelId}
+          AND b.active_yn = 'Y'
+          AND b.banner_type = 'CARD'
+          <if test="isAdmin == null or isAdmin == false">
+              AND m.is_active = 1
+              AND SYSDATE BETWEEN m.start_date AND m.end_date 
+          </if>
+        ORDER BY m.is_active DESC, m.start_date DESC
+    </select>
+
+    <select id="getPromotionDetail" parameterType="int" resultType="com.spring.app.js.promotion.domain.PromotionDTO">
+        SELECT 
+            m.promotion_id, m.fk_hotel_id, m.price, 
+            m.discount_rate, m.discount_amount, m.is_active,
+            m.target_room_type, m.target_bed_type, m.target_view_type, 
+            TO_CHAR(m.start_date, 'YYYY-MM-DD') AS start_date, 
+            TO_CHAR(m.end_date, 'YYYY-MM-DD') AS end_date,
+            b.banner_id, b.title, b.subtitle, b.benefits, b.image_url, b.sort_order
+        FROM PROMOTION_MASTER m
+        INNER JOIN PROMOTION_BANNER b ON m.promotion_id = b.fk_promotion_id
+        WHERE m.promotion_id = #{promotionId}
+          AND ROWNUM = 1
+    </select>
+
+    <insert id="insertPromotionMaster" parameterType="HashMap">
+        <selectKey keyProperty="promotion_id" resultType="int" order="BEFORE">
+            SELECT SEQ_PROMOTION_ID.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO PROMOTION_MASTER (
+            promotion_id, fk_hotel_id, title, price, 
+            discount_rate, discount_amount, 
+            start_date, end_date, is_active,
+            target_room_type, target_bed_type, target_view_type
+        ) VALUES (
+            #{promotion_id}, #{fk_hotel_id}, #{title}, #{price}, 
+            #{discount_rate, jdbcType=NUMERIC}, #{discount_amount, jdbcType=NUMERIC}, 
+            TO_DATE(#{start_date}, 'YYYY-MM-DD'), TO_DATE(#{end_date}, 'YYYY-MM-DD'), #{is_active},
+            #{target_room_type, jdbcType=VARCHAR}, 
+            #{target_bed_type, jdbcType=VARCHAR}, 
+            #{target_view_type, jdbcType=VARCHAR}
+        )
+    </insert>
+    
+    <insert id="insertPromotionBanner" parameterType="HashMap">
+        INSERT INTO PROMOTION_BANNER (
+            banner_id, fk_promotion_id, fk_hotel_id, banner_type, 
+            title, subtitle, benefits, image_url, sort_order, active_yn
+        ) VALUES (
+            SEQ_PROMO_BANNER_ID.NEXTVAL, 
+            #{promotion_id},  #{fk_hotel_id}, 
+            #{banner_type}, 
+            #{title}, 
+            #{subtitle}, 
+            #{benefits}, 
+            #{image_url, jdbcType=VARCHAR}, 
+            #{sort_order}, 
+            'Y'
+        )
+    </insert>
+
+    <update id="updatePromotion" parameterType="map">
+        UPDATE PROMOTION_MASTER
+        SET 
+            title = #{title},
+            start_date = TO_DATE(#{start_date}, 'YYYY-MM-DD'),
+            end_date = TO_DATE(#{end_date}, 'YYYY-MM-DD'),
+            discount_rate = #{discount_rate, jdbcType=NUMERIC},
+            discount_amount = #{discount_amount, jdbcType=NUMERIC},
+            is_active = #{is_active},
+            price = #{price, jdbcType=NUMERIC},
+            target_room_type = #{target_room_type, jdbcType=VARCHAR},
+            target_bed_type = #{target_bed_type, jdbcType=VARCHAR},
+            target_view_type = #{target_view_type, jdbcType=VARCHAR}
+        WHERE promotion_id = #{promotion_id}
+    </update>
+    
+    <update id="updatePromotionBanner" parameterType="map">
+        UPDATE PROMOTION_BANNER
+        SET 
+            title = #{title},
+            subtitle = #{subtitle},
+            benefits = #{benefits},
+            sort_order = #{sort_order}
+            <if test="image_url != null and image_url != ''">
+                , image_url = #{image_url}
+            </if>
+        WHERE fk_promotion_id = #{promotion_id}
+    </update>
+
+    <delete id="deletePromotionBanner" parameterType="int">
+        DELETE FROM PROMOTION_BANNER 
+        WHERE FK_PROMOTION_ID = #{promotionId}
+    </delete>
+    
+    <delete id="deletePromotionMaster" parameterType="int">
+        DELETE FROM PROMOTION_MASTER 
+        WHERE PROMOTION_ID = #{promotionId}
+    </delete>
+
+    <insert id="insertPromotionMapping" parameterType="HashMap">
+        INSERT INTO RESERVATION_PROMOTION_MAPPING (
+            mapping_id, reservation_id, promotion_id, 
+            applied_price_at_time, applied_at
+        ) VALUES (
+            SEQ_RESERVE_PROMO_MAP_ID.NEXTVAL, 
+            #{reservation_id}, 
+            #{promotion_id}, 
+            #{applied_price}, SYSDATE
+        )
+    </insert>
+    
+    <select id="getAvailableRoomsForPromotion" parameterType="PromotionDTO" resultType="HashMap">
+	    SELECT 
+	        ROOM_TYPE_ID, 
+	        FK_HOTEL_ID, 
+	        ROOM_GRADE,  BED_TYPE, 
+	        VIEW_TYPE, 
+	        ROOM_NAME, 
+	        BASE_PRICE, 
+	        IS_ACTIVE
+	    FROM ROOM_TYPE   WHERE FK_HOTEL_ID = #{fk_hotel_id}
+	      AND IS_ACTIVE = 'Y'
+	      <if test="target_room_type != null and target_room_type != ''">
+	          AND ROOM_GRADE = #{target_room_type} </if>
+	      <if test="target_bed_type != null and target_bed_type != ''">
+	          AND BED_TYPE = #{target_bed_type}
+	      </if>
+	      <if test="target_view_type != null and target_view_type != ''">
+	          AND VIEW_TYPE = #{target_view_type}
+	      </if>
+	</select>
+    
+</mapper>

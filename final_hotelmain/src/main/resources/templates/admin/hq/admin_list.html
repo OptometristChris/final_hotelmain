@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>지점 관리자 목록 | HQ</title>
+  <link rel="stylesheet" href="">
+  <style type="text/css">
+    .wrap{max-width:1100px;margin:0 auto}
+    .card{border:1px solid #e8ddd7;border-radius:18px;padding:16px;background:#fff;box-shadow:0 18px 38px rgba(0,0,0,.06)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+    .input,.select{padding:10px;border:1px solid #ddd;border-radius:10px}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid #e8ddd7;background:#fff;cursor:pointer;text-decoration:none}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:14px}
+    .muted{opacity:.7}
+    .chip{display:inline-block;padding:4px 8px;border-radius:999px;background:#efe7e2;font-size:12px}
+  </style>
+  <script th:inline="javascript">
+	 /*<![CDATA[*/
+	 /*]]>*/	
+  </script>
+</head>
+
+<body>
+<div class="container">
+  <div class="wrap">
+    <h2 style="margin:16px 0">지점 관리자 목록</h2>
+
+    <div class="card">
+      <form th:action="@{/admin/hq/admins}" method="get">
+        <div class="row">
+          <select class="select" name="hotelId">
+            <option value="0"
+                    th:selected="${paraMap != null and paraMap['hotelId'] == '0'}">전체 호텔</option>
+            <option value="1" th:selected="${paraMap != null and paraMap['hotelId'] == '1'}">호텔 1</option>
+            <option value="2" th:selected="${paraMap != null and paraMap['hotelId'] == '2'}">호텔 2</option>
+            <!-- [DUMMY] 호텔 목록도 추후 DB로 내려받으면 여기 option만 동적화 -->
+          </select>
+
+          <select class="select" name="enabled">
+            <option value="ALL" th:selected="${paraMap != null and paraMap.enabled == 'ALL'}">전체 상태</option>
+            <option value="1" th:selected="${paraMap != null and paraMap.enabled == '1'}">활성</option>
+            <option value="0" th:selected="${paraMap != null and paraMap.enabled == '0'}">중지</option>
+          </select>
+
+          <input class="input" type="text" name="keyword" placeholder="아이디/이름/이메일"
+                 th:value="${paraMap != null ? paraMap['keyword'] : ''}"/>
+
+          <input type="hidden" name="pageNo" value="1"/>
+          <input type="hidden" name="sizePerPage" th:value="${paraMap != null && paraMap.sizePerPage != null ? paraMap.sizePerPage : 10}"/>
+
+          <button type="submit" class="btn">검색</button>
+          <a class="btn" th:href="@{/admin/hq/admins/new}">계정 발급</a>
+        </div>
+      </form>
+
+      <div class="muted" style="margin-bottom:10px">
+        총 <span th:text="${totalCount != null ? totalCount : 0}">0</span>건
+      </div>
+
+      <!-- 실데이터 -->
+      <div th:if="${adminList != null and !#lists.isEmpty(adminList)}">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>번호</th><th>아이디</th><th>이름</th><th>이메일</th><th>호텔ID</th><th>상태</th><th></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="a : ${adminList}">
+            <td th:text="${a.admin_no}">1</td>
+            <td th:text="${a.adminid}">branch01</td>
+            <td th:text="${a.name}">홍길동</td>
+            <td th:text="${a.email}">mail</td>
+            <td th:text="${a.fk_hotel_id}">1</td>
+            <td>
+              <span class="chip" th:text="${a.enabled == '1' ? '활성' : '중지'}">활성</span>
+            </td>
+            <td>
+              <a class="btn" style="padding:6px 10px"
+                 th:href="@{/admin/hq/admins/detail/{no}(no=${a.admin_no})}">상세</a>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- [DUMMY] -->
+      <!-- [DUMMY-START] -->
+      <div th:unless="${adminList != null and !#lists.isEmpty(adminList)}" class="muted">
+        (더미) 아직 adminList가 없어서 목록이 비어있습니다.  
+        백엔드에서 adminList를 내려주면 위 테이블이 자동으로 실데이터로 채워집니다.
+      </div>
+      <!-- [DUMMY-END] -->
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

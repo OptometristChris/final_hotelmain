@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div#wrap})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>회원탈퇴 결과</title>
+
+  <style>
+    .result-wrap{
+      max-width: 640px;
+      margin: 180px auto 120px auto;
+      padding: 0 16px;
+    }
+
+    .result-card{
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 40px 28px;
+      text-align: center;
+    }
+
+    .result-title{
+      font-size: 28px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 12px;
+    }
+
+    .result-msg{
+      font-size: 15px;
+      color: #666;
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+
+    .btn{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 180px;
+      height: 46px;
+      border-radius: 999px;
+      text-decoration: none;
+      border: 1px solid #111;
+      background: #111;
+      color: #fff;
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+<div id="wrap" class="result-wrap">
+  <div class="result-card">
+    <div class="result-title" th:text="${result == 1 ? '회원탈퇴 완료' : '회원탈퇴 실패'}">회원탈퇴 완료</div>
+    <div class="result-msg" th:utext="${message}">
+      회원탈퇴가 정상 처리되었습니다.
+    </div>
+
+    <a class="btn" th:href="@{/index}">메인으로 이동</a>
+  </div>
+</div>
+</body>
+</html>

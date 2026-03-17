@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}" 
+      lang="ko" 
+      xmlns:th="http://www.thymeleaf.org"> 
+
+<head>
+<meta charset="UTF-8">
+<title>스프링 시큐리티 회원가입 결과</title>
+
+<link rel="stylesheet" href="">
+
+<style>
+:root{
+  --bg:#ffffff;
+  --panel:#ffffff;
+  --line:#e7e7e7;
+  --text:#111111;
+  --muted:#6f6f6f;
+  --header-offset:165px;
+  --page-bottom:90px;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Noto Sans KR', sans-serif;
+  background:#fff;
+  color:var(--text);
+}
+.container{
+  min-height:calc(100vh - 40px);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:var(--header-offset) 16px var(--page-bottom);
+}
+.wrap{
+  width:520px;
+  max-width:100%;
+}
+.brandbar{
+  display:flex;
+  justify-content:center;
+  margin-bottom:18px;
+  font-size:.92rem;
+  letter-spacing:.24em;
+  color:#111;
+  font-weight:700;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+}
+.header{
+  padding:24px 22px 18px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  background:#fafafa;
+}
+.header h1{
+  margin:0;
+  font-size:1.4rem;
+  font-weight:700;
+}
+.body{
+  padding:24px 22px;
+  text-align:center;
+}
+.result-message{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fafafa;
+  padding:18px;
+  line-height:1.8;
+  color:#333;
+}
+.btnrow{
+  margin-top:18px;
+}
+.btn-main{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:13px 22px;
+  border-radius:999px;
+  background:#111;
+  color:#fff;
+  border:1px solid #111;
+  font-weight:700;
+  text-decoration:none;
+}
+.btn-main:hover{
+  color:#fff;
+  text-decoration:none;
+}
+</style>
+
+<script th:inline="javascript">
+ /*<![CDATA[*/
+ /*]]>*/	
+</script>
+
+<body>
+  <div class="container">
+    <div class="wrap">
+      <div class="brandbar">CIEL</div>
+
+      <section class="card">
+        <div class="header">
+          <h1>회원가입 결과</h1>
+        </div>
+
+        <div class="body">
+          <div class="result-message" th:utext="${message}"></div>
+
+          <div class="btnrow">
+            <a th:href="@{/index}" class="btn-main">메인페이지로 이동</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

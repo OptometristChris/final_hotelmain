@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<title>객실 승인 관리(총괄관리자)</title>
+
+<!-- Bootstrap -->
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+
+/* 전체 페이지 */
+body{
+background:#f8f9fa;
+font-family:'Pretendard',sans-serif;
+}
+
+/* 카드 */
+.card{
+border:none;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.08);
+margin-bottom:40px;
+}
+
+/* 제목 */
+.page-title{
+font-weight:600;
+margin-bottom:30px;
+}
+
+.section-title{
+font-weight:600;
+margin-bottom:15px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="container mt-5">
+
+<h3 class="page-title">객실 승인 관리 (총괄관리자)</h3>
+
+
+
+<!-- ======================================================
+     승인 대기 객실
+====================================================== -->
+
+<div class="card p-4">
+
+<h5 class="section-title">승인 대기 객실</h5>
+
+<table class="table table-hover">
+
+<thead class="table-light">
+<tr>
+<th>객실ID</th>
+<th>호텔명</th>
+<th>객실명</th>
+<th>가격</th>
+<th>수용인원</th>
+<th>상태</th>
+<th>관리</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="room : ${pendingList}">
+
+<td th:text="${room.room_type_id}"></td>
+<td th:text="${room.hotel_name}"></td>
+<td th:text="${room.room_name}"></td>
+<td th:text="${room.base_price}"></td>
+<td th:text="${room.max_capacity}"></td>
+
+<td>
+<span class="badge bg-warning">승인대기</span>
+</td>
+
+<td>
+
+<form th:action="@{/admin/room/approve}"
+      method="post"
+      style="display:inline">
+
+<input type="hidden"
+name="roomTypeId"
+th:value="${room.room_type_id}">
+
+<button class="btn btn-success btn-sm">
+승인
+</button>
+
+</form>
+
+
+<button class="btn btn-danger btn-sm"
+th:onclick="'rejectRoom(' + ${room.room_type_id} + ')'">
+반려
+</button>
+
+<!-- 승인 히스토리 모달 -->
+<!--  
+<button
+class="btn btn-sm btn-secondary"
+onclick="showHistory([[${room.room_type_id}]])">
+승인 히스토리 이력
+</button>
+-->
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+
+<!-- ======================================================
+     승인 완료 객실
+====================================================== -->
+
+<div class="card p-4">
+
+<h5 class="section-title">승인 완료 객실</h5>
+
+<table class="table table-hover">
+
+<thead class="table-light">
+<tr>
+<th>객실ID</th>
+<th>호텔명</th>
+<th>객실명</th>
+<th>가격</th>
+<th>수용인원</th>
+<th>상태</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="room : ${approvedList}">
+
+<td th:text="${room.room_type_id}"></td>
+<td th:text="${room.hotel_name}"></td>
+<td th:text="${room.room_name}"></td>
+<td th:text="${room.base_price}"></td>
+<td th:text="${room.max_capacity}"></td>
+
+<td>
+<span class="badge bg-success">승인완료</span>
+
+<button
+class="btn btn-secondary btn-sm"
+th:onclick="'showHistory(' + ${room.room_type_id} + ')'">
+이력
+</button>
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+
+<!-- ======================================================
+     반려 객실
+====================================================== -->
+
+<div class="card p-4">
+
+<h5 class="section-title">반려 객실</h5>
+
+<table class="table table-hover">
+
+<thead class="table-light">
+<tr>
+<th>객실ID</th>
+<th>호텔명</th>
+<th>객실명</th>
+<th>가격</th>
+<th>수용인원</th>
+<th>상태</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="room : ${rejectedList}">
+
+<td th:text="${room.room_type_id}"></td>
+<td th:text="${room.hotel_name}"></td>
+<td th:text="${room.room_name}"></td>
+<td th:text="${room.base_price}"></td>
+<td th:text="${room.max_capacity}"></td>
+
+<td>
+<span class="badge bg-danger">반려</span>
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+
+<!-- 객실 승인 히스토리 -->
+<div class="card p-4">
+
+<h5 class="section-title">객실 승인 히스토리</h5>
+
+<table class="table table-hover">
+
+<thead class="table-light">
+<tr>
+<th>객실ID</th>
+<th>호텔명</th>
+<th>객실명</th>
+<th>상태</th>
+<th>반려사유</th>
+<th>처리자</th>
+<th>처리일</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr th:each="h : ${historyList}">
+
+<td th:text="${h['ROOM_TYPE_ID']}"></td>
+
+<td th:text="${h['HOTEL_NAME']}"></td>
+
+<td th:text="${h['ROOM_NAME']}"></td>
+
+<td>
+
+<span th:if="${h['STATUS'] == 'APPROVED'}"
+class="badge bg-success">승인</span>
+
+<span th:if="${h['STATUS'] == 'REJECTED'}"
+class="badge bg-danger">반려</span>
+
+</td>
+
+<td th:text="${h['REASON']}"></td>
+
+<td th:text="${h['DECIDED_BY']}"></td>
+
+<td th:text="${h['DECIDED_AT']}"></td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+
+</div>
+
+
+<!-- 이력 모달 -->
+<div class="modal fade" id="historyModal">
+
+<div class="modal-dialog">
+
+<div class="modal-content">
+
+<div class="modal-header">
+<h5>객실 승인 이력</h5>
+</div>
+
+<div class="modal-body" id="historyBody">
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+  
+
+
+<script>
+
+/*
+---------------------------------------
+객실 반려 처리
+---------------------------------------
+*/
+
+function rejectRoom(roomId){
+
+let reason = prompt("반려 사유를 입력하세요");
+
+if(reason == null || reason.trim() === ""){
+return;
+}
+
+/* csrf 값 가져오기 */
+let csrfToken = document.querySelector("meta[name='_csrf']").content;
+
+let form = document.createElement("form");
+
+form.method = "post";
+form.action = "[[@{/admin/room/reject}]]";
+
+
+let idInput = document.createElement("input");
+idInput.type = "hidden";
+idInput.name = "roomTypeId";
+idInput.value = roomId;
+
+
+let reasonInput = document.createElement("input");
+reasonInput.type = "hidden";
+reasonInput.name = "reason";
+reasonInput.value = reason;
+
+/* csrf hidden */
+let csrfInput = document.createElement("input");
+csrfInput.type = "hidden";
+csrfInput.name = "_csrf";
+csrfInput.value = csrfToken;
+
+
+form.appendChild(idInput);
+form.appendChild(reasonInput);
+form.appendChild(csrfInput);
+
+document.body.appendChild(form);
+
+form.submit();
+
+}
+
+
+/* 승인히스토리 모달 조회 */
+function showHistory(roomId){
+
+fetch("[[@{/admin/room/history}]]?roomTypeId=" + roomId)
+
+.then(res => res.json())
+
+.then(data => {
+
+if(!Array.isArray(data)){
+console.error("history data error", data)
+return
+}
+
+let html = ""
+
+data.forEach(h => {
+
+html += `
+	<div style="border-bottom:1px solid #ddd;padding:8px">
+	상태 : ${h.STATUS}<br>
+	사유 : ${h.REASON ?? '-'}<br>
+	처리일 : ${h.DECIDED_AT}
+	</div>
+	`
+
+})
+
+document.getElementById("historyBody").innerHTML = html
+
+new bootstrap.Modal(
+document.getElementById("historyModal")
+).show()
+
+})
+
+}
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>회원정보 수정</title>
+
+<link rel="stylesheet" href="">
+
+<style>
+:root{
+  --bg:#ffffff;
+  --panel:#ffffff;
+  --line:#e7e7e7;
+  --line-2:#d9d9d9;
+  --text:#111111;
+  --muted:#6f6f6f;
+  --danger:#c94b4b;
+  --header-offset:165px;
+  --page-bottom:90px;
+  --radius:10px;
+  --shadow:0 10px 24px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Noto Sans KR', sans-serif;
+  background:#fff;
+  color:var(--text);
+}
+.container{
+  min-height:calc(100vh - 40px);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:var(--header-offset) 16px var(--page-bottom);
+}
+.wrap{
+  width:720px;
+  max-width:100%;
+}
+.brandbar{
+  display:flex;
+  justify-content:center;
+  margin-bottom:18px;
+  font-size:.92rem;
+  letter-spacing:.24em;
+  color:#111;
+  font-weight:700;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.header{
+  padding:24px 22px 18px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  background:#fafafa;
+}
+.header h1{
+  margin:0;
+  font-size:1.45rem;
+  font-weight:700;
+}
+.header p{
+  margin:10px 0 0;
+  color:var(--muted);
+  font-size:.9rem;
+}
+.body{padding:22px;}
+.hint{
+  font-size:.84rem;
+  color:var(--muted);
+  line-height:1.7;
+  background:#fafafa;
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:13px;
+  margin-bottom:18px;
+}
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.field{margin-bottom:14px;}
+.label{
+  margin-bottom:7px;
+  font-size:.9rem;
+  color:#444;
+  font-weight:700;
+}
+.input{
+  width:100%;
+  padding:14px 14px;
+  border:1px solid var(--line-2);
+  border-radius:8px;
+  outline:none;
+  background:#fff;
+  font-size:.95rem;
+  font-family:inherit;
+}
+.input:focus{
+  border-color:#111;
+  box-shadow:0 0 0 4px rgba(17,17,17,.05);
+}
+.input[readonly]{
+  background:#f8f8f8;
+  color:#666;
+}
+.error{
+  display:none;
+  margin-top:12px;
+  font-size:.84rem;
+  color:#fff;
+  background:var(--danger);
+  border-radius:8px;
+  padding:11px 12px;
+  line-height:1.5;
+}
+.error.show{display:block;}
+.btnrow{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+}
+.btn{
+  flex:1;
+  border-radius:999px;
+  padding:14px 16px;
+  font-weight:700;
+  cursor:pointer;
+  font-size:.94rem;
+  transition:.2s ease;
+}
+.btn:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--shadow);
+}
+.btn-main{
+  background:#111;
+  color:#fff;
+  border:1px solid #111;
+}
+.btn-sub{
+  background:#fff;
+  color:#111;
+  border:1px solid var(--line-2);
+}
+.links{
+  margin-top:16px;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  color:var(--muted);
+  font-size:.83rem;
+}
+.links a{
+  color:var(--muted);
+  text-decoration:none;
+}
+.links a:hover{color:#111;}
+@media (max-width:560px){
+  .grid2{grid-template-columns:1fr;}
+  .btnrow{flex-direction:column;}
+}
+</style>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+document.addEventListener('DOMContentLoaded', () => {
+
+  const frm = document.getElementById('profileFrm');
+  const err = document.getElementById('err');
+
+  function show(msg){
+    err.textContent = msg;
+    err.classList.add('show');
+  }
+
+  function submitForm(){
+    err.classList.remove('show');
+
+    const mobile = frm.mobile.value.trim();
+    const postcode = frm.postcode.value.trim();
+    const address = frm.address.value.trim();
+    const detail = frm.detail_address.value.trim();
+
+    if(mobile && mobile.replaceAll('-', '').length < 10){
+      return show("휴대폰번호를 다시 확인하세요.");
+    }
+    if(postcode && postcode.length < 5){
+      return show("우편번호를 다시 확인하세요.");
+    }
+    if(address && address.length < 2){
+      return show("주소를 다시 확인하세요.");
+    }
+    if(detail && detail.length < 1){
+      return show("상세주소를 입력하세요.");
+    }
+
+    frm.action = /*[[@{/security/member/profileEdit}]]*/ 'url';
+    frm.method = "post";
+    frm.submit();
+  }
+
+  document.getElementById('btnSave').addEventListener('click', submitForm);
+  document.getElementById('btnCancel').addEventListener('click', () => history.back());
+});
+/*]]>*/
+</script>
+</head>
+
+<body>
+<div class="container"
+     th:with="
+       m = (${memberDto} != null ? ${memberDto} : ${session.sessionMemberDTO}),
+       name = (${m} != null and ${m.name} != null ? ${m.name} : '홍길동'),
+       memberid = (${m} != null and ${m.memberid} != null ? ${m.memberid} : 'hong123'),
+       email = (${m} != null and ${m.email} != null ? ${m.email} : 'hong@test.com'),
+       mobile = (${m} != null and ${m.mobile} != null ? ${m.mobile} : '01012345678'),
+       postcode = (${m} != null and ${m.postcode} != null ? ${m.postcode} : '06236'),
+       address = (${m} != null and ${m.address} != null ? ${m.address} : '서울특별시 강남구 테헤란로'),
+       detail = (${m} != null and ${m.detail_address} != null ? ${m.detail_address} : '101동 1001호'),
+       extra = (${m} != null and ${m.extra_address} != null ? ${m.extra_address} : '(참고) OO빌딩')
+     ">
+
+  <div class="wrap">
+    <div class="brandbar">CIEL</div>
+
+    <section class="card" aria-label="회원정보 수정 카드">
+      <div class="header">
+        <h1>회원정보 수정</h1>
+        <p>연락처 및 주소 정보를 수정합니다.</p>
+      </div>
+
+      <div class="body">
+        <div class="hint">
+          아이디와 이메일은 정책상 수정 불가이며, 연락처와 주소 정보만 변경 가능합니다.
+        </div>
+
+        <form id="profileFrm" name="profileFrm">
+          <div class="grid2">
+            <div class="field">
+              <div class="label"><span>이름</span></div>
+              <input class="input" type="text" th:value="${name}" readonly />
+            </div>
+            <div class="field">
+              <div class="label"><span>아이디</span></div>
+              <input class="input" type="text" th:value="${memberid}" readonly />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <div class="label"><span>이메일</span></div>
+              <input class="input" type="text" th:value="${email}" readonly />
+            </div>
+            <div class="field">
+              <div class="label"><span>휴대폰번호</span></div>
+              <input class="input" type="text" name="mobile" id="mobile" th:value="${mobile}" placeholder="01012345678" />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <div class="label"><span>우편번호</span></div>
+              <input class="input" type="text" name="postcode" id="postcode" th:value="${postcode}" placeholder="우편번호" />
+            </div>
+            <div class="field">
+              <div class="label"><span>주소</span></div>
+              <input class="input" type="text" name="address" id="address" th:value="${address}" placeholder="주소" />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <div class="label"><span>상세주소</span></div>
+              <input class="input" type="text" name="detail_address" id="detail_address" th:value="${detail}" placeholder="상세주소" />
+            </div>
+            <div class="field">
+              <div class="label"><span>참고항목</span></div>
+              <input class="input" type="text" name="extra_address" id="extra_address" th:value="${extra}" placeholder="참고항목" />
+            </div>
+          </div>
+
+          <div class="error" id="err"></div>
+
+          <div class="btnrow">
+            <button class="btn btn-main" type="button" id="btnSave">저장</button>
+            <button class="btn btn-sub" type="button" id="btnCancel">취소</button>
+          </div>
+
+          <div class="links">
+            <a th:href="@{/security/member/mypage}">마이페이지</a>
+            <span>|</span>
+            <a th:href="@{/security/passwdChange}">비밀번호 변경</a>
+            <span>|</span>
+            <a th:href="@{/index}">메인</a>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

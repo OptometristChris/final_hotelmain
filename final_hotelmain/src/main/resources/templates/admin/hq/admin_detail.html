@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>지점 관리자 상세 | HQ</title>
+  <link rel="stylesheet" href="">
+  <style type="text/css">
+    .wrap{max-width:900px;margin:0 auto}
+    .card{border:1px solid #e8ddd7;border-radius:18px;padding:16px;background:#fff;box-shadow:0 18px 38px rgba(0,0,0,.06)}
+    .row{display:grid;grid-template-columns:180px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #eee}
+    .row:last-child{border-bottom:none}
+    .label{opacity:.75}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid #e8ddd7;background:#fff;cursor:pointer;text-decoration:none}
+    .chip{display:inline-block;padding:4px 8px;border-radius:999px;background:#efe7e2;font-size:12px}
+    .muted{opacity:.7}
+    input{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
+  </style>
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    // enabled 토글은 추후 AJAX로 붙여도 됨(지금은 폼 POST로도 가능)
+    /*]]>*/
+  </script>
+</head>
+
+<body>
+<div class="container">
+  <div class="wrap">
+    <h2 style="margin:16px 0">지점 관리자 상세</h2>
+
+    <div class="card">
+
+      <!-- 실데이터 -->
+      <div th:if="${adminDto != null}">
+        <div class="row"><div class="label">관리자번호</div><div th:text="${adminDto.admin_no}">1</div></div>
+        <div class="row"><div class="label">아이디</div><div th:text="${adminDto.adminid}">branch01</div></div>
+        <div class="row"><div class="label">이름</div><div th:text="${adminDto.name}">홍길동</div></div>
+        <div class="row"><div class="label">이메일</div><div th:text="${adminDto.email}">mail</div></div>
+        <div class="row"><div class="label">휴대폰</div><div th:text="${adminDto.mobile}">010</div></div>
+        <div class="row"><div class="label">호텔ID</div><div th:text="${adminDto.fk_hotel_id}">1</div></div>
+        <div class="row"><div class="label">상태</div>
+          <div>
+            <span class="chip" th:text="${adminDto.enabled == '1' ? '활성' : '중지'}">활성</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label">권한</div>
+          <div th:if="${authorityList != null and !#lists.isEmpty(authorityList)}">
+            <span class="chip" th:each="r : ${authorityList}" th:text="${r}" style="margin-right:6px">ROLE_...</span>
+          </div>
+
+          <!-- [DUMMY] -->
+          <!-- [DUMMY-START] -->
+          <div th:unless="${authorityList != null and !#lists.isEmpty(authorityList)}" class="muted">
+            (더미) 권한 리스트가 없으면 비어있습니다. getAdminAuthorities 연결 시 자동 표시됩니다.
+          </div>
+          <!-- [DUMMY-END] -->
+        </div>
+      </div>
+
+      <!-- [DUMMY] -->
+      <!-- [DUMMY-START] -->
+      <div th:unless="${adminDto != null}" class="muted">
+        (더미) adminDto가 model에 없습니다. /admins/detail/{admin_no}에서 getAdminDetail 연결되면 자동 표시됩니다.
+      </div>
+      <!-- [DUMMY-END] -->
+
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <a class="btn" th:href="@{/admin/hq/admins}">목록</a>
+      </div>
+    </div>
+
+    <!-- HQ 수정은 현재 컨트롤러가 /admins/update (admin_update_result로 이동) -->
+    <h3 style="margin:18px 0 8px">정보 수정</h3>
+    <div class="card">
+      <form th:action="@{/admin/hq/admins/update}" method="post">
+
+        <input type="hidden" name="admin_no" th:value="${adminDto != null ? adminDto.admin_no : ''}"/>
+
+        <div class="row">
+          <div class="label">이름</div>
+          <div>
+            <input type="text" name="name" th:value="${adminDto != null ? adminDto.name : '지점관리자(더미)'}"/>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label">이메일</div>
+          <div>
+            <input type="text" name="email" th:value="${adminDto != null ? adminDto.email : 'branch01@ciel.co.kr'}"/>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label">휴대폰</div>
+          <div>
+            <input type="text" name="mobile" th:value="${adminDto != null ? adminDto.mobile : '010-1234-5678'}"/>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label">호텔ID</div>
+          <div>
+            <input type="text" name="fk_hotel_id" th:value="${adminDto != null ? adminDto.fk_hotel_id : 1}"/>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label">enabled</div>
+          <div>
+            <input type="text" name="enabled" th:value="${adminDto != null ? adminDto.enabled : '1'}"/>
+            <div class="muted">※ 나중에 셀렉트/토글로 개선 가능</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <button type="submit" class="btn">저장</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

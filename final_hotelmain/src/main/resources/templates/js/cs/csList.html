@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+<head>
+    <title>CIEL HOTEL - 고객센터</title>
+    
+    <th:block th:fragment="link"></th:block>
+    
+    <th:block th:fragment="style">
+        <style>
+            /* 기존 스타일 유지 */
+            .cs-container { padding: 150px 0 100px; min-height: 800px; max-width: 1100px; margin: 0 auto; }
+            .cs-title { font-size: 2.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 60px; text-align: center; letter-spacing: 2px; }
+            
+            /* [수정] 지점 선택 탭: 이미지처럼 가운데 정렬 */
+            .cs-tabs { display: flex; justify-content: center; margin-bottom: 50px; border-bottom: 1px solid #eee; }
+            .tab-item { padding: 15px 40px; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.3s; color: #999; text-decoration: none; font-size: 1rem; }
+            .tab-item:hover { color: #d4af37; }
+            .tab-item.active { border-bottom: 2px solid #1a1a1a; color: #1a1a1a; font-weight: 600; }
+
+            /* FAQ 섹션 */
+            .faq-section { margin-bottom: 80px; }
+            .section-label { font-size: 1.2rem; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+            .section-label i { color: #d4af37; }
+            
+            .faq-list { border-top: 2px solid #1a1a1a; border-bottom: 1px solid #eee; }
+            .faq-item { border-bottom: 1px solid #eee; }
+            .faq-question { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: 0.2s; }
+            .faq-question:hover { background: #f9f9f9; }
+            .faq-q-text { font-weight: 500; display: flex; gap: 15px; }
+            .faq-q-text .q-mark { color: #d4af37; font-weight: 700; }
+            .faq-answer { padding: 25px 40px; background: #fcfcfc; display: none; border-top: 1px solid #f0f0f0; line-height: 1.6; color: #666; }
+            .faq-question .bi-chevron-down { transition: transform 0.3s; }
+
+            /* QnA 리스트 */
+            .qna-list-wrap { border-top: 2px solid #1a1a1a; }
+            .qna-header { display: flex; padding: 15px 10px; background: #fcfcfc; border-bottom: 1px solid #ddd; font-weight: 600; font-size: 0.9rem; text-align: center; }
+            .qna-item { display: flex; align-items: center; padding: 16px 10px; border-bottom: 1px solid #eee; text-decoration: none !important; color: #333; text-align: center; font-size: 0.95rem; }
+            .qna-item:hover { background-color: #f9f9f9; }
+            
+            .col-num { width: 80px; }
+            .col-title { flex: 1; text-align: left; padding-left: 20px; display: flex; align-items: center; gap: 8px; }
+            .col-writer { width: 120px; }
+            .col-date { width: 120px; }
+            .col-status { width: 100px; }
+            
+            .status-badge { padding: 4px 10px; font-size: 0.75rem; border-radius: 20px; }
+            .status-waiting { background: #eee; color: #888; }
+            .status-complete { background: #1a1a1a; color: #fff; }
+            .icon-lock { color: #aaa; font-size: 0.8rem; }
+
+            /* 검색 및 페이징 */
+            .search-wrapper { margin: 30px 0 20px; display: flex; justify-content: flex-end; }
+            .search-form { display: flex; }
+            .search-input-box { position: relative; }
+            .search-input-box input { width: 300px; height: 45px; border: 1px solid #ddd; padding: 0 45px 0 15px; outline: none; }
+            .btn-search { position: absolute; right: 0; top: 0; width: 45px; height: 45px; background: none; border: none; cursor: pointer; }
+
+            .pagination-container { display: flex; justify-content: center; margin-top: 40px; gap: 5px; }
+            .page-box { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; text-decoration: none; color: #666; }
+            .page-box.active { background: #1a1a1a; color: #fff; }
+            
+            .btn-write { background-color: #1a1a1a; color: #fff !important; padding: 12px 30px; text-decoration: none; font-size: 0.9rem; transition: 0.3s; border: none; cursor: pointer; display: inline-block; }
+            .btn-write:hover { background-color: #d4af37; }
+        </style>
+    </th:block>
+</head>
+<body>
+
+<th:block th:fragment="content">
+    <div class="container cs-container">
+        <h2 class="cs-title">고객 센터</h2>
+
+        <div class="cs-tabs">
+            <a th:href="@{/cs/list(hotelId=1)}" class="tab-item" th:classappend="${hotelId == 1 or hotelId == '1'} ? 'active' : ''">호텔 시엘</a>
+            <a th:href="@{/cs/list(hotelId=2)}" class="tab-item" th:classappend="${hotelId == 2 or hotelId == '2'} ? 'active' : ''">르 시엘</a>
+        </div>
+
+        <div class="faq-section">
+            <div class="section-label"><i class="bi bi-chat-quote-fill"></i> 자주 묻는 질문 (FAQ)</div>
+            <div class="faq-list">
+                <div th:each="faq : ${faqList}" class="faq-item">
+                    <div class="faq-question">
+                        <div class="faq-q-text">
+                            <span class="q-mark">Q.</span>
+                            <span th:text="${faq.TITLE}">질문 내용</span>
+                        </div>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer" th:utext="${faq.CONTENT}">답변 내용</div>
+                </div>
+                <div th:if="${#lists.isEmpty(faqList)}" class="text-center py-4 text-muted border-bottom">
+                    등록된 FAQ가 없습니다.
+                </div>
+            </div>
+        </div>
+
+        <div class="qna-section">
+            <div class="section-label"><i class="bi bi-pencil-square"></i> 문의사항 (Q&A)</div>
+            
+            <div class="qna-list-wrap">
+                <div class="qna-header">
+                    <div class="col-num">번호</div>
+                    <div class="col-title">제목</div>
+                    <div class="col-writer">작성자</div>
+                    <div class="col-date">날짜</div>
+                    <div class="col-status">상태</div>
+                </div>
+
+                <a th:each="qna, status : ${qnaList}" 
+                   th:href="@{/cs/qnaDetail(qnaId=${qna.QNA_ID})}"
+                   class="qna-item">
+                    <div class="col-num" th:text="${totalCount - ((curPage-1) * 10) - status.index}">1</div>
+                    <div class="col-title">
+					    <i th:if="${qna.IS_SECRET == 'Y'}" class="bi bi-lock-fill icon-lock" style="color: #aaa; margin-right: 5px;"></i>
+					    <span th:text="${qna.TITLE}">문의 제목</span>
+					</div>
+                    <div class="col-writer" th:text="${qna.WRITER_NAME}">홍*동</div>
+                    <div class="col-date" th:text="${qna.CREATED_AT}">2024-03-05</div>
+                    <div class="col-status">
+                        <span th:if="${qna.STATUS == '0'}" class="status-badge status-waiting">답변대기</span>
+                        <span th:if="${qna.STATUS == '1'}" class="status-badge status-complete">답변완료</span>
+                    </div>
+                </a>
+
+                <div th:if="${#lists.isEmpty(qnaList)}" class="text-center py-5 text-muted border-bottom">
+                    등록된 문의사항이 없습니다.
+                </div>
+            </div>
+
+            <div class="text-right mt-4" style="text-align: right; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div class="search-wrapper" style="margin: 0;">
+                    <form th:action="@{/cs/list}" method="get" class="search-form">
+                        <input type="hidden" name="hotelId" th:value="${hotelId}">
+                        <div class="search-input-box">
+                            <input type="text" name="searchKeyword" th:value="${searchKeyword}" placeholder="문의글 제목 검색">
+                            <button type="submit" class="btn-search"><i class="bi bi-search"></i></button>
+                        </div>
+                    </form>
+                </div>
+
+                <div th:if="${#authorization.expression('isAuthenticated()') or session.Session_GuestDTO != null}">
+                    <a th:href="@{/cs/qnaWrite(hotelId=${hotelId})}" class="btn btn-write">문의하기</a>
+                </div>
+            </div>
+
+            <div class="pagination-container" th:if="${totalPage > 0}">
+                <a class="page-box" th:href="@{/cs/list(hotelId=${hotelId}, curPage=1)}"><i class="bi bi-chevron-double-left"></i></a>
+                <th:block th:each="p : ${#numbers.sequence(1, totalPage)}">
+                    <a class="page-box" th:classappend="${p == curPage} ? 'active'" 
+                       th:href="@{/cs/list(hotelId=${hotelId}, curPage=${p})}" th:text="${p}">1</a>
+                </th:block>
+                <a class="page-box" th:href="@{/cs/list(hotelId=${hotelId}, curPage=${totalPage})}"><i class="bi bi-chevron-double-right"></i></a>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<th:block th:fragment="script">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            // FAQ 아코디언 기능
+            $('.faq-question').click(function() {
+                const $answer = $(this).next('.faq-answer');
+                const $icon = $(this).find('.bi-chevron-down');
+                
+                $('.faq-answer').not($answer).slideUp(200);
+                $('.bi-chevron-down').not($icon).css('transform', 'rotate(0deg)');
+                
+                $answer.slideToggle(200, function() {
+                    if($(this).is(':visible')) {
+                        $icon.css('transform', 'rotate(180deg)');
+                    } else {
+                        $icon.css('transform', 'rotate(0deg)');
+                    }
+                });
+            });
+
+            const message = /*[[${message}]]*/ '';
+            if (message) alert(message);
+        });
+    </script>
+</th:block>
+</body>
+</html>

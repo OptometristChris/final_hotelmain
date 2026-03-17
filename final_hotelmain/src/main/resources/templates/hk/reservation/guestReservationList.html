@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+</head>
+
+<body>
+<h2>예약 내역</h2>
+
+<table border="1">
+
+<tr>
+<th>이름</th>
+<th>예약코드</th>
+<th>호텔</th>
+<th>객실</th>
+<th>체크인</th>
+<th>체크아웃</th>
+<th>금액</th>
+<th>상태</th>
+<th>취소</th>
+</tr>
+
+<tr th:each="r : ${reservationList}">
+
+<td th:text="${r.NAME}"></td>
+<td th:text="${r.RESERVATION_CODE}"></td>
+<td th:text="${r.HOTEL_NAME}"></td>
+<td th:text="${r.ROOM_NAME}"></td>
+<td th:text="${r.CHECKIN_DATE}"></td>
+<td th:text="${r.CHECKOUT_DATE}"></td>
+<td th:text="${r.TOTAL_PRICE}"></td>
+<td th:text="${r.RESERVATION_STATUS}"></td>
+
+<td>
+<button type="button"
+th:if="${r.RESERVATION_STATUS == 'CONFIRMED'}"
+th:attr="data-code=${r.RESERVATION_CODE}"
+onclick="cancelGuest(this)">
+취소
+</button>
+</td>
+
+</tr>
+
+</table>
+
+
+<script>
+
+function cancelGuest(btn){
+
+    if(!confirm("예약을 취소하시겠습니까?")){
+        return;
+    }
+
+    const code = btn.dataset.code;
+
+    const token = document.querySelector("meta[name='_csrf']").content;
+    const header = document.querySelector("meta[name='_csrf_header']").content;
+    
+    fetch("/final_hotel/reservation/guestCancel",{
+        method:"POST",
+        headers: {
+        	"Content-Type": "application/x-www-form-urlencoded",
+            [header]: token
+        },
+        body:"reservation_code="+code
+    })
+    .then(res=>res.text())
+    .then(data=>{
+
+        if(data === "success"){
+            alert("예약이 취소되었습니다.");
+            location.reload();
+        }
+        else{
+            alert("취소 가능 시간이 지났습니다.");
+        }
+
+    });
+
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<title>예약 정보 입력</title>
+
+<style>
+body {
+    font-family: 'Pretendard', sans-serif;
+    background: #f8f8f8;
+    margin: 0;
+    padding: 40px;
+}
+
+.container {
+    display: flex;
+    gap: 40px;
+}
+
+.left-box {
+    flex: 2;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+}
+
+.right-box {
+    flex: 1;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    height: fit-content;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.summary-price {
+    font-size: 22px;
+    font-weight: bold;
+    color: #c27a34;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    background: #c27a34;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+</style>
+</head>
+<body>
+
+<h2>예약 정보 입력</h2>
+
+<div class="container">
+
+<!-- 왼쪽 영역 -->
+<div class="left-box">
+
+    <h3 th:text="${hotel_name}"></h3>
+    <p th:text="${room_name}"></p>
+
+    <p>
+        체크인: <span th:text="${check_in}"></span><br>
+        체크아웃: <span th:text="${check_out}"></span><br>
+        숙박일: <span th:text="${nights}"></span> 박
+    </p>
+
+    <hr>
+
+    <form id="reservationForm">
+
+        <input type="hidden" name="room_type_id" th:value="${room_type_id}">
+        <input type="hidden" name="check_in" th:value="${check_in}">
+        <input type="hidden" name="check_out" th:value="${check_out}">
+
+        <!-- 인원수 -->
+        <label>투숙 인원 (최대 <span th:text="${max_capacity}"></span>명)</label><br>
+        <input type="number"
+               name="guest_count"
+               id="guestCount"
+               value="1"
+               min="1"
+               th:attr="max=${max_capacity}"
+               onchange="calculateTotal()">
+
+        <br><br>
+
+        <!-- 조식 -->
+        <label>조식 인원 선택 (1인 67,500원)</label><br>
+
+        <select id="breakfastCount" onchange="calculateTotal()">
+            <option value="0">선택 안함</option>
+            <option th:each="i : ${#numbers.sequence(1, max_capacity)}"
+                    th:value="${i}"
+                    th:text="${i} + ' 명'">
+            </option>
+        </select>
+
+        <hr>
+
+        <h3>예약자 정보</h3>
+
+        <p>예약자 : 
+            <span th:text="${memberName != null ? memberName : '비회원'}"></span>
+        </p>
+
+        <p>연락처 : 
+            <span th:text="${memberMobile != null ? memberMobile : '-'}"></span>
+        </p>
+
+        <p>이메일 : 
+            <span th:text="${memberEmail != null ? memberEmail : '-'}"></span>
+        </p>
+
+        <br><br>
+
+        <button type="button" onclick="requestPay()">결제하기</button>
+
+    </form>
+
+</div>
+
+<!-- 오른쪽 요약 박스 -->
+<div class="right-box">
+
+    <h3>결제 요약</h3>
+
+    <p>객실 요금:
+        <span id="currencySymbol">₩</span>
+        <span id="roomPrice" th:text="${room_price}"></span>
+    </p>
+
+    <p>조식 요금:
+        <span id="currencySymbol2">₩</span>
+        <span id="breakfastPrice">0</span>
+    </p>
+
+    <p class="summary-price">
+        총 결제 금액:
+        <span id="currencySymbol3">₩</span>
+        <span id="totalPrice" th:text="${room_price}"></span>
+    </p>
+
+</div>
+
+</div>
+
+<script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+
+<script>
+var IMP = window.IMP;
+IMP.init("imp76388561");
+
+const baseRoomPrice = [[${room_price}]];
+const nights = [[${nights}]];
+const BREAKFAST_PRICE = 67500;
+const currency = "[[${currency}]]";
+const includeTax = [[${tax}]];
+
+/* 통화 표시 */
+function getCurrencySymbol(){
+
+    if(currency === "USD") return "$";
+    if(currency === "JPY") return "¥";
+    if(currency === "EUR") return "€";
+
+    return "₩";
+}
+
+
+/* 합산금액 */
+function calculateTotal() {
+
+    const breakfastCount =
+        parseInt(document.getElementById("breakfastCount").value);
+
+    let roomTotal = baseRoomPrice;
+
+    let breakfastTotal =
+        breakfastCount * nights * BREAKFAST_PRICE;
+
+    // 세금 적용
+    if(includeTax){
+        roomTotal *= 1.1;
+        breakfastTotal *= 1.1;
+    }
+
+    const subtotal = roomTotal + breakfastTotal;
+
+    let rate = 1;
+
+    if(currency === "USD") rate = 0.00074;
+    if(currency === "JPY") rate = 0.11;
+    if(currency === "EUR") rate = 0.00068;
+
+    const roomConverted = roomTotal * rate;
+    const breakfastConverted = breakfastTotal * rate;
+    const total = subtotal * rate;
+
+    const symbol = getCurrencySymbol();
+
+    document.getElementById("currencySymbol").innerText = symbol;
+    document.getElementById("currencySymbol2").innerText = symbol;
+    document.getElementById("currencySymbol3").innerText = symbol;
+
+    document.getElementById("roomPrice").innerText =
+        roomConverted.toLocaleString();
+
+    document.getElementById("breakfastPrice").innerText =
+        breakfastConverted.toLocaleString();
+
+    document.getElementById("totalPrice").innerText =
+        total.toLocaleString();
+}
+
+/* 결제 */ 
+function requestPay() {
+
+    const totalAmount =
+        parseInt(document.getElementById("totalPrice").innerText.replace(/,/g,""));
+
+    IMP.request_pay({
+        pg: "html5_inicis",
+        pay_method: "card",
+        merchant_uid: "hotel_" + new Date().getTime(),
+        name: "호텔 예약 결제",
+        amount: 100,   
+        buyer_name: "[[${memberName}]]",
+        buyer_tel: "[[${memberMobile}]]"
+    }, function (rsp) {
+
+        if (rsp.success) {
+
+            const token = document.querySelector("meta[name='_csrf']").content;
+            const header = document.querySelector("meta[name='_csrf_header']").content;
+            
+            console.log("totalAmount : "+totalAmount);
+            console.log("typeof totalAmount =", typeof totalAmount);
+            
+            fetch("/final_hotel/payment/verify", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    [header]: token
+                },
+                body: JSON.stringify({
+                    imp_uid: rsp.imp_uid,
+                    merchant_uid: rsp.merchant_uid,
+                    room_type_id: document.querySelector("input[name='room_type_id']").value,
+                    check_in: document.querySelector("input[name='check_in']").value,
+                    check_out: document.querySelector("input[name='check_out']").value,
+                    guest_count: document.getElementById("guestCount").value,
+                    breakfast_count: document.getElementById("breakfastCount").value,
+                    total_price: String(totalAmount), // 안전한 방식
+
+                    hotel_name: "[[${hotel_name}]]",
+                    room_name: "[[${room_name}]]"
+                })
+            })
+            .then(async res => {
+
+                const text = await res.text();
+
+                console.log("==== /payment/verify status ====", res.status);
+                console.log("==== /payment/verify response ====", text);
+
+                if (!res.ok) {
+                    alert("예약 저장 중 오류가 발생했습니다.\n\n" + text);
+                    return;
+                }
+
+                alert("예약이 완료되었습니다.");
+                location.href = "/final_hotel/reservation/complete?code=" + encodeURIComponent(text);
+            })
+            .catch(err => {
+                console.error("==== /payment/verify fetch 오류 ====", err);
+                alert("서버 통신 중 오류가 발생했습니다.");
+            });
+
+        } else {
+            alert("결제 실패: " + rsp.error_msg);
+        }
+    });
+}
+
+window.onload = function() {
+
+    const guestInput = document.getElementById("guestCount");
+    const breakfastSelect = document.getElementById("breakfastCount");
+
+    // 인원 변경 시 조식 제한
+    guestInput.addEventListener("change", function() {
+
+        const maxGuest = parseInt(this.value);
+
+        for (let i = 0; i < breakfastSelect.options.length; i++) {
+            const optionValue = parseInt(breakfastSelect.options[i].value);
+            breakfastSelect.options[i].disabled = optionValue > maxGuest;
+        }
+
+        if (parseInt(breakfastSelect.value) > maxGuest) {
+            breakfastSelect.value = maxGuest;
+        }
+
+        calculateTotal();
+    });
+
+    calculateTotal();
+};
+</script>
+
+</body>
+</html>

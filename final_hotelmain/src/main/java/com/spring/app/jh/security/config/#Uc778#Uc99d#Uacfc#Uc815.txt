@@ -1,0 +1,27 @@
+
+>> 인증 과정의 순서 << 
+
+1. 사용자가 아이디/비번을 입력하고 로그인을 시도합니다. 
+   - com.spring.app.security.config.SecurityConfig 속에 httpSecurity.formLogin() 에 정의해 둠.
+
+2. 시스템은 DB에서 사용자 정보를 가져와 UserDetails 객체를 생성합니다.
+   - com.spring.app.security.service.CustomUserDetailsService 클래스의 loadUserByUsername(String username) 메서드가 (데이터베이스 또는 다른 저장소에서 사용자 정보를 로드함) 자동 실행되어 
+     UserDetails 객체를 생성함. 
+   
+3. 입력한 비번과 UserDetails 안의 비번이 일치하면 인증이 성공합니다.
+   - com.spring.app.security.config.SecurityConfig 속에 httpSecurity.formLogin() 에 정의해 둠.
+   
+4. 인증이 성공하면 이 UserDetails(회원신상정보데이터)를 Authentication(출입증카드)이라는 객체의 Principal 자리에 쏙 집어넣는다.
+
+5. 이제 이 Authentication(출입증카드)이 서버 세션(SecurityContext)에 저장되어, 인증을 받으려면 Authentication(출입증카드)만 제출하면 되는 것이고,
+   Authentication(출입증카드) 의 Principal 자리에 들어가면 UserDetails(회원신상정보데이터) 정보가 있다. 
+   
+"비유를 들어서 설명하자면 
+ UserDetails는 도서관 출입증카드에 적힌 '회원신상정보' 이고, 
+ Authentication은 회원신상정보가 적힌 도서관에 들어올 수 있는 '출입증카드' 이다. 
+ 출입증카드(Authentication) 안에는 회원신상정보(UserDetails)가 들어있기 때문에, 
+ 우리가 '출입증카드' 만 확인하면 이 사람이 누구인지(Name), 도서관 안에서 어떤 행동을 할 수 권한(Authority)이 있는지 알 수 있는 것이다."
+
+>> 핵심 요약 <<
+UserDetails: 사용자의 데이터 (Principal의 실제 구현체)
+Authentication: 인증 전체를 관리하는 객체 (Principal을 포함함)      

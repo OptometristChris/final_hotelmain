@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::section})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>호텔 위치 | CIEL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  .locationHero{
+      padding:180px 0 70px;
+      background:linear-gradient(180deg, rgba(8,8,8,.78), rgba(8,8,8,.58)),
+                 url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1600&q=80') center/cover;
+      color:#fff;
+  }
+  .locationHero .eyebrow{color:#d4af37;font-weight:700;letter-spacing:.18em;font-size:.82rem}
+  .locationHero h1{font-size:42px;font-weight:800;margin:14px 0 12px}
+  .locationHero p{max-width:760px;opacity:.9;line-height:1.8}
+
+  .locationSection{background:#f7f3ef;padding:72px 0 100px}
+  .locationWrap{max-width:1200px;margin:0 auto;padding:0 20px}
+  .hotelCard{
+      background:#fff;border:1px solid #eadfd7;border-radius:26px;overflow:hidden;
+      box-shadow:0 18px 40px rgba(0,0,0,.08);margin-bottom:28px;
+  }
+  .hotelGrid{display:grid;grid-template-columns:420px 1fr;min-height:420px}
+  .photoBox{position:relative;background:#111}
+  .photoBox img{width:100%;height:100%;object-fit:cover;display:block}
+  .photoFallback{display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:linear-gradient(135deg,#151515,#3b2f2a)}
+  .infoBox{padding:28px 30px 30px}
+  .hotelTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:18px}
+  .hotelName{font-size:28px;font-weight:800;color:#1c1c1c}
+  .hotelBadge{background:#111;color:#fff;border-radius:999px;padding:8px 14px;font-size:12px}
+  .hotelDesc{color:#5f5b57;line-height:1.8;margin-bottom:18px}
+  .meta{display:grid;grid-template-columns:110px 1fr;row-gap:10px;column-gap:16px;margin-bottom:22px;font-size:15px}
+  .metaLabel{color:#9a8c82;font-weight:700}
+  .metaValue{color:#222;word-break:keep-all}
+  .mapBox{height:250px;border-radius:18px;border:1px solid #e9dfd8;overflow:hidden;background:#f1ede9}
+  .emptyBox{
+      background:#fff;border:1px dashed #d6c7bb;border-radius:24px;padding:80px 20px;
+      text-align:center;color:#776a60
+  }
+  @media (max-width: 992px){
+      .hotelGrid{grid-template-columns:1fr}
+      .photoBox{height:280px}
+      .locationHero{padding-top:150px}
+  }
+</style>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2014221291f1b63602c92cea5292906"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+  document.addEventListener('DOMContentLoaded', function(){
+      const hotelList = /*[[${hotelList}]]*/ [];
+
+      if (!hotelList || hotelList.length === 0) {
+          return;
+      }
+
+      hotelList.forEach(function(hotel, idx){
+          if (hotel.latitude == null || hotel.longitude == null) return;
+
+          const mapEl = document.getElementById('hotelMap_' + idx);
+          if (!mapEl) return;
+
+          const position = new kakao.maps.LatLng(hotel.latitude, hotel.longitude);
+
+          const map = new kakao.maps.Map(mapEl, {
+              center: position,
+              level: 4
+          });
+
+          const marker = new kakao.maps.Marker({
+              position: position
+          });
+          marker.setMap(map);
+
+          const info = new kakao.maps.InfoWindow({
+              content: `<div style="padding:8px 12px;font-size:13px;font-weight:600;">${hotel.hotelName}</div>`
+          });
+          info.open(map, marker);
+      });
+  });
+/*]]>*/
+</script>
+</head>
+<body>
+<section>
+  <div class="locationHero">
+    <div class="locationWrap">
+      <div class="eyebrow">HOTEL LOCATION</div>
+      <h1>호텔 위치 안내</h1>
+      <p>등록된 호텔의 주소와 대표 위치를 한 번에 확인할 수 있도록 구성한 페이지입니다. 본문에서는 승인된 호텔만 노출되고, 각 호텔마다 지도와 기본 정보를 함께 보여줍니다.</p>
+    </div>
+  </div>
+
+  <div class="locationSection">
+    <div class="locationWrap">
+      <div th:if="${hotelList == null or #lists.isEmpty(hotelList)}" class="emptyBox">
+        현재 노출 가능한 호텔 위치 정보가 없습니다.
+      </div>
+
+      <article class="hotelCard"
+               th:each="hotel, stat : ${hotelList}">
+        <div class="hotelGrid">
+          <div class="photoBox">
+            <img th:if="${hotel.mainImageUrl != null and hotel.mainImageUrl != ''}"
+                 th:src="@{|/images/hotel/${hotel.mainImageUrl}|}"
+                 th:alt="${hotel.hotelName}">
+            <div th:if="${hotel.mainImageUrl == null or hotel.mainImageUrl == ''}" class="photoFallback">
+              대표 이미지 없음
+            </div>
+          </div>
+
+          <div class="infoBox">
+            <div class="hotelTop">
+              <div class="hotelName" th:text="${hotel.hotelName}">CIEL HOTEL</div>
+              <div class="hotelBadge" th:text="|HOTEL #${hotel.hotelId}|">HOTEL #1</div>
+            </div>
+
+            <div class="hotelDesc" th:text="${hotel.hotelDesc != null and hotel.hotelDesc != '' ? hotel.hotelDesc : '호텔 소개 문구가 아직 등록되지 않았습니다.'}">
+              호텔 소개
+            </div>
+
+            <div class="meta">
+              <div class="metaLabel">주소</div>
+              <div class="metaValue" th:text="${hotel.address}">서울특별시 ...</div>
+
+              <div class="metaLabel">연락처</div>
+              <div class="metaValue" th:text="${hotel.contact != null and hotel.contact != '' ? hotel.contact : '-'}">02-0000-0000</div>
+
+              <div class="metaLabel">좌표</div>
+              <div class="metaValue" th:text="|${hotel.latitude}, ${hotel.longitude}|">37.5665, 126.9780</div>
+            </div>
+
+            <div class="mapBox" th:id="|hotelMap_${stat.index}|"></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</body>
+</html>

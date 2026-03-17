@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.app.js.cs.model.CsDAO">
+
+	<resultMap id="faqResultMap" type="HashMap">
+	    <result property="FAQ_ID" column="faq_id" />
+	    <result property="TITLE" column="title" />
+	    <result property="CONTENT" column="content" jdbcType="CLOB" javaType="java.lang.String" />
+	    <result property="CATEGORY" column="category" />
+	    <result property="VIEW_COUNT" column="view_count" />
+	</resultMap>
+    <select id="getFaqListByHotel" parameterType="String" resultType="HashMap">
+        SELECT *
+        FROM (
+            SELECT faq_id, title, content, category, view_count
+            FROM FAQS
+            WHERE fk_hotel_id = #{hotelId}
+            ORDER BY view_count DESC
+        )
+        WHERE ROWNUM &lt;= 5
+    </select>
+
+    <select id="getQnaTotalCount" parameterType="HashMap" resultType="int">
+        SELECT count(*)
+        FROM QUESTIONS
+        WHERE fk_hotel_id = #{hotelId}
+        <if test='searchKeyword != null and searchKeyword != ""'>
+            AND (title LIKE '%'||#{searchKeyword}||'%' OR content LIKE '%'||#{searchKeyword}||'%')
+        </if>
+    </select>
+
+    <select id="getQnaListWithPaging" parameterType="HashMap" resultType="HashMap">
+	    SELECT *
+	    FROM (
+	        SELECT 
+	            ROW_NUMBER() OVER(ORDER BY created_at DESC) AS RNUM,
+	            qna_id, title, writer_name, 
+	            is_secret,  status,
+	            TO_CHAR(created_at, 'yyyy-mm-dd') AS created_at
+	        FROM QUESTIONS
+	        WHERE fk_hotel_id = #{hotelId}
+	        <if test='searchKeyword != null and searchKeyword != ""'>
+	            AND (title LIKE '%'||#{searchKeyword}||'%' OR content LIKE '%'||#{searchKeyword}||'%')
+	        </if>
+	    ) V
+	    WHERE RNUM BETWEEN #{startRno} AND #{endRno}
+	</select>
+
+    <select id="getQnaDetail" parameterType="String" resultType="HashMap">
+	    SELECT 
+	        Q.qna_id, 
+	        Q.title, 
+	        Q.content, 
+	        Q.writer_name, 
+	        Q.status, 
+	        Q.is_secret,
+	        Q.fk_hotel_id,
+	        TO_CHAR(Q.created_at, 'yyyy-mm-dd HH24:mi') AS q_date,
+	        A.content AS ans_content,
+	        TO_CHAR(A.created_at, 'yyyy-mm-dd HH24:mi') AS a_date
+	    FROM QUESTIONS Q
+	    LEFT JOIN ANSWERS A ON Q.qna_id = A.qna_id  WHERE Q.qna_id = #{qnaId}
+	</select>
+
+	<insert id="insertQna" parameterType="HashMap">
+	    INSERT INTO QUESTIONS (
+		    QNA_ID, 
+		    FK_HOTEL_ID, 
+		    TITLE, 
+		    CONTENT, 
+		    WRITER_NAME, 
+		    IS_SECRET, 
+		    STATUS, 
+		    CREATED_AT
+		) VALUES (
+		    SEQ_QNA_ID.nextval,  
+		    #{fk_hotel_id}, 
+		    #{title}, 
+		    #{content}, 
+		    #{writer_name}, 
+		    #{is_secret}, 
+		    'WAITING',
+		    SYSDATE
+		)
+	</insert>
+	
+	<delete id="deleteQna" parameterType="String">
+        DELETE FROM QUESTIONS
+        WHERE qna_id = #{qnaId}
+    </delete>
+	
+</mapper>

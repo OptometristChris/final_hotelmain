@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}" 
+      lang="ko" 
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>아이디 찾기</title>
+
+<link rel="stylesheet" href="">
+
+<style>
+:root{
+  --bg:#ffffff;
+  --panel:#ffffff;
+  --line:#e7e7e7;
+  --line-2:#d9d9d9;
+  --text:#111111;
+  --muted:#6f6f6f;
+  --danger:#c94b4b;
+  --header-offset:165px;
+  --page-bottom:90px;
+  --radius:10px;
+  --shadow:0 10px 24px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Noto Sans KR', sans-serif;
+  background:#fff;
+  color:var(--text);
+}
+.container{
+  min-height:calc(100vh - 40px);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:var(--header-offset) 16px var(--page-bottom);
+}
+.wrap{ width:460px; max-width:100%; }
+.brandbar{
+  display:flex;
+  justify-content:center;
+  margin-bottom:18px;
+  font-size:.92rem;
+  letter-spacing:.24em;
+  color:#111;
+  font-weight:700;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.header{
+  padding:24px 22px 18px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  background:#fafafa;
+}
+.header h1{
+  margin:0;
+  font-size:1.45rem;
+  font-weight:700;
+}
+.header p{
+  margin:10px 0 0;
+  color:var(--muted);
+  font-size:.9rem;
+}
+.body{ padding:22px; }
+.hint{
+  font-size:.84rem;
+  color:var(--muted);
+  line-height:1.6;
+  background:#fafafa;
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:12px;
+  margin-bottom:14px;
+}
+.seg{
+  display:flex;
+  gap:8px;
+  margin-bottom:16px;
+}
+.seg button{
+  flex:1;
+  border:1px solid var(--line-2);
+  background:#fff;
+  border-radius:8px;
+  padding:11px;
+  font-weight:700;
+  color:var(--muted);
+  cursor:pointer;
+  font-family:inherit;
+}
+.seg button.active{
+  border-color:#111;
+  color:#111;
+  background:#f8f8f8;
+}
+.field{ margin-bottom:14px; }
+.label{
+  margin-bottom:7px;
+  font-size:.9rem;
+  color:#444;
+  font-weight:700;
+}
+.input{
+  width:100%;
+  padding:14px 14px;
+  border:1px solid var(--line-2);
+  border-radius:8px;
+  outline:none;
+  background:#fff;
+  font-size:.95rem;
+  font-family:inherit;
+}
+.input:focus{
+  border-color:#111;
+  box-shadow:0 0 0 4px rgba(17,17,17,.05);
+}
+.btn{
+  width:100%;
+  border:0;
+  border-radius:999px;
+  padding:14px 16px;
+  font-weight:700;
+  cursor:pointer;
+  background:#111;
+  color:#fff;
+  font-size:.95rem;
+  font-family:inherit;
+}
+.links{
+  margin-top:14px;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  color:var(--muted);
+  font-size:.82rem;
+}
+.links a{
+  color:var(--muted);
+  text-decoration:none;
+}
+.links a:hover{ color:#111; }
+.error{
+  display:none;
+  margin-top:12px;
+  font-size:.84rem;
+  color:#fff;
+  background:var(--danger);
+  border-radius:8px;
+  padding:11px 12px;
+  line-height:1.5;
+}
+.error.show{ display:block; }
+</style>
+
+<script th:inline="javascript">
+ /*<![CDATA[*/
+document.addEventListener('DOMContentLoaded', () => {
+  const btnEmail = document.getElementById('seg-email');
+  const btnMobile = document.getElementById('seg-mobile');
+  const wrapEmail = document.getElementById('wrap-email');
+  const wrapMobile = document.getElementById('wrap-mobile');
+
+  const frm = document.getElementById('idFindFrm');
+  const err = document.getElementById('err');
+
+  function setMode(mode){
+    if(mode === 'email'){
+      btnEmail.classList.add('active');
+      btnMobile.classList.remove('active');
+      wrapEmail.style.display = '';
+      wrapMobile.style.display = 'none';
+      frm.mobile.value = '';
+    } else {
+      btnMobile.classList.add('active');
+      btnEmail.classList.remove('active');
+      wrapMobile.style.display = '';
+      wrapEmail.style.display = 'none';
+      frm.email.value = '';
+    }
+    err.classList.remove('show');
+  }
+
+  btnEmail.addEventListener('click', () => setMode('email'));
+  btnMobile.addEventListener('click', () => setMode('mobile'));
+
+  frm.addEventListener('submit', (e) => {
+    err.classList.remove('show');
+
+    const name = frm.name.value.trim();
+    const email = frm.email.value.trim();
+    const mobile = frm.mobile.value.trim().replaceAll('-', '');
+
+    if(!name){
+      e.preventDefault();
+      err.textContent = '이름을 입력하세요.';
+      err.classList.add('show');
+      return;
+    }
+
+    if(wrapEmail.style.display !== 'none'){
+      if(!email){
+        e.preventDefault();
+        err.textContent = '이메일을 입력하세요.';
+        err.classList.add('show');
+        return;
+      }
+    } else {
+      if(!mobile){
+        e.preventDefault();
+        err.textContent = '휴대폰번호를 입력하세요.';
+        err.classList.add('show');
+        return;
+      }
+      if(!/^\d{10,11}$/.test(mobile)){
+        e.preventDefault();
+        err.textContent = '휴대폰번호는 숫자만 10~11자리로 입력하세요.';
+        err.classList.add('show');
+        return;
+      }
+      frm.mobile.value = mobile;
+    }
+  });
+
+  setMode('email');
+});
+ /*]]>*/	
+</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="wrap">
+      <div class="brandbar">CIEL</div>
+
+      <section class="card" aria-label="아이디 찾기 카드">
+        <div class="header">
+          <h1>아이디 찾기</h1>
+          <p>이름 + 이메일(또는 휴대폰번호)로 아이디를 찾습니다.</p>
+        </div>
+
+        <div class="body">
+          <div class="hint">
+            입력하신 정보가 DB와 일치하면 아이디를 바로 보여줍니다.
+          </div>
+
+          <div class="seg">
+            <button type="button" id="seg-email" class="active">이메일로 찾기</button>
+            <button type="button" id="seg-mobile">휴대폰으로 찾기</button>
+          </div>
+
+          <form id="idFindFrm" method="post" th:action="@{/security/member_id_find}">
+            <div class="field">
+              <div class="label"><span>이름</span></div>
+              <input class="input" name="name" autocomplete="name" placeholder="이름" />
+            </div>
+
+            <div class="field" id="wrap-email">
+              <div class="label"><span>이메일</span></div>
+              <input class="input" name="email" autocomplete="email" placeholder="example@domain.com" />
+            </div>
+
+            <div class="field" id="wrap-mobile" style="display:none;">
+              <div class="label"><span>휴대폰번호</span></div>
+              <input class="input" name="mobile" inputmode="tel" autocomplete="tel" placeholder="숫자만 (01012345678)" />
+            </div>
+
+            <button class="btn" type="submit">아이디 찾기</button>
+
+            <div class="links">
+              <a th:href="@{/security/login}">로그인</a>
+              <span>|</span>
+              <a th:href="@{/security/member_pw_find}">비밀번호 찾기</a>
+              <span>|</span>
+              <a th:href="@{/index}">메인</a>
+            </div>
+
+            <div class="error" id="err"></div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

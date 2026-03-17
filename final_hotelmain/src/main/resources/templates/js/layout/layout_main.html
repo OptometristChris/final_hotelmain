@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(title, link, style, script, content)">
+<head>
+   <meta charset="UTF-8">
+   
+   <!-- ================================================================== -->
+   <!-- CSRF meta                                                          -->
+   <!-- ================================================================== -->
+   <!--
+      공통 레이아웃을 타는 모든 페이지에서 AJAX POST/PUT/DELETE 요청 시
+      CSRF 토큰을 헤더에 실어 보내기 위해 meta 태그로 내려준다.
+    -->
+   <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+   <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+	
+   <title th:replace="${title}">CIEL HOTEL</title>
+
+   <link rel="stylesheet" th:href="@{/bootstrap-4.6.2-dist/css/bootstrap.min.css}">
+   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+   
+   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+   
+   <th:block th:replace="${link}"></th:block>
+   <th:block th:replace="${style}"></th:block>
+
+   <style>
+       body { font-family: 'Noto Sans KR', sans-serif; margin: 0; padding: 0; }
+
+       /* --- 헤더 스타일 --- */
+       .ciel-header { 
+           width: 100%; position: absolute; top: 0; z-index: 1000; 
+           background: rgba(0, 0, 0, 0.5) !important;
+       }
+       .top-util { font-size: 0.75rem; color: #eee; border-bottom: 1px solid rgba(255,255,255,0.1); }
+       .top-util .container-fluid { display: flex; justify-content: flex-end; align-items: center; }
+       .top-util a { color: #eee; margin-left: 20px; text-decoration: none; }
+       .user-welcome { color: #d4af37; font-weight: 500; margin-left: 20px; }
+
+       /* --- 드롭다운 스타일 --- */
+       .custom-dropdown { position: relative; display: inline-flex; align-items: center; }
+       .custom-dropdown .dropdown-toggle { color: #eee !important; font-size: 0.75rem; text-decoration: none; cursor: pointer; margin-left: 20px; }
+       .custom-dropdown .dropdown-menu {
+           position: absolute !important; top: 100% !important; right: 0 !important;
+           background-color: #1a1a1a !important; border: 1px solid rgba(212, 175, 55, 0.5) !important;
+           min-width: 160px; padding: 0 !important; display: none;
+       }
+       .custom-dropdown.show .dropdown-menu { display: block; }
+       .custom-dropdown .dropdown-item { color: #fff !important; font-size: 0.75rem; padding: 12px 20px !important; display: flex; align-items: center; transition: 0.2s; }
+       .custom-dropdown .dropdown-item:hover { background-color: #d4af37 !important; color: #000 !important; }
+
+       /* --- 네비게이션 스타일 --- */
+       .nav-section { width: 100%; transition: all 0.4s ease; padding: 15px 0; }
+       .nav-section.scrolled {
+           position: fixed; top: 0; left: 0; background-color: rgba(0, 0, 0, 0.9) !important;
+           box-shadow: 0 2px 10px rgba(0,0,0,0.3); padding: 10px 0; z-index: 1001;
+       }
+       .nav-link { color: #fff !important; font-weight: 500; margin: 0 15px; }
+       .navbar-brand img { height: 100px; transition: all 0.3s ease; }
+       .navbar-brand strong { color: #d4af37; font-size: 1.4rem; letter-spacing: 2px; font-weight: 700; }
+       .nav-section.scrolled .navbar-brand img { height: 80px; }
+
+       /* --- 푸터 스타일 --- */
+       .footer { background-color: #000; color: #fff; padding: 60px 0; position: relative; z-index: 10; clear: both; }
+       .footer-logo { font-size: 1.5rem; letter-spacing: 5px; margin-bottom: 20px; color: #d4af37; }
+   </style>
+</head>
+<body>
+
+    <header class="ciel-header">
+        <div class="top-util">
+            <div class="container-fluid py-2 px-md-5">
+                
+                <!-- 고객지원 드롭다운 -->
+                <div class="dropdown custom-dropdown">
+		            <a href="#" class="dropdown-toggle" id="supportDropdown" data-toggle="dropdown">
+		                <i class="fas fa-headset mr-1"></i> 고객지원
+		            </a>
+		            <div class="dropdown-menu shadow-lg" aria-labelledby="supportDropdown">
+		                <a class="dropdown-item" th:href="@{/notice/list}"><i class="fas fa-bullhorn"></i> 공지사항</a>
+		                <a class="dropdown-item" th:href="@{/cs/list}"><i class="fas fa-question-circle"></i> Q&A</a>
+		            </div>
+		        </div>
+
+                <!-- ========================================================= -->
+                <!-- 1) 게스트 로그인 상태                                      -->
+                <!-- ========================================================= -->
+                <!--
+                    게스트는 현재 Spring Security 인증 주체가 아니라 guestSession 세션으로 관리한다.
+                    따라서 게스트 분기를 가장 먼저 본다.
+                 -->
+                <th:block th:if="${session.guestSession != null}">
+                    <span class="user-welcome">
+                        <i class="fas fa-user-circle mr-1"></i>
+                        <span th:text="${session.guestSession.guestName}">게스트</span>님 환영합니다
+                    </span>
+                    <a href="#">예약조회</a>
+                    <a href="javascript:void(0);" onclick="logoutGuest();">로그아웃</a>
+                </th:block>
+
+                <!-- ========================================================= -->
+				<!-- 2) 관리자 로그인 상태                                      -->
+				<!-- ========================================================= -->
+				
+				<!-- 총괄(HQ) 관리자 -->
+				<th:block th:if="${session.guestSession == null}" sec:authorize="hasRole('ADMIN_HQ')">
+				    <span class="user-welcome">
+				        <i class="fas fa-user-shield mr-1"></i>
+				        <span sec:authentication="name"></span>님 환영합니다
+				    </span>
+				    <a th:href="@{/admin/hq/dashboard}">관리자 대시보드</a>
+				    <a href="javascript:void(0);" onclick="logoutAdmin();">로그아웃</a>
+				</th:block>
+				
+				<!-- 지점(BRANCH) 관리자 -->
+				<th:block th:if="${session.guestSession == null}" sec:authorize="hasRole('ADMIN_BRANCH')">
+				    <span class="user-welcome">
+				        <i class="fas fa-user-shield mr-1"></i>
+				        <span sec:authentication="name"></span>님 환영합니다
+				    </span>
+				    <a th:href="@{/admin/branch/dashboard}">관리자 대시보드</a>
+				    <a href="javascript:void(0);" onclick="logoutAdmin();">로그아웃</a>
+				</th:block>
+
+                <!-- ========================================================= -->
+                <!-- 3) 일반 회원 로그인 상태                                   -->
+                <!-- ========================================================= -->
+                <th:block th:if="${session.guestSession == null}" sec:authorize="isAuthenticated() and !hasAnyRole('ADMIN_HQ','ADMIN_BRANCH')">
+                    <span class="user-welcome">
+                        <i class="fas fa-user-circle mr-1"></i>
+                        <span sec:authentication="name"></span>님 환영합니다
+                    </span>
+                    <a th:href="@{/security/member/mypage}">마이페이지</a>
+                    <a href="javascript:void(0);" onclick="logoutMember();">로그아웃</a>
+                </th:block>
+
+                <!-- ========================================================= -->
+                <!-- 4) 비로그인 상태                                           -->
+                <!-- ========================================================= -->
+                <th:block th:if="${session.guestSession == null}" sec:authorize="isAnonymous()">
+                    <a th:href="@{/security/login}">로그인</a>
+                    <a th:href="@{/security/memberRegister}">회원가입</a>
+                </th:block>
+
+                <!--
+                    NOTE:
+                    예전 hidden logout form 은 제거한다.
+                    현재는
+                    - 회원: AJAX /api/auth/member/logout
+                    - 관리자: AJAX /api/auth/admin/logout
+                    - 게스트: location.href -> /guest/logout
+                    방식으로 분리 처리한다.
+                 -->
+            </div>
+        </div>
+        
+        <div class="nav-section">
+            <div class="container-fluid px-md-5">
+                <nav class="navbar navbar-expand-lg justify-content-center p-0">
+                    <a class="navbar-brand position-absolute" th:href="@{/}" style="left: 0;">
+					    <img th:src="@{/images/js/ciel_logo.png}" alt="CIEL 로고">
+					    <strong>CIEL</strong>
+					</a>
+                    <ul class="navbar-nav">
+                    	<li class="nav-item"><a class="nav-link" th:href="@{/}">브랜드</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/room/list}">객실</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/dining/all}">다이닝</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/promotion/list}">프로모션</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/}">부대시설</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/hotel/location}">호텔 위치</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+       	<th:block th:replace="${content}"></th:block>
+    </main>
+
+    <footer class="footer mt-0 text-center">
+        <div class="container">
+            <div class="footer-logo">CIEL LECIEL</div>
+            <p class="small text-muted mb-4">
+                서울특별시 송파구 잠실로 313 (잠실동) CIEL HOTEL<br>
+                TEL: 02-4982-5177 | EMAIL: ciel0209@gmail.com
+            </p>
+            <p class="small text-muted mb-0">© 2026 CIEL HOTEL. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script th:src="@{/jquery-ui-1.13.1.custom/external/jquery/jquery.js}"></script>
+    <script th:src="@{/bootstrap-4.6.2-dist/js/bootstrap.bundle.min.js}"></script>
+
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+
+        const contextPath = /*[[@{/}]]*/ '';
+
+        $(document).ready(function() {
+            var $navSection = $('.nav-section');
+
+            $(window).scroll(function() {
+                if ($(window).scrollTop() > 50) {
+                    $navSection.addClass('scrolled');
+                } 
+                else {
+                    $navSection.removeClass('scrolled');
+                }
+            });
+        });
+
+        // =========================================================
+        // 1) CSRF 정보 읽기
+        // =========================================================
+        function getCsrfInfo() {
+            return {
+                token: $("meta[name='_csrf']").attr("content"),
+                header: $("meta[name='_csrf_header']").attr("content")
+            };
+        }
+
+        // =========================================================
+        // 2) 회원 로그아웃
+        // =========================================================
+        /*
+            회원은 현재 JWT 로그인 + 세션 하이브리드 구조이므로
+            로그아웃도 Auth API 를 AJAX 로 호출한다.
+         */
+        function logoutMember() {
+
+            const csrf = getCsrfInfo();
+
+            $.ajax({
+                url: contextPath + "api/auth/member/logout",
+                type: "post",
+                beforeSend: function(xhr){
+                    xhr.setRequestHeader(csrf.header, csrf.token);
+                },
+                success: function(){
+                    sessionStorage.removeItem("JWT");
+                    location.href = contextPath + "index";
+                },
+                error: function(request, status, error){
+                    alert("회원 로그아웃 처리 중 오류가 발생했습니다.");
+                }
+            });
+        }
+
+        // =========================================================
+        // 3) 관리자 로그아웃
+        // =========================================================
+        /*
+            관리자는 현재 1차 단계에서는 JWT + 세션 하이브리드 구조로 두고,
+            추후 분리 시 JWT only 로 발전시킬 수 있다.
+         */
+        function logoutAdmin() {
+
+            const csrf = getCsrfInfo();
+
+            $.ajax({
+                url: contextPath + "api/auth/admin/logout",
+                type: "post",
+                beforeSend: function(xhr){
+                    xhr.setRequestHeader(csrf.header, csrf.token);
+                },
+                success: function(){
+                    sessionStorage.removeItem("JWT");
+                    location.href = contextPath + "admin/login";
+                },
+                error: function(request, status, error){
+                    alert("관리자 로그아웃 처리 중 오류가 발생했습니다.");
+                }
+            });
+        }
+
+        // =========================================================
+        // 4) 게스트 로그아웃
+        // =========================================================
+        /*
+            게스트는 현재 기존 세션 방식 유지이므로
+            /guest/logout 으로 이동하여 guestSession 을 제거한다.
+         */
+        function logoutGuest() {
+            location.href = contextPath + "guest/logout";
+        }
+
+    /*]]>*/
+    </script>
+    
+    <th:block th:replace="${script}"></th:block>
+</body>
+</html>

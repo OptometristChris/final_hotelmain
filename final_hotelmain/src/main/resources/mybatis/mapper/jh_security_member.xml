@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ==== mapper 기본설정 ==== -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ===== (#스프링시큐리티11) =====  -->
+
+<!-- ==== 루트 엘리먼트 & 네임스페이스 설정(프로젝트 전체내에서 유일해야 한다.) ==== -->
+<mapper namespace="com.spring.app.jh.security.model.MemberDAO">
+
+	<!-- =========================================================
+	     1) 회원가입시 아이디/이메일 중복확인
+	     ========================================================= -->
+
+	<!-- 회원가입시 아이디 중복확인 -->
+	<select id="member_id_check" resultType="Integer">
+		select count(*)
+		from tbl_member_security
+		where memberid = #{memberid}
+	</select>
+
+	<!-- 회원가입시 이메일 중복확인 -->
+	<select id="emailDuplicateCheck" resultType="Integer">
+		select count(*)
+		from tbl_member_security
+		where email = #{email}
+	</select>
+
+
+	<!-- =========================================================
+	     2) 회원가입
+	     - member_no 는 시퀀스로 생성 (selectKey)
+	     - enabled/point/날짜 기본값은 프로젝트 정책대로 세팅
+	     ========================================================= -->
+
+	<!-- 회원가입 -->
+	<insert id="insert_member" parameterType="MemberDTO">
+	  <selectKey keyProperty="memberNo" resultType="int" order="BEFORE">
+	    SELECT seq_tbl_member_security.NEXTVAL FROM dual
+	  </selectKey>
+	
+	  INSERT INTO tbl_member_security
+	  (
+	    member_no,
+	    memberid, passwd, enabled,
+	    name, birthday,
+	    email, mobile,
+	    postcode, address, detail_address, extra_address,
+	    point, point_earned_total,
+	    registerday, passwd_modify_date, last_login_date,
+	    grade_code,
+	    member_type,
+	    lookup_key
+	  )
+	  VALUES
+	  (
+	    #{memberNo},
+	    #{memberid}, #{passwd}, '1',
+	    #{name}, #{birthday},
+	    #{email}, #{mobile},
+	    #{postcode}, #{address}, #{detail_address}, #{extra_address},
+	    0, 0,
+	    SYSDATE, SYSDATE, SYSDATE,
+	    default,
+	    'MEMBER',
+	    #{lookupKey}
+	  )
+	</insert>
+
+
+	<insert id="insert_social_member" parameterType="MemberDTO">
+	  <selectKey keyProperty="memberNo" resultType="int" order="BEFORE">
+	    SELECT seq_tbl_member_security.NEXTVAL FROM dual
+	  </selectKey>
+
+	  INSERT INTO tbl_member_security
+	  (
+	    member_no,
+	    memberid, passwd, enabled,
+	    name, email,
+	    point, point_earned_total,
+	    registerday, passwd_modify_date, last_login_date,
+	    grade_code,
+	    member_type,
+	    social_provider,
+	    provider_user_id
+	  )
+	  VALUES
+	  (
+	    #{memberNo},
+	    #{memberid}, #{passwd}, '1',
+	    #{name}, #{email, jdbcType=VARCHAR},
+	    0, 0,
+	    SYSDATE, SYSDATE, SYSDATE,
+	    default,
+	    'MEMBER',
+	    #{socialProvider},
+	    #{providerUserId}
+	  )
+	</insert>
+
+	<!-- 권한부여(기본 ROLE_USER) : member_no 기반 -->
+	<insert id="insert_member_authority_by_member_no">
+		INSERT INTO tbl_member_authorities(member_auth_no, member_no, authority)
+		VALUES(seq_tbl_member_authorities.nextval, #{memberNo}, 'ROLE_USER')
+	</insert>
+	<!-- ROLE_USER 는 기본값이다. ROLE_ 접두어는 필수 규칙이고, 뒤에는 자기 마음 -->
+	
+	<!-- lookup_key로 기존 계정 조회(MEMBER/GUEST 공용) -->
+	<select id="findByLookupKey" parameterType="String" resultType="MemberDTO">
+	  SELECT
+	    member_no   AS memberNo,
+	    name,
+	    mobile,
+	    enabled,
+	    member_type AS memberType,
+	    lookup_key  AS lookupKey
+	  FROM tbl_member_security
+	  WHERE lookup_key = #{lookupKey}
+	</select>
+	
+	<select id="findMemberNoByLookupKey" parameterType="String" resultType="Integer">
+	  SELECT member_no
+	  FROM tbl_member_security
+	  WHERE lookup_key = #{lookupKey}
+	</select>
+	
+	<!-- 게스트 생성(옵션2: 비회원 로그인 성공 시 즉시 생성) -->
+	<insert id="insert_guest" parameterType="MemberDTO">
+	  <selectKey keyProperty="memberNo" resultType="int" order="BEFORE">
+	    SELECT seq_tbl_member_security.NEXTVAL FROM dual
+	  </selectKey>
+	
+	  INSERT INTO tbl_member_security
+	  (
+	    member_no,
+	    enabled,
+	    name,
+	    mobile,
+	    registerday, passwd_modify_date, last_login_date,
+	    member_type,
+	    lookup_key,
+	    grade_code         
+	  )
+	  VALUES
+	  (
+	    #{memberNo},
+	    '1',
+	    #{name},
+	    #{mobile},
+	    SYSDATE, SYSDATE, SYSDATE,
+	    'GUEST',
+	    #{lookupKey},
+	    NULL               <!-- DEFAULT 'classic'이기 때문에 비회원은 null로 넣어버림 -->
+	  )
+	</insert>
+
+	<!-- =========================================================
+	     3) 로그인 처리를 위해 사용되어지는 것임
+	     - memberid 로 회원정보 조회
+	     ========================================================= -->
+
+
+	<select id="findBySocialProvider" resultType="MemberDTO">
+		SELECT
+		  member_no              AS memberNo,
+		  memberid,
+		  passwd,
+		  enabled,
+		  name,
+		  birthday,
+		  email,
+		  mobile,
+		  postcode,
+		  address,
+		  detail_address,
+		  extra_address,
+		  point,
+		  point_earned_total,
+		  grade_code,
+		  registerday,
+		  passwd_modify_date,
+		  last_login_date,
+		  member_type           AS memberType,
+		  lookup_key            AS lookupKey,
+		  social_provider       AS socialProvider,
+		  provider_user_id      AS providerUserId
+		FROM tbl_member_security
+		WHERE social_provider = #{socialProvider}
+		  AND provider_user_id = #{providerUserId}
+	</select>
+
+	<select id="findByMemberNo" parameterType="Integer" resultType="MemberDTO">
+		SELECT
+		  member_no              AS memberNo,
+		  memberid,
+		  passwd,
+		  enabled,
+		  name,
+		  birthday,
+		  email,
+		  mobile,
+		  postcode,
+		  address,
+		  detail_address,
+		  extra_address,
+		  point,
+		  point_earned_total,
+		  grade_code,
+		  registerday,
+		  passwd_modify_date,
+		  last_login_date,
+		  member_type           AS memberType,
+		  lookup_key            AS lookupKey,
+		  social_provider       AS socialProvider,
+		  provider_user_id      AS providerUserId
+		FROM tbl_member_security
+		WHERE member_no = #{memberNo}
+	</select>
+
+	<select id="findByMemberid" parameterType="String" resultType="MemberDTO">
+		SELECT
+		  member_no              AS memberNo,
+		  memberid,
+		  passwd,
+		  enabled,
+		  name,
+		  birthday,
+		  email,
+		  mobile,
+		  postcode,
+		  address,
+		  detail_address,
+		  extra_address,
+		  point,
+		  point_earned_total,
+		  registerday,
+		  passwd_modify_date,
+		  last_login_date,
+		  grade_code,
+		  member_type           AS memberType,
+		  lookup_key            AS lookupKey,
+		  social_provider       AS socialProvider,
+		  provider_user_id      AS providerUserId
+		FROM tbl_member_security
+		WHERE memberid = #{memberid}
+	</select>
+
+	<!-- 권한 리스트: member_no 기준(권장) -->
+	<select id="authorityListByMemberNo" parameterType="Integer" resultType="String">
+		SELECT authority
+		FROM tbl_member_authorities
+		WHERE member_no = #{memberNo}
+	</select>
+
+	<!-- (필요시) memberid -> member_no 조회 -->
+	<select id="findMemberNoByMemberid" parameterType="String" resultType="Integer">
+		SELECT member_no
+		FROM tbl_member_security
+		WHERE memberid = #{memberid}
+	</select>
+
+
+	<!-- =========================================================
+	     4) 로그인 부가 기능
+	     ========================================================= -->
+
+	<!-- 로그인한 사용자 정보에서 비밀번호를 변경한 날짜가 현재일로 부터 몇개월 전 인지 그 개월차이를 알아온다. -->
+	<select id="lastPasswdChangeMonth" parameterType="String" resultType="Integer">
+		select trunc(months_between(sysdate, passwd_modify_date)) AS PASSWD_MODIFY_MONTH
+		from tbl_member_security
+		where memberid = #{memberid}
+	</select>
+
+	<!-- 로그인한 사용자 정보에서 로그인한 날짜를 현재일자로 업데이트 하도록 함. -->
+	<update id="update_last_login" parameterType="String">
+		UPDATE tbl_member_security
+		SET last_login_date = SYSDATE
+		WHERE memberid = #{memberid}
+	</update>
+
+	<update id="update_last_login_by_member_no" parameterType="Integer">
+		UPDATE tbl_member_security
+		SET last_login_date = SYSDATE
+		WHERE member_no = #{memberNo}
+	</update>
+
+	<!-- =========================================================
+	     5) 비밀번호 변경
+	     ========================================================= -->
+
+	<!-- 비밀번호 변경 하기 -->
+	<update id="passwdChange" parameterType="HashMap">
+		UPDATE tbl_member_security
+		SET passwd = #{passwd}
+		WHERE memberid = #{memberid}
+	</update>
+
+	<!-- 비밀번호 변경한 날짜를 SYSDATE 로 수정하기 -->
+	<update id="passwdModifyDate">
+		UPDATE tbl_member_security
+		SET passwd_modify_date = SYSDATE
+		WHERE memberid = #{memberid}
+	</update>
+
+
+	<!-- =========================================================
+	     6) 마이페이지: 회원 프로필 수정(연락처/주소) + 회원 비활성(탈퇴/정지)
+	     ========================================================= -->
+
+	<!-- 마이페이지: 회원 프로필 수정(연락처/주소) -->
+	<update id="update_member_profile" parameterType="MemberDTO">
+		UPDATE tbl_member_security
+		   SET mobile         = #{mobile},
+		       postcode       = #{postcode},
+		       address        = #{address},
+		       detail_address = #{detail_address},
+		       extra_address  = #{extra_address}
+		 WHERE member_no      = #{memberNo}
+	</update>
+
+	<!-- 회원 비활성(탈퇴/정지): enabled='0' -->
+	<update id="disable_member" parameterType="Integer">
+		UPDATE tbl_member_security
+		   SET enabled = '0'
+		 WHERE member_no = #{memberNo}
+	</update>
+
+
+	<!-- =========================================================
+	     7) 관리자/테스트용: 회원 전체 조회 (삭제)
+	     ========================================================= -->
+
+	
+
+
+	<!-- =========================================================
+	     8) 로그인 기록 남기기
+	     ========================================================= -->
+	<insert id="insertLoginhistory">
+	    INSERT INTO tbl_loginhistory(historyno, member_no, logindate, clientip)
+	    VALUES(seq_historyno.nextval, #{memberNo}, SYSDATE, #{clientip})
+	</insert>
+	
+	
+	<!-- =========================================================
+	     9) 아이디 찾기 / 비밀번호 찾기
+	     ========================================================= -->
+	<!-- 아이디 찾기: name + (email or mobile) -->
+	<select id="findMemberId" parameterType="HashMap" resultType="String">
+		SELECT memberid
+		FROM tbl_member_security
+		WHERE name = #{name}
+		<choose>
+			<when test="email != null and email != ''">
+				AND email = #{email}
+			</when>
+			<when test="mobile != null and mobile != ''">
+				AND mobile = #{mobile}
+			</when>
+			<otherwise>
+				<!-- email/mobile 둘 다 없으면 매칭 불가 -->
+				AND 1 = 0
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 비밀번호 찾기 본인확인: memberid + (email or mobile) 일치여부 -->
+	<select id="verifyMemberForPwReset" parameterType="HashMap" resultType="Integer">
+		SELECT count(*)
+		FROM tbl_member_security
+		WHERE memberid = #{memberid}
+		<choose>
+			<when test="email != null and email != ''">
+				AND email = #{email}
+			</when>
+			<when test="mobile != null and mobile != ''">
+				AND mobile = #{mobile}
+			</when>
+			<otherwise>
+				AND 1 = 0
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 임시 비밀번호(BCrypt 해시)로 업데이트 + 변경일 갱신 -->
+	<update id="updatePasswordForTemp" parameterType="HashMap">
+		UPDATE tbl_member_security
+		SET passwd = #{passwd},
+		    passwd_modify_date = SYSDATE
+		WHERE memberid = #{memberid}
+	</update>
+	
+	
+	<!-- id로 이메일 정보 얻기 -->
+	<select id="findEmailByMemberid" parameterType="String" resultType="String">
+	  SELECT email
+	  FROM tbl_member_security
+	  WHERE memberid = #{memberid}
+	</select>
+
+
+</mapper>

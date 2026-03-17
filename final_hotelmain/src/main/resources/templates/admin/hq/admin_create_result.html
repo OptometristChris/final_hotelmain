@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::div.container})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>발급 결과 | HQ</title>
+  <link rel="stylesheet" href="">
+  <style type="text/css">
+    .wrap{max-width:900px;margin:0 auto}
+    .card{border:1px solid #e8ddd7;border-radius:18px;padding:16px;background:#fff;box-shadow:0 18px 38px rgba(0,0,0,.06)}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid #e8ddd7;text-decoration:none}
+  </style>
+  <script th:inline="javascript">
+	 /*<![CDATA[*/
+	 /*]]>*/	
+  </script>
+</head>
+
+<body>
+<div class="container">
+  <div class="wrap">
+    <h2 style="margin:16px 0">발급 결과</h2>
+
+    <div class="card">
+      <div th:if="${message != null}" th:text="${message}">
+        처리 결과 메시지
+      </div>
+
+      <!-- [DUMMY] -->
+      <!-- [DUMMY-START] -->
+      <div th:unless="${message != null}">
+        (더미) message 값이 model에 없으면 여기가 보입니다.  
+        컨트롤러에서 model.addAttribute("message", ...) 넣으면 자동으로 실데이터가 보입니다.
+      </div>
+      <!-- [DUMMY-END] -->
+
+      <div style="margin-top:14px">
+        <a class="btn" th:href="@{/admin/hq/admins}">목록으로</a>
+        <a class="btn" th:href="@{/admin/hq/dashboard}" style="margin-left:6px">대시보드</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
