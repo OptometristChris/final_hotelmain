@@ -226,6 +226,7 @@ public class SecurityConfig {
                 .requestMatchers("/cs/qnaWrite", "/cs/qnaDelete").authenticated()
                 .requestMatchers("/reservation/**").permitAll()
                 .requestMatchers("/payment/**").permitAll()
+                .requestMatchers("/shuttle/**").permitAll()
                 .requestMatchers("/security/special/**").hasAnyRole("ADMIN_HQ", "ADMIN_BRANCH", "USER_SPECIAL")
                 .requestMatchers("/security/admin/**").hasAnyRole("ADMIN_HQ", "ADMIN_BRANCH")
                 .requestMatchers("/emp/**").hasAnyRole("ADMIN_HQ", "ADMIN_BRANCH")

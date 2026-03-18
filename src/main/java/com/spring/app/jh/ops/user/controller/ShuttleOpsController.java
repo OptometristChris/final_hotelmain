@@ -1,5 +1,7 @@
 package com.spring.app.jh.ops.user.controller;
 
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +12,7 @@ import com.spring.app.jh.ops.user.domain.ShuttleReservePageDTO;
 import com.spring.app.jh.ops.user.service.ShuttleOpsService;
 import com.spring.app.jh.security.auth.domain.JwtPrincipalDTO;
 import com.spring.app.jh.security.domain.CustomUserDetails;
+import com.spring.app.jh.security.domain.Session_GuestDTO;
 import com.spring.app.jh.security.domain.Session_MemberDTO;
 
 import jakarta.servlet.http.HttpSession;
@@ -39,11 +42,11 @@ public class ShuttleOpsController {
 
 
     @PostMapping("/confirm")
-    public String confirm(@RequestParam long reservationId,
-                          @RequestParam(required = false) java.util.List<Long> toTimetableIds,
-                          @RequestParam(required = false) java.util.List<Integer> toQtys,
-                          @RequestParam(required = false) java.util.List<Long> fromTimetableIds,
-                          @RequestParam(required = false) java.util.List<Integer> fromQtys,
+    public String confirm(@RequestParam("reservationId") long reservationId,
+				  		  @RequestParam(value = "toTimetableIds", required = false) List<Long> toTimetableIds,
+				          @RequestParam(value = "toQtys", required = false) List<Integer> toQtys,
+				          @RequestParam(value = "fromTimetableIds", required = false) List<Long> fromTimetableIds,
+				          @RequestParam(value = "fromQtys", required = false) List<Integer> fromQtys,
                           HttpSession session,
                           Authentication authentication) {
 
@@ -82,9 +85,16 @@ public class ShuttleOpsController {
     private Integer resolveMemberNo(HttpSession session, Authentication authentication) {
 
         if (session != null) {
+        	// 일반 회원 세션
             Object obj = session.getAttribute("sessionMemberDTO");
             if (obj instanceof Session_MemberDTO dto) {
                 return dto.getMemberNo();
+            }
+            
+            // 게스트(비회원) 세션
+            Object guestObj = session.getAttribute("guestSession");
+            if (guestObj instanceof Session_GuestDTO guestDto) {
+                return guestDto.getMemberNo();
             }
         }
 

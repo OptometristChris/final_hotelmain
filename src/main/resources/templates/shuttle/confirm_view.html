@@ -4,7 +4,7 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8"/>
-  <title>셔틀 예약 확인</title>
+  <title>객실 및 셔틀 예약 확인</title>
   <link rel="stylesheet" href="">
 
   <style>
@@ -432,7 +432,7 @@
 
   <div class="pageTop">
     <div>
-      <h1 class="pageTitle">셔틀 예약 내역</h1>
+      <h1 class="pageTitle">객실 및 셔틀 예약 내역</h1>
       <div class="pageDesc">
         오늘 기준으로 아직 유효한 객실 예약만 표시합니다.<br>
         체크아웃이 지난 객실예약은 목록에서 제외되며,
@@ -443,7 +443,7 @@
     <div class="userMini">
       <div class="label">예약자 정보</div>
       <div class="name">
-        <span th:text="${memberName}">홍길동</span>님의 셔틀예약 내역
+        <span th:text="${memberName}">홍길동</span>님의 객실 및 셔틀예약 내역
       </div>
       <div class="userMeta">
         <span class="pill">회원번호 <b th:text="${memberNo}">4</b></span>
