@@ -272,10 +272,13 @@ function func_AdminLogin() {
       if (("accessToken" in json) && json.accessToken) {
         alert("관리자 로그인 성공!!");
         sessionStorage.setItem("JWT", JSON.stringify(json));
+     	// ===== SSR 페이지 이동 시 notice 서비스에서도 읽을 수 있도록 accessToken 을 쿠키에도 저장 =====
+        document.cookie = "accessToken=" + encodeURIComponent(json.accessToken) + "; path=/; SameSite=Lax";
       }
       else {
         alert("관리자 로그인 실패!! (accessToken 이 없어요)");
         sessionStorage.removeItem("JWT");
+        document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         return;
       }
 
@@ -288,6 +291,7 @@ function func_AdminLogin() {
       else {
         alert("관리자 유형(adminType) 정보가 없습니다.");
         sessionStorage.removeItem("JWT");
+        document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       }
     },
     error: function(request, status, error){

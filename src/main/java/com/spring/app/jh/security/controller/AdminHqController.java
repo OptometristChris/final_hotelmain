@@ -21,6 +21,10 @@ import com.spring.app.jh.security.domain.AdminDTO;
 import com.spring.app.jh.security.domain.MemberDTO;
 import com.spring.app.jh.security.domain.Session_AdminDTO;
 import com.spring.app.jh.security.service.AdminService;
+import org.springframework.security.core.Authentication;
+
+import com.spring.app.jh.security.auth.domain.JwtPrincipalDTO;
+import com.spring.app.jh.security.domain.Session_AdminDTO;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -78,64 +82,77 @@ public class AdminHqController {
 		// 1. HQ 내 정보(프로필) 보기/수정
 		// ============================================================
 
-		@GetMapping("account/myInfo")
-		public String myInfo(HttpSession session, Model model){
+	@GetMapping("account/myInfo")
+	public String myInfo(HttpSession session, Model model, Authentication authentication){
 
-			Session_AdminDTO sad = (Session_AdminDTO) session.getAttribute("sessionAdminDTO");
+	    Integer adminNo = resolveAdminNo(session, authentication);
 
-			// 세션이 없다면 비정상 -> 다시 로그인
-			if(sad == null) {
-				return "redirect:/admin/login";
-			}
+	    if(adminNo == null) {
+	        return "redirect:/admin/login";
+	    }
 
-			AdminDTO adminDto = adminService.getAdminDetail(sad.getAdmin_no()); // TODO
-			model.addAttribute("adminDto", adminDto);
+	    AdminDTO adminDto = adminService.getAdminDetail(adminNo);
+	    model.addAttribute("adminDto", adminDto);
 
-			return "admin/hq/account/myInfo";
-			// src/main/resources/templates/admin/hq/account/myInfo.html
-		}
+	    return "admin/hq/account/myInfo";
+	}
 
 
-		@GetMapping("account/profileEdit")
-		public String profileEditForm(HttpSession session, Model model){
+	@GetMapping("account/profileEdit")
+	public String profileEditForm(HttpSession session, Model model, Authentication authentication){
 
-			Session_AdminDTO sad = (Session_AdminDTO) session.getAttribute("sessionAdminDTO");
-			if(sad == null) {
-				return "redirect:/admin/login";
-			}
+	    Integer adminNo = resolveAdminNo(session, authentication);
 
-			AdminDTO adminDto = adminService.getAdminDetail(sad.getAdmin_no()); // TODO
-			model.addAttribute("adminDto", adminDto);
+	    if(adminNo == null) {
+	        return "redirect:/admin/login";
+	    }
 
-			return "admin/hq/account/profileEditForm";
-			// src/main/resources/templates/admin/hq/account/profileEditForm.html
-		}
+	    AdminDTO adminDto = adminService.getAdminDetail(adminNo);
+	    model.addAttribute("adminDto", adminDto);
+
+	    return "admin/hq/account/profileEditForm";
+	}
 
 
-		@PostMapping("account/profileEdit")
-		public String profileEditEnd(AdminDTO adminDto, HttpSession session, Model model){
+	@PostMapping("account/profileEdit")
+	public String profileEditEnd(AdminDTO adminDto,
+	                             HttpSession session,
+	                             Model model,
+	                             Authentication authentication){
 
-			/*
-			   ★ 핵심: 어떤 관리자인지(PK=admin_no)는 세션에서 강제 주입해야 한다.
-			   - 사용자가 form에서 admin_no를 조작하는 것을 막기 위함.
-			*/
-			Session_AdminDTO sad = (Session_AdminDTO) session.getAttribute("sessionAdminDTO");
-			if(sad == null) {
-				return "redirect:/admin/login";
-			}
+	    Integer adminNo = resolveAdminNo(session, authentication);
 
-			adminDto.setAdmin_no(sad.getAdmin_no());
+	    if(adminNo == null) {
+	        return "redirect:/admin/login";
+	    }
 
-			int n = adminService.updateAdminProfile(adminDto); // TODO (name/email/mobile 등)
-			model.addAttribute("result", n);
+	    adminDto.setAdmin_no(adminNo);
 
-			return "admin/hq/account/profileEditResult";
-			// src/main/resources/templates/admin/hq/account/profileEditResult.html
-		}
+	    int n = adminService.updateAdminProfile(adminDto);
+	    model.addAttribute("result", n);
+
+	    return "admin/hq/account/profileEditResult";
+	}
 
 
 		
-	
+		private Integer resolveAdminNo(HttpSession session, Authentication authentication) {
+
+		    if (session != null) {
+		        Session_AdminDTO sad = (Session_AdminDTO) session.getAttribute("sessionAdminDTO");
+		        if (sad != null && sad.getAdmin_no() != null) {
+		            return sad.getAdmin_no();
+		        }
+		    }
+
+		    if (authentication != null && authentication.getPrincipal() instanceof JwtPrincipalDTO jwtPrincipal) {
+		        if (jwtPrincipal.getPrincipalNo() != null) {
+		            return jwtPrincipal.getPrincipalNo().intValue();
+		        }
+		    }
+
+		    return null;
+		}
 	
 	
 

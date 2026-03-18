@@ -80,7 +80,7 @@
                             <div class="carousel-inner">
                                 <div th:each="img, stat : ${#strings.arraySplit(dining.store_imgs, ',')}" 
                                      class="carousel-item" th:classappend="${stat.first} ? 'active'">
-                                    <img th:src="@{|/images/dining/${img}|}" class="d-block w-100" alt="매장사진">
+                                    <img th:src="@{/images/dining/{img}(img=${img})}" class="d-block w-100" alt="매장사진">
                                 </div>
                             </div>
                             <a class="carousel-control-prev" href="#storeCarousel" data-slide="prev"><span class="carousel-control-prev-icon"></span></a>
@@ -93,7 +93,7 @@
                             <div class="carousel-inner">
                                 <div th:each="img, stat : ${#strings.arraySplit(dining.food_imgs, ',')}" 
                                      class="carousel-item" th:classappend="${stat.first} ? 'active'">
-                                    <img th:src="@{|/images/dining/${img}|}" class="d-block w-100" alt="음식사진">
+                                    <img th:src="@{/images/dining/{img}(img=${img})}" class="d-block w-100" alt="음식사진">
                                 </div>
                             </div>
                             <a class="carousel-control-prev" href="#foodCarousel" data-slide="prev"><span class="carousel-control-prev-icon"></span></a>

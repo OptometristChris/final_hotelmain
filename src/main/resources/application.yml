@@ -101,6 +101,7 @@ logging: #로그 지정
 
 server:
   port: 8001
+  forward-headers-strategy: framework
   servlet:
     # 기존 /final_hotel context-path 제거
     encoding:

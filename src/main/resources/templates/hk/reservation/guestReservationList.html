@@ -63,7 +63,7 @@ function cancelGuest(btn){
     const token = document.querySelector("meta[name='_csrf']").content;
     const header = document.querySelector("meta[name='_csrf_header']").content;
     
-    fetch("/final_hotel/reservation/guestCancel",{
+    fetch("/reservation/guestCancel",{
         method:"POST",
         headers: {
         	"Content-Type": "application/x-www-form-urlencoded",

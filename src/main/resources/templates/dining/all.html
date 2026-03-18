@@ -137,7 +137,7 @@
 
         function changeHotel(hotelId) {
             const selectedType = '[[${selectedType}]]';
-            let url = "/final_hotel/dining/all?hotel_id=" + hotelId;
+            let url = "/dining/all?hotel_id=" + hotelId;
             if(selectedType && selectedType !== 'null' && selectedType !== '') {
                 url += "&d_type=" + selectedType;
             }
@@ -164,7 +164,7 @@
         </div>
 
 	    <div class="hotel-select-wrap">
-	        <select class="custom-select-sm" onchange="location.href='/final_hotel/dining/all?hotel_id=' + this.value">
+	        <select class="custom-select-sm" onchange="location.href='/dining/all?hotel_id=' + this.value">
 	            <option value="">전체 호텔</option>
 	            <option value="1" th:selected="${selectedHotel == 1}">CIEL</option>
 	            <option value="2" th:selected="${selectedHotel == 2}">LE CIEL</option>
@@ -178,7 +178,7 @@
 	                <div class="img-wrapper shadow-sm">
 	                    <img th:src="@{/images/dining/{img}(img=${dining.main_img})}" 
 	                         th:alt="${dining.name}"
-	                         onerror="this.src='/final_hotel/images/dining/default_dining.jpg'">
+	                         onerror="this.src='/images/dining/default_dining.jpg'">
 	                </div>
 	
 	                <div class="badge-container">

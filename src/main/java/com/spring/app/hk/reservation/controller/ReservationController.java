@@ -28,7 +28,6 @@ public class ReservationController {
 
 	private final ReservationService reservationService;
 
-	// 예약 정보 입력 페이지 (객실 정보 조회, 숙박일 계산, 총 객실 기본요금 계산)
 	@GetMapping("/form")
 	public String reservationForm(@RequestParam("room_type_id") int room_type_id,
 			@RequestParam("check_in") String check_in,
@@ -40,19 +39,13 @@ public class ReservationController {
 			HttpSession session,
 			Model model) {
 
-		// 객실 기본 정보 조회 (DAO → ROOM + HOTEL JOIN)
 		Map<String, Object> roomInfo = reservationService.getRoomInfo(room_type_id);
 
-		// ===============================
-		// 로그인 사용자 정보 가져오기
-		// 회원 로그인 / 비회원 로그인 모두 처리
-		// ===============================
 		String name = null;
 		String mobile = null;
 		String email = null;
 		Integer memberNo = null;
 
-		// 1️⃣ 회원 로그인 (Spring Security)
 		if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
 
 			CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
@@ -63,7 +56,6 @@ public class ReservationController {
 			memberNo = userDetails.getMemberDto().getMemberNo();
 		}
 
-		// 2️⃣ 비회원 로그인 (세션 guestSession)
 		if (name == null) {
 
 			Session_GuestDTO guest = (Session_GuestDTO) session.getAttribute("guestSession");
@@ -75,28 +67,20 @@ public class ReservationController {
 			}
 		}
 		
-		// 추가
 		if(memberNo == null){
-
 		    model.addAttribute("message","로그인 또는 비회원 로그인이 필요합니다.");
-		    model.addAttribute("loc","/final_hotel/security/login");
-
+		    model.addAttribute("loc","/security/login");
 		    return "msg";
 		}
 
-		// 숙박일 계산
 		LocalDate inDate = LocalDate.parse(check_in.trim());
 		LocalDate outDate = LocalDate.parse(check_out.trim());
 		long nights = ChronoUnit.DAYS.between(inDate, outDate);
 
-		// 기본 객실 요금 계산 (1박 요금 * 숙박일)
 		int basePrice = ((Number) roomInfo.get("BASE_PRICE")).intValue();
 		int maxCapacity = ((Number) roomInfo.get("MAX_CAPACITY")).intValue();
 		int totalRoomPrice = basePrice * (int) nights;
 
-		// ===============================
-		// 모델 데이터 전달
-		// ===============================
 		model.addAttribute("memberName", name);
 		model.addAttribute("memberMobile", mobile);
 		model.addAttribute("memberEmail", email);
@@ -112,32 +96,27 @@ public class ReservationController {
 		model.addAttribute("max_capacity", maxCapacity);
 		model.addAttribute("base_price", totalRoomPrice);
 
-		model.addAttribute("room_price", room_price); // 추가 (가격 합)
-		model.addAttribute("currency", currency); // 추가 (환율, 세금)
+		model.addAttribute("room_price", room_price);
+		model.addAttribute("currency", currency);
 		model.addAttribute("tax", tax);
 
 		return "hk/reservation/form";
 	}
 
-	// 예약 저장용
 	@PostMapping("/save")
 	public String saveReservation(@RequestParam Map<String, String> map,
 								  HttpSession session,
 								  Model model) {
 
-		// 1. 넘어온 결제 정보 확인 (디버깅용)
 		System.out.println("결제 성공 UID: " + map.get("payment_imp_uid"));
 		System.out.println("최종 결제 금액: " + map.get("applied_price"));
 		System.out.println("프로모션 ID: " + map.get("promotion_id"));
 
-		// 2. 서비스 단에서 예약 정보 저장
 		String reservationCode = reservationService.saveReservation(map, session);
 
-		// 3. 성공 시 완료 페이지로 이동
 		return "redirect:/reservation/complete?code=" + reservationCode;
 	}
 
-	// 예약 완료 페이지
 	@GetMapping("/complete")
 	public String reservationComplete(@RequestParam("code") String code, Model model) {
 
@@ -152,28 +131,19 @@ public class ReservationController {
 		return "hk/reservation/complete";
 	}
 
-	// =======================================================
-	// 마이페이지 : 로그인 회원의 예약 목록 조회
-	// =======================================================
 	@GetMapping("/mypage")
 	public String myReservationList(Authentication auth, Model model) {
 
-		// 로그인 사용자 정보 가져오기
 		CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
 		int memberNo = userDetails.getMemberDto().getMemberNo();
 
-		// 예약 목록 조회
 		List<Map<String, Object>> reservationList = reservationService.selectMyReservationList(memberNo);
 
-		// 화면에 전달
 		model.addAttribute("reservationList", reservationList);
 
 		return "hk/reservation/reservationList";
 	}
 
-	// ======================================
-	// 예약 취소
-	// ======================================
 	@PostMapping("/cancel")
 	@ResponseBody
 	public String cancelReservation(@RequestParam("reservation_id") Long reservationId){
@@ -187,19 +157,11 @@ public class ReservationController {
 	    return "deadline";
 	}
 	
-	
-	// ======================================
-	// 비회원 예약 조회 페이지
-	// ======================================
 	@GetMapping("/guest")
 	public String guestReservationSearchPage(){
 	    return "hk/reservation/guestSearch";
 	}
 
-
-	// ======================================
-	// 비회원 예약 조회 처리
-	// ======================================
 	@PostMapping("/guest")
 	public String guestReservationSearch(
 	        @RequestParam("name") String name,
@@ -214,14 +176,11 @@ public class ReservationController {
 	    return "hk/reservation/guestReservationList";
 	}
 	
-	// ======================================
-	// 비회원 예약 취소
-	// ======================================
 	@PostMapping("/guestCancel")
 	@ResponseBody
 	public String cancelGuestReservation(@RequestParam("reservation_code") String reservationCode){
 
-		  System.out.println("받은 예약코드 = " + reservationCode);
+		System.out.println("받은 예약코드 = " + reservationCode);
 		
 	    int n = reservationService.cancelGuestReservation(reservationCode);
 
@@ -233,5 +192,4 @@ public class ReservationController {
 
 	    return "deadline";
 	}
-	
 }

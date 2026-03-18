@@ -13,6 +13,10 @@ import com.spring.app.jh.ops.admin.service.AdminDashboardService;
 import com.spring.app.jh.security.domain.AdminDTO;
 import com.spring.app.jh.security.domain.Session_AdminDTO;
 import com.spring.app.jh.security.service.AdminService;
+import org.springframework.security.core.Authentication;
+
+import com.spring.app.jh.security.auth.domain.JwtPrincipalDTO;
+import com.spring.app.jh.security.domain.Session_AdminDTO;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -44,31 +48,42 @@ public class AdminBranchController {
 	// ============================================================
 
 	@GetMapping("dashboard")
-	public String dashboard(HttpSession session, Model model) {
+	public String dashboard(HttpSession session, Model model, Authentication authentication) {
 
-        Session_AdminDTO sad = (Session_AdminDTO) session.getAttribute("sessionAdminDTO");
+	    Integer hotelId = null;
 
-        if (sad == null || sad.getFk_hotel_id() == null) {
-            return "redirect:/admin/login";
-        }
+	    Session_AdminDTO sad = (Session_AdminDTO) session.getAttribute("sessionAdminDTO");
+	    if (sad != null && sad.getFk_hotel_id() != null) {
+	        hotelId = sad.getFk_hotel_id();
+	    }
+	    else if (authentication != null
+	          && authentication.getPrincipal() instanceof JwtPrincipalDTO jwtPrincipal) {
 
-        int hotelId = sad.getFk_hotel_id();
+	        if ("ADMIN".equals(jwtPrincipal.getPrincipalType()) || jwtPrincipal.getAdminType() != null) {
+	            if (jwtPrincipal.getHotelId() != null) {
+	                hotelId = jwtPrincipal.getHotelId().intValue();
+	            }
+	        }
+	    }
 
-        AdminDashboardKpiDTO kpi = adminDashboardService.getBranchDashboardKpi(hotelId);
-        MonthlyReservationSummaryDTO monthlySummary = adminDashboardService.getBranchMonthlyReservationSummary(hotelId);
+	    if (hotelId == null) {
+	        return "redirect:/admin/login";
+	    }
 
+	    AdminDashboardKpiDTO kpi = adminDashboardService.getBranchDashboardKpi(hotelId);
+	    MonthlyReservationSummaryDTO monthlySummary = adminDashboardService.getBranchMonthlyReservationSummary(hotelId);
 
-        model.addAttribute("kpi_occupancy", kpi.getOccupancyRate());
-        model.addAttribute("kpi_sales", kpi.getMonthlySales());
-        model.addAttribute("kpi_cancelRate", kpi.getCancelRate());
-        model.addAttribute("kpi_revpar", kpi.getRevpar());
-        
-        model.addAttribute("monthlySummary", monthlySummary);
-        model.addAttribute("todayReservationCount", adminDashboardService.getBranchTodayReservationCount(hotelId));
-        model.addAttribute("todayCancelCount", adminDashboardService.getBranchTodayCancelCount(hotelId));
+	    model.addAttribute("kpi_occupancy", kpi.getOccupancyRate());
+	    model.addAttribute("kpi_sales", kpi.getMonthlySales());
+	    model.addAttribute("kpi_cancelRate", kpi.getCancelRate());
+	    model.addAttribute("kpi_revpar", kpi.getRevpar());
 
-        return "admin/branch/branch_dashboard";
-    }
+	    model.addAttribute("monthlySummary", monthlySummary);
+	    model.addAttribute("todayReservationCount", adminDashboardService.getBranchTodayReservationCount(hotelId));
+	    model.addAttribute("todayCancelCount", adminDashboardService.getBranchTodayCancelCount(hotelId));
+
+	    return "admin/branch/branch_dashboard";
+	}
 
 
 	

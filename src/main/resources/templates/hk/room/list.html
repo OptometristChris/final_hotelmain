@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <title>객실 목록</title>
 
-
 <style>
 body {
 	font-family: 'Pretendard', sans-serif;
@@ -112,7 +111,7 @@ h1 {
 
 .filter-wrapper {
 	max-width: 1100px;
-	width: 100%; /* 추가 */
+	width: 100%;
 	margin: 0 auto 40px auto;
 	padding: 25px 30px;
 	background: #fafafa;
@@ -244,7 +243,6 @@ h1 {
 }
 </style>
 
-<!-- FullCalendar CSS -->
 <link
 	href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css"
 	rel="stylesheet">
@@ -263,7 +261,6 @@ h1 {
 			</select>
 		</div>
 
-		<!-- 체크박스 -->
 		<div
 			style="max-width: 1100px; margin: 0 auto 20px auto; text-align: right;">
 			<label> <input type="checkbox" id="extraFeeCheck"> 세금
@@ -271,25 +268,17 @@ h1 {
 			</label>
 		</div>
 
-		<!-- 사용자가 선택한 체크인/체크아웃 날짜 표시 영역 -->
 		<div id="selectedDateBox" style="margin: 20px 0; font-weight: bold;">
 
 		</div>
 
-		<!-- 예약 페이지로 넘길 값 저장용 hidden input -->
-		<input type="hidden" id="checkInInput" name="check_in"> <input
-			type="hidden" id="checkOutInput" name="check_out">
+		<input type="hidden" id="checkInInput" name="check_in"> 
+		<input type="hidden" id="checkOutInput" name="check_out">
 
-		<!-- ===============================
-      필터 (AJAX)
-     =============================== -->
-		<div
-			style="display: flex; justify-content: center; margin-bottom: 20px;">
+		<div style="display: flex; justify-content: center; margin-bottom: 20px;">
 
-			<!-- 좌측 필터 -->
 			<div class="filter-wrapper">
 			    
-			    <!-- 1줄 -->
 			    <div class="filter-row">
 			        <form id="filterForm" class="filter-group">
 			
@@ -316,7 +305,7 @@ h1 {
 			             <option value="DOUBLE" th:selected="${searchParams?.bedType == 'DOUBLE'}">DOUBLE</option>
 			             <option value="TWIN" th:selected="${searchParams?.bedType == 'TWIN'}">TWIN</option>
 			             <option value="KING" th:selected="${searchParams?.bedType == 'KING'}">KING</option>
-			         </select>
+			         	</select>
 			
 			            <select name="view_type">
 			                <option value="">전망 전체</option>
@@ -324,6 +313,7 @@ h1 {
 			                <option value="RIVER">RIVER</option>
 			            </select>        
 			               
+
 			            <select name="capacity">
 						    <option value="">인원 전체</option>
 						    <option value="1">1명</option>
@@ -345,36 +335,32 @@ h1 {
 			
 			    </div>
 			    
-			       <!-- 2줄 (날짜 + 검색) -->
-			      <div class="filter-row" style="margin-top:15px;">
-			            <div class="filter-date">
-			                 <input type="date" id="filterCheckIn" name="filter_check_in"
-			                 th:value="${searchParams?.checkIn}">
+			    <div class="filter-row" style="margin-top:15px;">
+			        <div class="filter-date">
+			            <input type="date" id="filterCheckIn" name="filter_check_in"
+			                th:value="${searchParams?.checkIn}">
 			            <span>~</span>
 			            <input type="date" id="filterCheckOut" name="filter_check_out"
-			            th:value="${searchParams?.checkOut}">
-			         </div>
+			                th:value="${searchParams?.checkOut}">
+			        </div>
 			         
-			         <button type="submit" form="filterForm" class="filter-search-btn">
-			                검색
-			            </button>
-			
-			      </div>
-			   </div>
+			        <button type="submit" form="filterForm" class="filter-search-btn">
+			            검색
+			        </button>
+			    </div>
+			</div>
 		</div>
 
 		<hr>
 
-		<!-- ===============================
-     객실 목록 영역
-     =============================== -->
 		<div id="roomListArea">
 
 			<div th:each="room : ${roomList}" class="room-card">
 
 				<div class="room-image">
 					<img th:src="@{${room.image_url}}"
-						style="width: 100%; height: 100%; object-fit: cover;">
+						 onerror="this.src='/images/dining/default_dining.jpg'"
+						 style="width: 100%; height: 100%; object-fit: cover;">
 				</div>
 
 				<div class="room-info">
@@ -394,7 +380,7 @@ h1 {
 						전망: <span th:text="${room.view_type}"></span>
 					</div>
 
-					<div class="price">
+					<div th:class="'price price-' + ${room.room_type_id}">
 						가격 조회 중 ...
 					</div>
 
@@ -410,10 +396,6 @@ h1 {
 			</div>
 		</div>
 
-
-		<!-- =======================
-	 예약 모달
-	======================= -->
 		<div id="calendarModal"
 			style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);">
 
@@ -424,20 +406,16 @@ h1 {
 
 				<h2>날짜 선택</h2>
 
-				<!-- 실제 달력 -->
 				<div id="calendar"></div>
 			</div>
 		</div>
 
-
-		<!-- 비교(푸터) -->
 		<div id="compareBar"
 			style="position: fixed; bottom: 0; left: 0; width: 100%; background: #111; color: white; padding: 15px; display: none; z-index: 9999;">
 
 			<div
 				style="display: flex; justify-content: space-between; align-items: center;">
 				<div id="compareItems">
-					<!-- 선택된 객실 표시 -->
 				</div>
 
 				<button onclick="openCompareModal()"
@@ -446,10 +424,6 @@ h1 {
 			</div>
 		</div>
 
-
-		<!-- =======================
-     비교 모달
-	======================= -->
 		<div id="compareModal"
 			style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 10000;">
 
@@ -469,85 +443,61 @@ h1 {
 				<h2>상품 비교 상세</h2>
 
 				<div id="compareModalBody" style="margin-top: 30px;">
-					<!-- JS로 채워짐 -->
 				</div>
 
 			</div>
 		</div>
 
-		<!-- ===============================
-     AJAX 스크립트
-     =============================== -->
-
-		<!-- FullCalendar JS -->
 		<script
 			src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 
 		<script>
-
-// 환율
 let exchangeRates = { KRW: 1 };
 let currentCurrency = "KRW";
-
-// 체크박스 (세금봉사료)
 let includeExtraFee = false;
-
-// 숙박 가격 합산용
 let calendarData = [];
 let currentRoomId = null;
 
-// ===============================
-// 달력 모달
-// ===============================
-let calendarInstance = null; // 드래그
-let selectedCheckIn = null;  // 클릭
-let selectedCheckOut = null; // 클릭
+let calendarInstance = null;
+let selectedCheckIn = null;
+let selectedCheckOut = null;
 
 function openCalendar(roomId) {
-
-	// 모달 표시
     document.getElementById("calendarModal").style.display = "block";
 
-    // 해당 객실의 날짜별 가격 조회
-    fetch(`/final_hotel/room/calendar?room_id=${roomId}`)
+    fetch(`/room/calendar?room_id=${roomId}`)
         .then(res => res.json())
         .then(data => {
 
-        	 calendarData = data; // 추가
+            calendarData = data;
 
-        	 // 서버에서 받은 날짜별 가격 → 달력 이벤트 형식으로 변환
             const events = data.map(day => ({
 			    title: day.AVAILABLE_COUNT === 0 
 			           ? "예약마감" 
 			           : calculateFinalPrice(day.FINAL_PRICE),
 			    start: day.STAY_DATE,
 			    allDay: true,
-			    color: day.AVAILABLE_COUNT === 0 ? "#999999" : ""  // 재고 0 이면 회색처리
+			    color: day.AVAILABLE_COUNT === 0 ? "#999999" : ""
 			}));
 
             const calendarEl = document.getElementById("calendar");
 
-            // 기존 달력 제거 (중복 생성 방지)
             if(calendarInstance !== null){
                 calendarInstance.destroy();
             }
 
-            // FullCalendar 생성  [달력 옵션]
             calendarInstance = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth', // 월 단위 보기
+                initialView: 'dayGridMonth',
                 height: 650,
-                selectable: true,      // 드래그 선택 가능
-                selectMirror: true,    // 선택 영역 표시
-                unselectAuto: false,   // 자동 해제 방지
+                selectable: true,
+                selectMirror: true,
+                unselectAuto: false,
                            
-                // ======= 날짜 범위 선택 시 실행 =======
-                // 드래그
                 select: function(info){
 
                     let start = info.startStr;
                     let end = new Date(info.endStr);
 
-                    // FullCalendar는 end가 하루 더해져서 오므로 -1일 해준다
                     end.setDate(end.getDate() - 1);
 
                     let adjustedEnd =
@@ -569,7 +519,6 @@ function openCalendar(roomId) {
                     closeModal();
                 },
                 
-                // 클릭 → 클릭 방식
                 dateClick: function(info){
 
                     const clickedDay = data.find(d => d.STAY_DATE === info.dateStr);
@@ -579,13 +528,11 @@ function openCalendar(roomId) {
                         return;
                     }
 
-                    // 체크인
                     if(!selectedCheckIn){
                         selectedCheckIn = info.dateStr;
                         return;
                     }
 
-                    // 체크아웃
                     selectedCheckOut = info.dateStr;
 
                     if(new Date(selectedCheckOut) <= new Date(selectedCheckIn)){
@@ -602,13 +549,11 @@ function openCalendar(roomId) {
                     closeModal();
                 },
                 
-                // ======= 재고 없으면 예약 막기 =======
                 selectAllow: function(selectInfo){
 
                     const start = selectInfo.startStr;
                     const end = selectInfo.endStr;
 
-                    // 선택한 범위 안에 재고 0 날짜가 있는지 확인
                     const hasSoldOut = data.some(day => 
                         day.AVAILABLE_COUNT === 0 &&
                         day.STAY_DATE >= start &&
@@ -623,60 +568,41 @@ function openCalendar(roomId) {
                     return true;
                 },
 
-                events: events // 날짜별 가격 표시
+                events: events
             });                
 
-            calendarInstance.render(); // 달력 렌더링
+            calendarInstance.render();
         });
 }
 
-//===============================
-//모달 닫기
-//===============================
 function closeModal(){
     document.getElementById("calendarModal").style.display = "none";
 }
 
-
-//===============================
-// 모달에서 예약하기
-//===============================
-// 선택된 날짜 페이지 반영
 function applyDateToPage(checkIn, checkOut){
 
-    const roomId = currentRoomId;  // 선택한 객실
-
-     // 날짜별 가격 합 계산
+    const roomId = currentRoomId;
     const totalRoomPrice = calculateStayPrice(checkIn, checkOut);
     
-    // 환율 + 세금
     const currency = currentCurrency;
     const tax = includeExtraFee;
 
-    // 예약 페이지로 이동
-    location.href = `/final_hotel/reservation/form?room_type_id=${roomId}&check_in=${checkIn}&check_out=${checkOut}&room_price=${totalRoomPrice}&currency=${currency}&tax=${tax}`;
+    location.href = `/reservation/form?room_type_id=${roomId}&check_in=${checkIn}&check_out=${checkOut}&room_price=${totalRoomPrice}&currency=${currency}&tax=${tax}`;
 }
 
-// 날짜별 가격 합 계산 함수
 function calculateStayPrice(checkIn, checkOut){
 
     let total = 0;
 
     calendarData.forEach(day => {
-
         if(day.STAY_DATE >= checkIn && day.STAY_DATE < checkOut){
             total += day.FINAL_PRICE;
         }
-
     });
 
     return total;
 }
 
-
-//박수 계산 함수
-//체크인 날짜와 체크아웃 날짜의 차이를 계산해서
-//총 숙박 일수를 반환한다.
 function calculateNights(start, end){
     const s = new Date(start);
     const e = new Date(end);
@@ -684,58 +610,37 @@ function calculateNights(start, end){
     return diff / (1000 * 60 * 60 * 24);
 }
 
-
-// 예약 버튼 클릭 처리 함수
 function handleReserveClick(roomId) {
-
     currentRoomId = roomId;
-
-    // 무조건 달력 열기
     openCalendar(roomId);
 }
 
-
-// 최저가 계산 함수
 function getMinPrice(calendarData){
-
     if(!calendarData || calendarData.length === 0){
         return null;
     }
-
     return Math.min(...calendarData.map(d => d.FINAL_PRICE));
 }
 
-// 객실별 calendar API 호출 함수
 function loadMinPrice(roomId){
-
-    fetch(`/final_hotel/room/calendar?room_id=${roomId}`)
+    fetch(`/room/calendar?room_id=${roomId}`)
         .then(res => res.json())
         .then(data => {
 
             const minPrice = getMinPrice(data);
-
             const priceArea = document.querySelector(`.price-${roomId}`);
 
+            if(!priceArea) return;
+
             if(minPrice){
-
                 priceArea.dataset.basePrice = minPrice;
-
-                priceArea.innerText =
-                    "최저 " + calculateFinalPrice(minPrice) + " ~";
-
+                priceArea.innerText = "최저 " + calculateFinalPrice(minPrice) + " ~";
             }else{
                 priceArea.innerText = "가격 정보 없음";
             }
-
         });
 }
 
-
-//======================================
-// 필터 AJAX : 필터 폼 제출 시 페이지 이동 막고 AJAX로 객실 목록 재조회
-// + 날짜 선택 시 재고 판단
-// + 우측 정렬 필터 (js공통함수)
-//======================================
 function loadRooms() {
 
     const hotel = document.querySelector("[name='hotel']").value;
@@ -745,19 +650,15 @@ function loadRooms() {
     const capacity = document.querySelector("[name='capacity']").value;
     const sort = document.getElementById("sortSelect").value;
     
-    // 날짜 값
     const checkIn = document.getElementById("filterCheckIn").value;
     const checkOut = document.getElementById("filterCheckOut").value;
 
-    // 날짜 없으면 재고 조건 없이 조회
-    let url = `/final_hotel/room/filter?hotel=${hotel}&room_grade=${roomGrade}&bed_type=${bedType}&view_type=${viewType}&capacity=${capacity}&sort=${sort}`;
+    let url = `/room/filter?hotel=${hotel}&room_grade=${roomGrade}&bed_type=${bedType}&view_type=${viewType}&capacity=${capacity}&sort=${sort}`;
 
-    // 체크인 체크아웃 선택 하면 재고 조건 포함하여 조회 (예약 마감)
     if(checkIn && checkOut){
         url += `&check_in=${checkIn}&check_out=${checkOut}`;
     }
     
-    // ajax 요청
     fetch(url)
         .then(res => res.json())
         .then(data => {
@@ -774,20 +675,14 @@ function loadRooms() {
             	
             	let stockHtml = "";
             	let reserveBtn;
-            	let priceHtml = "";
             	
-            	// 날짜 선택 전
             	if(!checkIn || !checkOut){
-
             	    reserveBtn = `
             	        <button onclick="handleReserveClick(${room.room_type_id})">
             	            예약하기
             	        </button>
             	    `;
-            	    // 가격 표시 안함
             	}
-
-            	// 날짜 선택 후
             	else {
             		if(room.availableCount === 0){
                 	    stockHtml = `<div style="color:gray; font-weight:bold;">
@@ -810,24 +705,24 @@ function loadRooms() {
               	        `;
                 	}
             		else {
-            		        reserveBtn = `
-            		            <button onclick="handleReserveClick(${room.room_type_id})">
-            		                예약하기
-            		            </button>
-            		        `;
+            		    reserveBtn = `
+            		        <button onclick="handleReserveClick(${room.room_type_id})">
+            		            예약하기
+            		        </button>
+            		    `;
             		}
-            		
             	}
             	
                 area.innerHTML += `
                     <div class="room-card">
                         <div class="room-image">
-                            <img src="/final_hotel${room.image_url}"
+                            <img src="${room.image_url}"
+                                 onerror="this.src='/images/dining/default_dining.jpg'"
                                  style="width:100%; height:100%; object-fit:cover;">
                         </div>
                         <div class="room-info">
                             <div class="room-name">
-                                <a href="/final_hotel/room/detail?room_id=${room.room_type_id}">
+                                <a href="/room/detail?room_id=${room.room_type_id}">
                                     ${room.room_name}
                                 </a>
                             </div>
@@ -849,39 +744,25 @@ function loadRooms() {
                     </div>
                 `;
                 
-                // 츠가
                 loadMinPrice(room.room_type_id);
-                
             });
 
             updatePricesByCurrency(currentCurrency);
-            
         });
-    
 }
 
-
-//필터 검색
 document.getElementById("filterForm").addEventListener("submit", function(e){
     e.preventDefault();
     loadRooms();
 });
 
-
-// 정렬 변경 시 자동 실행
 document.getElementById("sortSelect").addEventListener("change", function(){
     loadRooms();
 });
 
-
-//======================================
-//비교하기 버튼 클릭시 푸터에 나오게끔 (비교함에 3개까지 저장 가능) + localstorage에 저장 + 이미지 연결
-//======================================
 function addToCompare(roomId){
 
     let compareList = JSON.parse(localStorage.getItem("compareList")) || [];
-
-    // 클릭한 카드 찾기
     const card = event.target.closest(".room-card");
 
     const name = card.querySelector(".room-name a").innerText;
@@ -904,11 +785,9 @@ function addToCompare(roomId){
     });
 
     localStorage.setItem("compareList", JSON.stringify(compareList));
-
     updateCompareFooter();
 }
 
-// 푸터에 표시 (비교 바)
 function updateCompareFooter(){
 
     let compareList = JSON.parse(localStorage.getItem("compareList")) || [];
@@ -926,7 +805,6 @@ function updateCompareFooter(){
     bar.style.display = "block";
 
     compareList.forEach(room => {
-
         items.innerHTML += `
             <div style="
                 display:flex;
@@ -955,10 +833,7 @@ function updateCompareFooter(){
     });
 }
 
-
-// 페이지 로드시도 실행
 document.addEventListener("DOMContentLoaded", function(){
-	
    const savedCurrency = localStorage.getItem("currency");
 
     if(savedCurrency){
@@ -971,8 +846,6 @@ document.addEventListener("DOMContentLoaded", function(){
     loadExchangeRates();
 });
 
-
-// 푸터 비교하기 버튼 클릭 시 서버에서 데이터 받아옴
 function openCompareModal(){
 
     let compareList = JSON.parse(localStorage.getItem("compareList")) || [];
@@ -987,7 +860,7 @@ function openCompareModal(){
     const token = document.querySelector("meta[name='_csrf']").content;
     const header = document.querySelector("meta[name='_csrf_header']").content;
     
-    fetch("/final_hotel/room/compare", { 
+    fetch("/room/compare", { 
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -1001,19 +874,15 @@ function openCompareModal(){
     });
 }
 
-// 삭제하기
 function removeFromCompare(roomId){
 
     let compareList = JSON.parse(localStorage.getItem("compareList")) || [];
-
     compareList = compareList.filter(r => r.id !== roomId);
 
     localStorage.setItem("compareList", JSON.stringify(compareList));
-
     updateCompareFooter();
 }
 
-// 비교하기 모달 렌더링하기 (이미지 추가)
 function renderCompareModal(data){
 
     const modal = document.getElementById("compareModal");
@@ -1069,25 +938,19 @@ function renderCompareModal(data){
     	`;
 
     body.innerHTML = html;
-
     modal.style.display = "block";
 }
 
-
-// 비교하기 모달 닫기
 function closeCompareModal(){
     document.getElementById("compareModal").style.display = "none";
 }
 
-
-// 환율 api 호출
 function loadExchangeRates() {
     fetch("https://open.er-api.com/v6/latest/KRW")
         .then(response => response.json())
         .then(data => {
             exchangeRates = data.rates;
-            exchangeRates["KRW"] = 1; // 기준통화
-
+            exchangeRates["KRW"] = 1;
             console.log("환율 저장 완료");
         })
         .catch(error => {
@@ -1095,8 +958,6 @@ function loadExchangeRates() {
         });
 }
 
-
-// 통화 변경시 가격 재계산 함수
 function updatePricesByCurrency(currency){
 
     currentCurrency = currency;
@@ -1107,10 +968,8 @@ function updatePricesByCurrency(currency){
             const basePrice = Number(el.dataset.basePrice);
 
             if(basePrice){
-                el.innerText =
-                    "최저 " + calculateFinalPrice(basePrice) + " ~";
+                el.innerText = "최저 " + calculateFinalPrice(basePrice) + " ~";
             }
-
         });
 }
 
@@ -1121,45 +980,36 @@ function formatCurrency(amount, currency){
     }).format(amount);
 }
 
-// 셀렉트 이벤트 연결
 document.getElementById("currencySelect")
     .addEventListener("change", function(){
     	
     	currentCurrency = this.value;
-
-        localStorage.setItem("currency", currentCurrency); // 통화 선택시 저장
-    	
+        localStorage.setItem("currency", currentCurrency);
         updatePricesByCurrency(this.value);
         
-        // 비교 모달 가격 갱신
         document.querySelectorAll(".compare-price")
             .forEach(el => {
                 const base = Number(el.dataset.basePrice);
                 el.innerText = calculateFinalPrice(base);
             });
         
-        // 달력이 열려있으면 다시 열어서 갱신
         if(calendarInstance !== null){
             const currentRoomId = window.currentRoomId;
             if(currentRoomId){
                 openCalendar(currentRoomId);
             }
         }
-        
     });
     
     
-// 달력 모달에 통화 변환시 적용 위해 함수 추가 + 세금. 봉사료 체크박스 반영 추가
 function calculateFinalPrice(basePrice){
 
     let price = basePrice;
 
-    // 세금·봉사료 10%
     if(includeExtraFee){
         price *= 1.1;
     }
 
-    // 환율 적용
     const rate = exchangeRates[currentCurrency] || 1;
 
     if(currentCurrency !== "KRW"){
@@ -1172,31 +1022,24 @@ function calculateFinalPrice(basePrice){
     }).format(price);
 }
 
-
-// 체크박스 이벤트 연결
 document.getElementById("extraFeeCheck")
 .addEventListener("change", function(){
 
     includeExtraFee = this.checked;
-
     updatePricesByCurrency(currentCurrency);
 
-    // 비교 모달 갱신
     document.querySelectorAll(".compare-price")
         .forEach(el => {
             const base = Number(el.dataset.basePrice);
             el.innerText = calculateFinalPrice(base);
         });
 
-    // 달력 열려있으면 다시 렌더
     if(calendarInstance !== null){
         if(window.currentRoomId){
             openCalendar(window.currentRoomId);
         }
     }
 });
-
-
 </script>
 
 	</div>

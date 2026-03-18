@@ -151,7 +151,7 @@
 
             const roomId = selectedRadio.value;
             try {
-                const response = await fetch(`/final_hotel/room/calendar?room_id=${roomId}`);
+                const response = await fetch(`/room/calendar?room_id=${roomId}`);
                 calendarData = await response.json();
                 updateFinalDisplay(checkInVal, checkOutVal);
             } catch (error) {
@@ -213,13 +213,13 @@
 
             const selectedRadio = document.querySelector('input[name="room_type_id"]:checked');
 
-            IMP.init("imp76388561"); // 실제 연동된 가맹점 식별코드를 입력하세요
+            IMP.init("imp76388561");
             IMP.request_pay({
                 pg: "html5_inicis",
                 pay_method: "card",
                 merchant_uid: "hotel_" + new Date().getTime(),
                 name: "프로모션: " + [[${promo.title}]],
-                amount: 100, // 테스트 결제금액
+                amount: 100,
                 buyer_name: [[${memberName}]],
                 buyer_tel: [[${memberMobile}]]
             }, function (rsp) {
@@ -227,7 +227,7 @@
                     const token = document.querySelector("meta[name='_csrf']").content;
                     const header = document.querySelector("meta[name='_csrf_header']").content;
                     
-                    fetch("/final_hotel/payment/verify", {
+                    fetch("/payment/verify", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -259,7 +259,7 @@
                         }
 
                         alert("예약이 완료되었습니다.");
-                        location.href = "/final_hotel/reservation/complete?code=" + encodeURIComponent(text);
+                        location.href = "/reservation/complete?code=" + encodeURIComponent(text);
                     })
                     .catch(err => {
                         console.error("==== /payment/verify fetch 오류 ====", err);

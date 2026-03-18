@@ -338,7 +338,7 @@ div[style="margin-top:30px;"] {
 	            <a th:href="@{/room/detail(room_id=${rec.room_type_id})}">
 	            	
 	            	<div class="rec-img">
-			            <img th:src="'/final_hotel' + ${rec.image_url}">
+			            <img th:src="@{${rec.image_url}}">
 			        </div>
 	            	
 	                <div class="rec-name"

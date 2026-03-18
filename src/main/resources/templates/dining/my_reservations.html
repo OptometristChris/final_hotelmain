@@ -24,8 +24,7 @@
         <script th:inline="javascript">
             function cancelRes(resId) {
                 if(confirm("정말로 예약을 취소하시겠습니까?")) {
-                    // 취소 후 다시 조회 페이지로 리다이렉트 (컨트롤러 설정에 따라 분기 가능)
-                    location.href = "/final_hotel/dining/cancel?id=" + resId;
+                    location.href = "/dining/cancel?id=" + resId;
                 }
             }
         </script>

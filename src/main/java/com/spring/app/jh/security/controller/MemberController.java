@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -288,9 +288,9 @@ public class MemberController {
     // 마이페이지로
     @PreAuthorize("hasRole('USER')")
     @GetMapping("member/mypage")
-    public String mypage(HttpSession session, Model model) {
+    public String mypage(HttpSession session, Model model, Authentication authentication) {
 
-        Integer memberNo = resolveMemberNo(session);
+        Integer memberNo = resolveMemberNo(session, authentication);
         if (memberNo == null) {
             return "redirect:/security/login";
         }
@@ -307,9 +307,9 @@ public class MemberController {
     // 회원정보 수정 폼 페이지
     @PreAuthorize("hasRole('USER')")
     @GetMapping("member/profileEdit")
-    public String profileEditForm(HttpSession session, Model model) {
+    public String profileEditForm(HttpSession session, Model model, Authentication authentication) {
 
-        Integer memberNo = resolveMemberNo(session);
+        Integer memberNo = resolveMemberNo(session, authentication);
         if(memberNo == null) return "redirect:/security/login";
 
         MemberDTO memberDto = memberService.findByMemberNo(memberNo);
@@ -324,9 +324,10 @@ public class MemberController {
     @PostMapping("member/profileEdit")
     public String profileEditEnd(MemberDTO memberdto,
                                  HttpSession session,
-                                 Model model) {
+                                 Model model,
+                                 Authentication authentication) {
 
-        Integer memberNo = resolveMemberNo(session);
+        Integer memberNo = resolveMemberNo(session, authentication);
         if(memberNo == null) {
             return "redirect:/security/login";
         }
@@ -343,9 +344,9 @@ public class MemberController {
     // 회원탈퇴 form
     @PreAuthorize("hasRole('USER')")
     @GetMapping("member/withdraw")
-    public String withdrawForm(HttpSession session, Model model) {
+    public String withdrawForm(HttpSession session, Model model, Authentication authentication) {
 
-        Integer memberNo = resolveMemberNo(session);
+        Integer memberNo = resolveMemberNo(session, authentication);
         if (memberNo == null) {
             return "redirect:/security/login";
         }
@@ -363,11 +364,12 @@ public class MemberController {
     @ResponseBody
     public Map<String, Object> withdrawMember(HttpSession session,
                                               HttpServletRequest request,
-                                              HttpServletResponse response) {
+                                              HttpServletResponse response,
+                                              Authentication authentication) {
 
         Map<String, Object> resultMap = new HashMap<>();
 
-        Integer memberNo = resolveMemberNo(session);
+        Integer memberNo = resolveMemberNo(session, authentication);
 
         if (memberNo == null) {
             resultMap.put("success", false);
@@ -423,20 +425,23 @@ public class MemberController {
     }
 
 
-    private Integer resolveMemberNo(HttpSession session) {
+    /*
+        [중요]
+        - 1순위: sessionMemberDTO
+        - 2순위: 현재 Authentication principal
+        - 즉, 세션 기반 + JWT/CustomUserDetails/OAuth2 fallback 구조로 본다.
+     */
+    private Integer resolveMemberNo(HttpSession session, Authentication authentication) {
 
-        if (session == null) return null;
-
-        Object obj = session.getAttribute("sessionMemberDTO");
-        if (obj instanceof Session_MemberDTO dto) {
-            return dto.getMemberNo();
+        if (session != null) {
+            Object obj = session.getAttribute("sessionMemberDTO");
+            if (obj instanceof Session_MemberDTO dto) {
+                return dto.getMemberNo();
+            }
         }
 
-        SecurityContext context =
-                (SecurityContext) session.getAttribute("SPRING_SECURITY_CONTEXT");
-
-        if (context != null && context.getAuthentication() != null) {
-            Object principal = context.getAuthentication().getPrincipal();
+        if (authentication != null) {
+            Object principal = authentication.getPrincipal();
 
             if (principal instanceof OAuth2MemberPrincipal oauth2Principal) {
                 return oauth2Principal.getMemberDto().getMemberNo();
@@ -447,7 +452,8 @@ public class MemberController {
             }
 
             if (principal instanceof JwtPrincipalDTO jwtPrincipal) {
-                if ("MEMBER".equals(jwtPrincipal.getPrincipalType())) {
+                if ("MEMBER".equals(jwtPrincipal.getPrincipalType()) &&
+                    jwtPrincipal.getPrincipalNo() != null) {
                     return jwtPrincipal.getPrincipalNo().intValue();
                 }
             }
