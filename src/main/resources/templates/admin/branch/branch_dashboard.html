@@ -219,7 +219,7 @@
       border-radius: 16px;
       padding:12px;
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap:10px;
       backdrop-filter: blur(6px);
     }
@@ -474,19 +474,26 @@
         </div>
 
         <div class="quickActions">
-          <button class="qaBtn" type="button" onclick="location.href='/admin/branch/room/status'">
-            <div class="dot">🛏️</div>
-            <div class="txt"><b>객실 상태 변경</b></div>
-          </button>
-          <button class="qaBtn" type="button" onclick="location.href='/admin/branch/notice/write'">
-            <div class="dot">📢</div>
-            <div class="txt"><b>공지 등록</b></div>
-          </button>
-          <button class="qaBtn" type="button" onclick="location.href='/admin/branch/promotion/write'">
-            <div class="dot">🎁</div>
-            <div class="txt"><b>프로모션 등록</b></div>
-          </button>
-        </div>
+		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/hotel/list}'|"> 
+		    <div class="dot">🛏️</div>
+		    <div class="txt"><b>객실 관리</b></div>
+		  </button>
+		
+		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/reservation/manage}'|">
+		    <div class="dot">🛏️</div>
+		    <div class="txt"><b>예약 관리</b></div>
+		  </button>
+		
+		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/notice/list}'|"> 
+		    <div class="dot">📢</div>
+		    <div class="txt"><b>공지 등록</b></div>
+		  </button>
+		
+		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/promotion/list}'|">
+		    <div class="dot">🎁</div>
+		    <div class="txt"><b>프로모션 등록</b></div>
+		  </button>
+		</div>
       </div>
     </section>
 
