@@ -17,6 +17,7 @@ import com.spring.app.common.Sha256;
 import com.spring.app.common.util.LookupKeyUtil;
 import com.spring.app.jh.security.domain.MemberDTO;
 import com.spring.app.jh.security.model.MemberDAO;
+import com.spring.app.js.promotion.domain.PromotionDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -348,6 +349,11 @@ public class MemberService_imple implements MemberService {
 	public int disable_member(Integer memberNo) {
 	    return memberDao.disable_member(memberNo);
 	}
+	
+	@Override
+    public List<PromotionDTO> selectMypagePromoList() {
+        return memberDao.selectMypagePromoList();
+    }
 	
 	
 	// =========================================================

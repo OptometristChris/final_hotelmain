@@ -497,8 +497,8 @@
         <div class="leftPane">
           <div class="roomThumb">
             <img th:if="${card.roomImageUrl != null and card.roomImageUrl != ''}"
-                 th:src="${card.roomImageUrl}"
-                 alt="객실 이미지">
+			     th:src="@{${card.roomImageUrl}}"
+			     alt="객실 이미지">
             <img th:if="${card.roomImageUrl == null or card.roomImageUrl == ''}"
                  th:src="@{/images/noimage.png}"
                  alt="객실 이미지">

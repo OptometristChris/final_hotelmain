@@ -104,8 +104,8 @@
         <div class="hotelGrid">
           <div class="photoBox">
             <img th:if="${hotel.mainImageUrl != null and hotel.mainImageUrl != ''}"
-                 th:src="@{|/images/hotel/${hotel.mainImageUrl}|}"
-                 th:alt="${hotel.hotelName}">
+			     th:src="@{${hotel.mainImageUrl}}"
+			     th:alt="${hotel.hotelName}">
             <div th:if="${hotel.mainImageUrl == null or hotel.mainImageUrl == ''}" class="photoFallback">
               대표 이미지 없음
             </div>

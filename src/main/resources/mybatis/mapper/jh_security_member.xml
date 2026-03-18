@@ -396,6 +396,72 @@
 	  FROM tbl_member_security
 	  WHERE memberid = #{memberid}
 	</select>
+	
+	<select id="selectMypagePromoList"
+	        resultType="com.spring.app.js.promotion.domain.PromotionDTO">
+	
+	    SELECT *
+	    FROM (
+	        /* 1. 최근 판매로 이어진 프로모션 중 판매량 1위 */
+	        SELECT
+	            pm.promotion_id,
+	            pm.fk_hotel_id,
+	            pb.title,
+	            pb.image_url,
+	            pb.benefits,
+	            pm.price,
+	            pm.start_date,
+	            pm.end_date,
+	            pm.discount_rate,
+	            1 AS sort_no
+	        FROM promotion_master pm
+	        JOIN promotion_banner pb
+	          ON pb.fk_promotion_id = pm.promotion_id
+	        JOIN (
+	            SELECT promotion_id
+	            FROM reservation_promotion_mapping
+	            GROUP BY promotion_id
+	            ORDER BY COUNT(*) DESC, promotion_id DESC
+	            FETCH FIRST 1 ROWS ONLY
+	        ) best
+	          ON best.promotion_id = pm.promotion_id
+	
+	        UNION ALL
+	
+	        /* 2~3. 최신 등록순 2개 */
+	        SELECT *
+	        FROM (
+	            SELECT
+	                pm.promotion_id,
+	                pm.fk_hotel_id,
+	                pb.title,
+	                pb.image_url,
+	                pb.benefits,
+	                pm.price,
+	                pm.start_date,
+	                pm.end_date,
+	                pm.discount_rate,
+	                2 AS sort_no
+	            FROM promotion_master pm
+	            JOIN promotion_banner pb
+	              ON pb.fk_promotion_id = pm.promotion_id
+	            WHERE pm.promotion_id NOT IN (
+	                SELECT promotion_id
+	                FROM (
+	                    SELECT promotion_id
+	                    FROM reservation_promotion_mapping
+	                    GROUP BY promotion_id
+	                    ORDER BY COUNT(*) DESC, promotion_id DESC
+	                    FETCH FIRST 1 ROWS ONLY
+	                )
+	            )
+	            ORDER BY pm.created_at DESC, pm.promotion_id DESC
+	            FETCH FIRST 2 ROWS ONLY
+	        )
+	    )
+	    ORDER BY sort_no, promotion_id
+	
+	</select>
 
 
 </mapper>

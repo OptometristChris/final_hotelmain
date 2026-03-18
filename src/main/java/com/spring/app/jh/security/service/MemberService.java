@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.spring.app.jh.security.domain.MemberDTO;
+import com.spring.app.js.promotion.domain.PromotionDTO;
 
 public interface MemberService {
 	
@@ -37,6 +38,9 @@ public interface MemberService {
 	
 	// 회원탈퇴(soft delete)
 	int disable_member(Integer memberNo);
+	
+	// 마이페이지 추천 프로모션 3건 조회
+    List<PromotionDTO> selectMypagePromoList();
 	// ===== MemberController 에서 사용하는 메서드들 ==== //
 	
 	

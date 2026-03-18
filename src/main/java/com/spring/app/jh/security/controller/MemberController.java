@@ -1,6 +1,7 @@
 package com.spring.app.jh.security.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +22,7 @@ import com.spring.app.jh.security.domain.MemberDTO;
 import com.spring.app.jh.security.domain.Session_MemberDTO;
 import com.spring.app.jh.security.oauth.OAuth2MemberPrincipal;
 import com.spring.app.jh.security.service.MemberService;
+import com.spring.app.js.promotion.domain.PromotionDTO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -295,9 +297,28 @@ public class MemberController {
             return "redirect:/security/login";
         }
 
-        // 필요하면 상세 조회 추가 가능
-        // MemberDTO memberDto = memberService.findByMemberNo(memberNo);
-        // model.addAttribute("memberDto", memberDto);
+        MemberDTO memberDto = memberService.findByMemberNo(memberNo);
+        model.addAttribute("memberDto", memberDto);
+
+        List<PromotionDTO> promoList = memberService.selectMypagePromoList();
+        model.addAttribute("promoList", promoList);
+        
+        boolean isSocialMember =
+                memberDto != null &&
+                memberDto.getSocialProvider() != null &&
+                !memberDto.getSocialProvider().trim().isEmpty();
+
+        model.addAttribute("isSocialMember", isSocialMember);
+
+        if (isSocialMember) {
+            String snsName = switch (memberDto.getSocialProvider().toUpperCase()) {
+                case "KAKAO" -> "카카오";
+                case "NAVER" -> "네이버";
+                case "GOOGLE" -> "구글";
+                default -> memberDto.getSocialProvider();
+            };
+            model.addAttribute("snsName", snsName);
+        }
 
         return "security/member/mypage";
         // templates/security/member/mypage.html
