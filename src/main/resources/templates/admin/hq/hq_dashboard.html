@@ -708,7 +708,7 @@
               <span>지점 관리자 계정 발급 및 목록 관리</span>
             </div>
           </div>
-          <button class="btnSmall primary" type="button" onclick="location.href='/admin/hq/admins'">이동</button>
+          <button class="btnSmall primary" type="button" th:onclick="|location.href='@{/admin/hq/admins}'|">이동</button>
         </div>
 
         <div class="item">
@@ -719,7 +719,7 @@
               <span>호텔별 셔틀 노선 관리, 운행 차단, 기간 연장, 과거 데이터 정리</span>
             </div>
           </div>
-          <button class="btnSmall primary" type="button" onclick="location.href='/shuttle/confirm/view'">이동</button>
+          <button class="btnSmall primary" type="button" th:onclick="|location.href='@{/admin/hq/shuttle}'|">이동</button>
         </div>
       </div>
     </section>

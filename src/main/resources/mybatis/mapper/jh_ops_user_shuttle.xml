@@ -425,7 +425,7 @@
 	    ON ri.room_type_id = rt.room_type_id
 	   AND ri.is_main = 'Y'
 	  WHERE r.member_no = #{memberNo}
-	    AND r.reservation_status = 'CONFIRMED' OR r.reservation_status = 'CHECKED_IN'
+	    AND (r.reservation_status = 'CONFIRMED' OR r.reservation_status = 'CHECKED_IN')
 	    AND TRUNC(r.checkout_date) >= TRUNC(SYSDATE)
 	  ORDER BY r.checkin_date DESC, r.reservation_id DESC
 	</select>
