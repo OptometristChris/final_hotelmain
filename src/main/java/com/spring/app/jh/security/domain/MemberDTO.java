@@ -42,6 +42,8 @@ public class MemberDTO {
     // 소셜 로그인
     private String socialProvider;
     private String providerUserId;
+    // 화면/로그인 후처리용 임시 플래그
+    private boolean socialJoinJustCreated;
 
     // 주소
     private String postcode;

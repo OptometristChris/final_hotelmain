@@ -118,22 +118,29 @@ public class MemberAuthenticationSuccessHandler extends SavedRequestAwareAuthent
 		String clientip = request.getRemoteAddr();
 		memberService.insertLoginhistory(memberDto.getMemberNo(), clientip);
 
+		// 카카오 신규가입 + 이메일 미등록 시 첫 로그인 1회만 알림
+		boolean showKakaoEmailReminderOnce =
+				memberDto != null
+				&& "KAKAO".equalsIgnoreCase(memberDto.getSocialProvider())
+				&& memberDto.isSocialJoinJustCreated()
+				&& (memberDto.getEmail() == null || memberDto.getEmail().trim().isEmpty());
+
+		if (showKakaoEmailReminderOnce) {
+			session.setAttribute("showKakaoEmailReminderOnce", true);
+			response.sendRedirect(request.getContextPath() + "/security/member/mypage");
+			return;
+		}
+
 		boolean shouldAskPasswordChange = memberid != null
 				&& memberDto.getSocialProvider() == null
 				&& n >= 6;
 
 		if (shouldAskPasswordChange) {
 
-			/*
-			   ★ URL 하드코딩 제거 ★
-			   - localhost, 포트, context-path를 코드에 박아두면 배포/환경 변경시 깨진다.
-			   - request.getContextPath()를 사용하면 현재 프로젝트의 컨텍스트패스를 자동 반영한다.
-			 */
 			String ctxPath = request.getContextPath();
 
 			response.setContentType("text/html; charset=UTF-8");
 			PrintWriter out = response.getWriter();
-			// out 은 웹브라우저에 기술하는 대상체라고 생각하자.
 
 			out.println("<html>");
 			out.println("<head>"
@@ -148,21 +155,12 @@ public class MemberAuthenticationSuccessHandler extends SavedRequestAwareAuthent
 			out.println("</body>");
 			out.println("</html>");
 			out.flush();
-			return; // confirm 응답으로 이동하므로 여기서 종료
+			return;
 
 		}
-		// 로그인한 사용자 정보에서 비밀번호를 변경한 날짜가 현재일로 부터 6개월 이내 이라면
 		else {
-			/*
-			   >>> 화면에 보여질 페이지를 지정하도록 한다. <<<
-			   - SavedRequestAwareAuthenticationSuccessHandler의 기본 로직을 그대로 사용한다.
-
-			   1) SavedRequest(원래 가려던 페이지)가 있으면 그쪽으로 redirect
-			   2) SavedRequest가 없으면 defaultTargetUrl로 redirect
-			 */
 			super.onAuthenticationSuccess(request, response, authentication);
 		}
-
-	}// end of onAuthenticationSuccess()-------------------------------------
+	}
 
 }

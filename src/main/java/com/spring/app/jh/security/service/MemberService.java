@@ -22,7 +22,7 @@ public interface MemberService {
 	int passwdChange(Map<String, String> paraMap);
 	
 	// 회원정보 수정 저장
-	int update_member_profile(MemberDTO memberdto);
+	int update_member_profile(MemberDTO memberdto, boolean canEditEmail);
 	
 	// id 찾기
 	String findMemberId(Map<String, String> paraMap);

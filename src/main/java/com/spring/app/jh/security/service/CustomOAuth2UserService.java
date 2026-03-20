@@ -24,22 +24,31 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 	@Override
 	public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 
-		OAuth2User oauth2User = delegate.loadUser(userRequest);
+	    OAuth2User oauth2User = delegate.loadUser(userRequest);
 
-		String registrationId = userRequest.getClientRegistration().getRegistrationId();
-		OAuth2UserInfo userInfo = OAuth2UserInfoFactory.of(registrationId, oauth2User.getAttributes());
+	    String registrationId = userRequest.getClientRegistration().getRegistrationId();
+	    OAuth2UserInfo userInfo = OAuth2UserInfoFactory.of(registrationId, oauth2User.getAttributes());
 
-		MemberDTO memberDto = memberService.findOrCreateSocialMember(
-				userInfo.getSocialProvider(),
-				userInfo.getProviderUserId(),
-				userInfo.getEmail(),
-				userInfo.getName());
+	    System.out.println("======================================");
+	    System.out.println("[SOCIAL LOGIN DEBUG]");
+	    System.out.println("registrationId = " + registrationId);
+	    System.out.println("attributes = " + oauth2User.getAttributes());
+	    System.out.println("providerUserId = " + userInfo.getProviderUserId());
+	    System.out.println("email = " + userInfo.getEmail());
+	    System.out.println("name = " + userInfo.getName());
+	    System.out.println("======================================");
 
-		String userNameAttributeName = userRequest.getClientRegistration()
-				.getProviderDetails()
-				.getUserInfoEndpoint()
-				.getUserNameAttributeName();
+	    MemberDTO memberDto = memberService.findOrCreateSocialMember(
+	            userInfo.getSocialProvider(),
+	            userInfo.getProviderUserId(),
+	            userInfo.getEmail(),
+	            userInfo.getName());
 
-		return new OAuth2MemberPrincipal(memberDto, oauth2User.getAttributes(), userNameAttributeName);
+	    String userNameAttributeName = userRequest.getClientRegistration()
+	            .getProviderDetails()
+	            .getUserInfoEndpoint()
+	            .getUserNameAttributeName();
+
+	    return new OAuth2MemberPrincipal(memberDto, oauth2User.getAttributes(), userNameAttributeName);
 	}
 }

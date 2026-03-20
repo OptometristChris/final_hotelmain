@@ -83,6 +83,11 @@ body{
   padding:13px;
   margin-bottom:18px;
 }
+.hint-email{
+  color:#c62828;
+  background:#fff5f5;
+  border-color:#f0c7c7;
+}
 .grid2{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -178,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const frm = document.getElementById('profileFrm');
   const err = document.getElementById('err');
+  const canEditEmailValue = /*[[${canEditEmail}]]*/ false;
 
   function show(msg){
     err.textContent = msg;
@@ -187,10 +193,22 @@ document.addEventListener('DOMContentLoaded', () => {
   function submitForm(){
     err.classList.remove('show');
 
+    const emailInput = frm.email ? frm.email.value.trim() : "";
     const mobile = frm.mobile.value.trim();
     const postcode = frm.postcode.value.trim();
     const address = frm.address.value.trim();
     const detail = frm.detail_address.value.trim();
+
+    if (canEditEmailValue) {
+      if(!emailInput){
+        return show("이메일을 입력하세요.");
+      }
+
+      const emailRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+      if(!emailRegExp.test(emailInput)){
+        return show("이메일 형식이 올바르지 않습니다.");
+      }
+    }
 
     if(mobile && mobile.replaceAll('-', '').length < 10){
       return show("휴대폰번호를 다시 확인하세요.");
@@ -220,15 +238,16 @@ document.addEventListener('DOMContentLoaded', () => {
 <body>
 <div class="container"
      th:with="
-       m = (${memberDto} != null ? ${memberDto} : ${session.sessionMemberDTO}),
-       name = (${m} != null and ${m.name} != null ? ${m.name} : '홍길동'),
-       memberid = (${m} != null and ${m.memberid} != null ? ${m.memberid} : 'hong123'),
-       email = (${m} != null and ${m.email} != null ? ${m.email} : 'hong@test.com'),
-       mobile = (${m} != null and ${m.mobile} != null ? ${m.mobile} : '01012345678'),
-       postcode = (${m} != null and ${m.postcode} != null ? ${m.postcode} : '06236'),
-       address = (${m} != null and ${m.address} != null ? ${m.address} : '서울특별시 강남구 테헤란로'),
-       detail = (${m} != null and ${m.detail_address} != null ? ${m.detail_address} : '101동 1001호'),
-       extra = (${m} != null and ${m.extra_address} != null ? ${m.extra_address} : '(참고) OO빌딩')
+       m = ${memberDto},
+       name = (${m != null and m.name != null} ? ${m.name} : '홍길동'),
+       memberid = (${m != null and m.memberid != null} ? ${m.memberid} : 'hong123'),
+       email = (${m != null and m.email != null} ? ${m.email} : ''),
+       mobile = (${m != null and m.mobile != null} ? ${m.mobile} : '01012345678'),
+       postcode = (${m != null and m.postcode != null} ? ${m.postcode} : '06236'),
+       address = (${m != null and m.address != null} ? ${m.address} : '서울특별시 강남구 테헤란로'),
+       detail = (${m != null and m.detail_address != null} ? ${m.detail_address} : '101동 1001호'),
+       extra = (${m != null and m.extra_address != null} ? ${m.extra_address} : '(참고) OO빌딩'),
+       canEditEmailValue = (${canEditEmail != null} ? ${canEditEmail} : false)
      ">
 
   <div class="wrap">
@@ -241,11 +260,16 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="body">
-        <div class="hint">
+        <div class="hint" th:if="${!canEditEmailValue}">
           아이디와 이메일은 정책상 수정 불가이며, 연락처와 주소 정보만 변경 가능합니다.
         </div>
 
+        <div class="hint hint-email" th:if="${canEditEmailValue}">
+          카카오 간편가입 회원은 이메일이 비어있는 경우에 한해 최초 1회 이메일 등록이 가능합니다.
+        </div>
+
         <form id="profileFrm" name="profileFrm">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
           <div class="grid2">
             <div class="field">
               <div class="label"><span>이름</span></div>
@@ -260,8 +284,22 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="grid2">
             <div class="field">
               <div class="label"><span>이메일</span></div>
-              <input class="input" type="text" th:value="${email}" readonly />
+
+              <input class="input"
+                     th:if="${!canEditEmailValue}"
+                     type="text"
+                     th:value="${email}"
+                     readonly />
+
+              <input class="input"
+                     th:if="${canEditEmailValue}"
+                     type="email"
+                     name="email"
+                     id="email"
+                     th:value="${email}"
+                     placeholder="이메일을 입력하세요" />
             </div>
+
             <div class="field">
               <div class="label"><span>휴대폰번호</span></div>
               <input class="input" type="text" name="mobile" id="mobile" th:value="${mobile}" placeholder="01012345678" />

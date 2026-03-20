@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -290,9 +290,9 @@ public class MemberController {
     // 마이페이지로
     @PreAuthorize("hasRole('USER')")
     @GetMapping("member/mypage")
-    public String mypage(HttpSession session, Model model, Authentication authentication) {
+    public String mypage(HttpSession session, Model model) {
 
-        Integer memberNo = resolveMemberNo(session, authentication);
+        Integer memberNo = resolveMemberNo(session);
         if (memberNo == null) {
             return "redirect:/security/login";
         }
@@ -320,21 +320,43 @@ public class MemberController {
             model.addAttribute("snsName", snsName);
         }
 
+        boolean isKakaoWithoutEmail =
+                memberDto != null
+                && "KAKAO".equalsIgnoreCase(memberDto.getSocialProvider())
+                && (memberDto.getEmail() == null || memberDto.getEmail().trim().isEmpty());
+
+        model.addAttribute("isKakaoWithoutEmail", isKakaoWithoutEmail);
+
+        boolean showKakaoEmailReminderOnce = Boolean.TRUE.equals(session.getAttribute("showKakaoEmailReminderOnce"));
+        model.addAttribute("showKakaoEmailReminderOnce", showKakaoEmailReminderOnce);
+
+        if (showKakaoEmailReminderOnce) {
+            session.removeAttribute("showKakaoEmailReminderOnce"); // 1회만
+        }
+
         return "security/member/mypage";
-        // templates/security/member/mypage.html
     }
 
 
     // 회원정보 수정 폼 페이지
     @PreAuthorize("hasRole('USER')")
     @GetMapping("member/profileEdit")
-    public String profileEditForm(HttpSession session, Model model, Authentication authentication) {
+    public String profileEdit(HttpSession session, Model model) {
 
-        Integer memberNo = resolveMemberNo(session, authentication);
-        if(memberNo == null) return "redirect:/security/login";
+        Integer memberNo = resolveMemberNo(session);
+        if (memberNo == null) {
+            return "redirect:/security/login";
+        }
 
-        MemberDTO memberDto = memberService.findByMemberNo(memberNo);
-        model.addAttribute("memberDto", memberDto);
+        MemberDTO memberdto = memberService.findByMemberNo(memberNo);
+        model.addAttribute("memberdto", memberdto);
+
+        boolean canEditEmail =
+                memberdto != null
+                && "KAKAO".equalsIgnoreCase(memberdto.getSocialProvider())
+                && (memberdto.getEmail() == null || memberdto.getEmail().trim().isEmpty());
+
+        model.addAttribute("canEditEmail", canEditEmail);
 
         return "security/member/profileEditForm";
     }
@@ -345,17 +367,23 @@ public class MemberController {
     @PostMapping("member/profileEdit")
     public String profileEditEnd(MemberDTO memberdto,
                                  HttpSession session,
-                                 Model model,
-                                 Authentication authentication) {
+                                 Model model) {
 
-        Integer memberNo = resolveMemberNo(session, authentication);
+        Integer memberNo = resolveMemberNo(session);
         if(memberNo == null) {
             return "redirect:/security/login";
         }
 
-        memberdto.setMemberNo(memberNo);   // ★ 핵심: 수정 대상 회원 PK 세팅
+        MemberDTO originMember = memberService.findByMemberNo(memberNo);
 
-        int result = memberService.update_member_profile(memberdto);
+        boolean canEditEmail =
+                originMember != null
+                && "KAKAO".equalsIgnoreCase(originMember.getSocialProvider())
+                && (originMember.getEmail() == null || originMember.getEmail().trim().isEmpty());
+
+        memberdto.setMemberNo(memberNo);   // ★ 수정 대상 회원 PK 세팅
+
+        int result = memberService.update_member_profile(memberdto, canEditEmail);
         model.addAttribute("result", result);
 
         return "security/member/profileEditResult";
@@ -365,9 +393,9 @@ public class MemberController {
     // 회원탈퇴 form
     @PreAuthorize("hasRole('USER')")
     @GetMapping("member/withdraw")
-    public String withdrawForm(HttpSession session, Model model, Authentication authentication) {
+    public String withdrawForm(HttpSession session, Model model) {
 
-        Integer memberNo = resolveMemberNo(session, authentication);
+        Integer memberNo = resolveMemberNo(session);
         if (memberNo == null) {
             return "redirect:/security/login";
         }
@@ -385,12 +413,11 @@ public class MemberController {
     @ResponseBody
     public Map<String, Object> withdrawMember(HttpSession session,
                                               HttpServletRequest request,
-                                              HttpServletResponse response,
-                                              Authentication authentication) {
+                                              HttpServletResponse response) {
 
         Map<String, Object> resultMap = new HashMap<>();
 
-        Integer memberNo = resolveMemberNo(session, authentication);
+        Integer memberNo = resolveMemberNo(session);
 
         if (memberNo == null) {
             resultMap.put("success", false);
@@ -446,23 +473,20 @@ public class MemberController {
     }
 
 
-    /*
-        [중요]
-        - 1순위: sessionMemberDTO
-        - 2순위: 현재 Authentication principal
-        - 즉, 세션 기반 + JWT/CustomUserDetails/OAuth2 fallback 구조로 본다.
-     */
-    private Integer resolveMemberNo(HttpSession session, Authentication authentication) {
+    private Integer resolveMemberNo(HttpSession session) {
 
-        if (session != null) {
-            Object obj = session.getAttribute("sessionMemberDTO");
-            if (obj instanceof Session_MemberDTO dto) {
-                return dto.getMemberNo();
-            }
+        if (session == null) return null;
+
+        Object obj = session.getAttribute("sessionMemberDTO");
+        if (obj instanceof Session_MemberDTO dto) {
+            return dto.getMemberNo();
         }
 
-        if (authentication != null) {
-            Object principal = authentication.getPrincipal();
+        SecurityContext context =
+                (SecurityContext) session.getAttribute("SPRING_SECURITY_CONTEXT");
+
+        if (context != null && context.getAuthentication() != null) {
+            Object principal = context.getAuthentication().getPrincipal();
 
             if (principal instanceof OAuth2MemberPrincipal oauth2Principal) {
                 return oauth2Principal.getMemberDto().getMemberNo();
@@ -473,8 +497,7 @@ public class MemberController {
             }
 
             if (principal instanceof JwtPrincipalDTO jwtPrincipal) {
-                if ("MEMBER".equals(jwtPrincipal.getPrincipalType()) &&
-                    jwtPrincipal.getPrincipalNo() != null) {
+                if ("MEMBER".equals(jwtPrincipal.getPrincipalType())) {
                     return jwtPrincipal.getPrincipalNo().intValue();
                 }
             }

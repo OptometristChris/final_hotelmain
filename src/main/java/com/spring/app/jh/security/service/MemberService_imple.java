@@ -300,6 +300,7 @@ public class MemberService_imple implements MemberService {
 		if (memberDto != null) {
 			applyDecrypt(memberDto);
 			applyAuthorities(memberDto);
+			memberDto.setSocialJoinJustCreated(false); // 기존 회원
 			return memberDto;
 		}
 
@@ -330,6 +331,8 @@ public class MemberService_imple implements MemberService {
 		MemberDTO savedMember = memberDao.findByMemberNo(newMember.getMemberNo());
 		applyDecrypt(savedMember);
 		applyAuthorities(savedMember);
+		savedMember.setSocialJoinJustCreated(true); // 신규 가입 회원
+
 		return savedMember;
 	}
 
@@ -339,9 +342,29 @@ public class MemberService_imple implements MemberService {
 	}
 
 	@Override
-	public int update_member_profile(MemberDTO memberdto) {
-		int n = memberDao.update_member_profile(memberdto);
-		return n;
+	public int update_member_profile(MemberDTO memberdto, boolean canEditEmail) {
+
+	    if (canEditEmail) {
+	        String email = memberdto.getEmail();
+
+	        if (email != null && !email.trim().isEmpty()) {
+	            try {
+	                memberdto.setEmail(aES256.encrypt(email.trim()));
+	            }
+	            catch (UnsupportedEncodingException | GeneralSecurityException e) {
+	                throw new RuntimeException(e);
+	            }
+	        }
+	        else {
+	            memberdto.setEmail(null);
+	        }
+	    }
+	    else {
+	        memberdto.setEmail(null);
+	    }
+
+	    int n = memberDao.update_member_profile(memberdto, canEditEmail);
+	    return n;
 	}
 	
 	@Transactional

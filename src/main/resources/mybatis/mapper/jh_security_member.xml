@@ -309,14 +309,17 @@
 	     ========================================================= -->
 
 	<!-- 마이페이지: 회원 프로필 수정(연락처/주소) -->
-	<update id="update_member_profile" parameterType="MemberDTO">
-		UPDATE tbl_member_security
-		   SET mobile         = #{mobile},
-		       postcode       = #{postcode},
-		       address        = #{address},
-		       detail_address = #{detail_address},
-		       extra_address  = #{extra_address}
-		 WHERE member_no      = #{memberNo}
+	<update id="update_member_profile">
+	    UPDATE tbl_member_security
+	       SET mobile         = #{memberdto.mobile},
+	           postcode       = #{memberdto.postcode},
+	           address        = #{memberdto.address},
+	           detail_address = #{memberdto.detail_address},
+	           extra_address  = #{memberdto.extra_address}
+	    <if test="canEditEmail and memberdto.email != null and memberdto.email != ''">
+	         , email          = #{memberdto.email}
+	    </if>
+	     WHERE member_no      = #{memberdto.memberNo}
 	</update>
 
 	<!-- 회원 비활성(탈퇴/정지): enabled='0' -->

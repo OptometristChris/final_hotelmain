@@ -43,7 +43,8 @@ public interface MemberDAO {
 	
 	List<String> authorityListByMemberNo(@Param("memberNo") Integer memberNo);
 	
-	int update_member_profile(MemberDTO memberdto);
+	int update_member_profile(@Param("memberdto") MemberDTO memberdto,
+			  				  @Param("canEditEmail") boolean canEditEmail);
 	
 	String findMemberId(Map<String, String> paraMap);
 
