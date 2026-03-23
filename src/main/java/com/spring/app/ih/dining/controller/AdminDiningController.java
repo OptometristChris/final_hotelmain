@@ -286,7 +286,7 @@ public class AdminDiningController {
             try {
                 response.setContentType("application/octet-stream");
                 String encodedFileName = new String(fileName.getBytes("UTF-8"), "ISO-8859-1");
-                response.setHeader("Content-Disposition", "attachment; filename="" + encodedFileName + """);
+                response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
                 response.setContentLength((int) file.length());
                 try (FileInputStream fis = new FileInputStream(file); OutputStream os = response.getOutputStream()) {
                     FileCopyUtils.copy(fis, os);
