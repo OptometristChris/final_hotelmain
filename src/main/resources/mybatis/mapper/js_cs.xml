@@ -35,9 +35,12 @@
 	    FROM (
 	        SELECT 
 	            ROW_NUMBER() OVER(ORDER BY created_at DESC) AS RNUM,
-	            qna_id, title, writer_name, 
-	            is_secret,  status,
-	            TO_CHAR(created_at, 'yyyy-mm-dd') AS created_at
+	            qna_id, 
+	            title, 
+	            writer_name, 
+	            is_secret,  
+	            status,
+	            fk_hotel_id,  TO_CHAR(created_at, 'yyyy-mm-dd') AS created_at
 	        FROM QUESTIONS
 	        WHERE fk_hotel_id = #{hotelId}
 	        <if test='searchKeyword != null and searchKeyword != ""'>
@@ -85,9 +88,68 @@
 		)
 	</insert>
 	
+	<update id="updateQna" parameterType="HashMap">
+	    UPDATE QUESTIONS
+	    SET FK_HOTEL_ID = #{fk_hotel_id},
+	        TITLE = #{title},
+	        CONTENT = #{content},
+	        IS_SECRET = #{is_secret},
+	        CREATED_AT = SYSDATE  
+	    WHERE QNA_ID = #{qnaId} AND STATUS = 'WAITING' 
+	</update>
+	
 	<delete id="deleteQna" parameterType="String">
         DELETE FROM QUESTIONS
         WHERE qna_id = #{qnaId}
     </delete>
+    
+    <insert id="insertAnswer" parameterType="HashMap">
+	    INSERT INTO ANSWERS (
+	        ANSWER_ID, 
+	        QNA_ID, 
+	        CONTENT, 
+	        ADMIN_NO,    CREATED_AT
+	    ) VALUES (
+	        SEQ_ANSWER_ID.nextval,
+	        #{qnaId}, 
+	        #{ansContent}, 
+	        #{adminNo},    SYSDATE
+	    )
+	</insert>
+	
+	<update id="updateQnaStatus" parameterType="HashMap">
+	    UPDATE QUESTIONS
+	    SET STATUS = 'ANSWERED'
+	    WHERE QNA_ID = #{qnaId}
+	</update>
+	
+	<update id="updateAnswer" parameterType="HashMap">
+	    UPDATE ANSWERS 
+	    SET CONTENT = #{ansContent},
+	        ADMIN_NO = #{adminNo},
+	        CREATED_AT = SYSDATE WHERE QNA_ID = #{qnaId}
+	</update>
+	
+	<insert id="insertFaq" parameterType="HashMap">
+	    INSERT INTO FAQS (
+	        FAQ_ID, 
+	        FK_HOTEL_ID, 
+	        CATEGORY,    TITLE, 
+	        CONTENT, 
+	        VIEW_COUNT,
+	        CREATED_AT   ) VALUES (
+	        SEQ_FAQ_ID.nextval, 
+	        #{fk_hotel_id}, 
+	        #{category}, #{title}, 
+	        #{content}, 
+	        0,
+	        SYSDATE
+	    )
+	</insert>
+		
+	<delete id="deleteFaq" parameterType="String">
+	    DELETE FROM FAQS
+	    WHERE faq_id = #{faqId}
+	</delete>
 	
 </mapper>

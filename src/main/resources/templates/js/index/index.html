@@ -166,7 +166,9 @@
         <div class="main-slider">
             <div class="slide-item-wrapper" th:each="banner : ${mainBannerList}">
                 <div class="slide-item">
-                    <img th:src="@{'/images/js/' + ${banner.image_url}}" th:alt="${banner.title}">
+                    <img th:with="fileName=${banner.image_url}"
+                         th:src="${#strings.contains(fileName, '/file_images/') ? fileName : '/file_images/hotel/' + fileName}"
+                         th:alt="${banner.title}">
                 </div>
                 <div class="room-info-overlay position-absolute" style="bottom: 25%; left: 5%; z-index: 10;">
                     <h6 class="text-white font-weight-bold mb-2" style="opacity:0.9; font-size: 1.5rem; letter-spacing: 2px;" th:text="${banner.title}">HOTEL NAME</h6>
@@ -199,8 +201,9 @@
             <div class="tab-body">
                 <select name="hotelId" class="reserve-field" required>
                     <option value="" disabled selected hidden>호텔 선택</option>
-                    <option value="1">CIEL HOTEL</option>
-                    <option value="2">LE CIEL</option>
+                    <th:block th:each="hotel : ${hotelList}">
+                        <option th:value="${hotel.HOTEL_ID}" th:text="${hotel.HOTEL_NAME}"></option>
+                    </th:block>
                 </select>
                 <div id="room-fields">
                     <input type="text" name="daterange" class="reserve-field" placeholder="체크인 / 체크아웃" readonly style="background-color: #fff;">

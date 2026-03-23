@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>예약 완료</title>
@@ -148,14 +149,16 @@
 
 	<!-- 수정필요함 -->
     <div class="btn-group">
-    	<a th:href="@{/shuttle/reserve(reservationId=31)}"
+    	<a th:href="@{/shuttle/reserve(reservationId=${reservation['RESERVATION_ID']})}"
 		   class="btn btn-primary">
 		    셔틀 예약하기
 		</a>
     
-        <a th:href="@{/security/member/mypage}" class="btn btn-primary">
-            마이페이지 이동
-        </a>
+        <a sec:authorize="isAuthenticated()"
+		   th:href="@{/security/member/mypage}"
+		   class="btn btn-primary">
+		    마이페이지 이동
+		</a>
 
         <a th:href="@{/}" class="btn btn-outline">
             메인으로 이동

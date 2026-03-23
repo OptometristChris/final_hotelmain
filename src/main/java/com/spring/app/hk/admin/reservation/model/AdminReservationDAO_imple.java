@@ -45,10 +45,27 @@ public class AdminReservationDAO_imple implements AdminReservationDAO {
 	}
 
 	
+	@Override
+	public List<Map<String, Object>> getOverdueList() {
+	    return sqlsession.selectList("adminReservation.getOverdueList");
+	}
+	
+	
 	// 체크아웃 완료 목록 조회
 	@Override
 	public List<Map<String, Object>> getCheckoutCompleteList() {
 		return sqlsession.selectList("adminReservation.getCheckoutCompleteList");
+	}
+
+	
+	@Override
+	public int getTodayCheckinTotalCount() {
+	    return sqlsession.selectOne("adminReservation.getTodayCheckinTotalCount");
+	}
+
+	@Override
+	public int getTodayCheckinDoneCount() {
+	    return sqlsession.selectOne("adminReservation.getTodayCheckinDoneCount");
 	}
 
 	
@@ -58,6 +75,14 @@ public class AdminReservationDAO_imple implements AdminReservationDAO {
 
 		return sqlsession.selectList("adminReservation.selectAdminReservationList", param);
     }
+
+	
+	@Override
+	public List<Map<String, Object>> selectHotelList() {
+		return sqlsession.selectList("adminReservation.selectHotelList");
+	}
+
+	
 	
 
 }

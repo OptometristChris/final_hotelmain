@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+<head>
+    <title>FAQ 등록 - CIEL HOTEL</title>
+    
+    <link rel="stylesheet" href="">
+    
+    <th:block th:fragment="style">
+        <style>
+            .write-container { padding: 150px 0 100px; max-width: 900px; margin: 0 auto; }
+            .write-title { font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 50px; }
+            .form-group { margin-bottom: 25px; }
+            .form-label { display: block; font-weight: 600; margin-bottom: 10px; color: #333;}
+            .form-control { height: 45px; width: 100%; padding: 10px 15px; border: 1px solid #ddd; outline: none; }
+            .btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 50px; border-top: 1px solid #eee; padding-top: 30px; }
+            .btn-custom { padding: 12px 45px; font-size: 1rem; cursor: pointer; border: none; transition: 0.3s; text-decoration: none; }
+            .btn-cancel { background: #f4f4f4; color: #666; }
+            .btn-submit { background: #1a1a1a; color: #fff; }
+            .btn-submit:hover { background: #d4af37; }
+        </style>
+    </th:block>
+</head>
+<body>
+
+<th:block th:fragment="content">
+    <div class="container write-container">
+        <h2 class="write-title">자주 묻는 질문(FAQ) 등록</h2>
+
+        <form th:action="@{/cs/faqWriteEnd}" method="post" id="faqForm">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" name="fk_hotel_id" th:value="${hotelId}">
+            
+            <div class="form-group">
+			    <div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 5px solid #d4af37;">
+			        <span style="font-weight: 700; color: #1a1a1a; font-size: 1.1rem;">
+			            <i class="bi bi-geo-alt-fill"></i> [[${hotelName}]]
+			        </span>
+			        <span style="margin-left: 10px; color: #666;">지점의 FAQ를 작성 중입니다.</span>
+			    </div>
+			</div>
+            
+            <div class="form-row-custom">
+			    <div class="form-group category-area">
+			        <label class="form-label">카테고리</label>
+			        <select name="category" class="form-control">
+			            <option value="객실">객실</option>
+			            <option value="식음료">식음료</option>
+			            <option value="서비스">서비스</option>
+			            <option value="부대시설">부대시설</option>
+			            <option value="기타">기타</option>
+			        </select>
+			    </div>
+			
+			    <div class="form-group title-area">
+			        <label class="form-label">질문 제목</label>
+			        <input type="text" name="title" id="title" class="form-control" placeholder="질문을 입력하세요.">
+			    </div>
+			</div>
+
+            <div class="form-group">
+                <label class="form-label">답변 내용</label>
+                <textarea name="content" id="content" style="width:100%; height:400px;"></textarea>
+            </div>
+
+            <div class="btn-group">
+                <a th:href="@{/cs/list(hotelId=${hotelId})}" class="btn-custom btn-cancel">취소</a>
+                <button type="button" class="btn-custom btn-submit" onclick="goWrite()">등록하기</button>
+            </div>
+        </form>
+    </div>
+</th:block>
+
+<th:block th:fragment="script">
+    <script th:src="@{/smarteditor/js/HuskyEZCreator.js}" charset="utf-8"></script>
+    <script th:inline="javascript">
+        let oEditors = [];
+
+        $(function() {
+            nhn.husky.EZCreator.createInIFrame({
+                oAppRef: oEditors,
+                elPlaceHolder: "content",
+                sSkinURI: /*[[@{/smarteditor/SmartEditor2Skin.html}]]*/ "/smarteditor/SmartEditor2Skin.html",
+                fCreator: "createInIFrame"
+            });
+        });
+
+        function goWrite() {
+            // 에디터의 내용이 textarea에 적용됨
+            oEditors.getById["content"].exec("UPDATE_CONTENTS_FIELD", []);
+
+            const title = document.getElementById("title").value.trim();
+            const content = document.getElementById("content").value;
+
+            if(!title) {
+                alert("질문을 입력해주세요.");
+                return;
+            }
+            if(content == "" || content == "<p>&nbsp;</p>") {
+                alert("내용을 입력해주세요.");
+                return;
+            }
+
+            if(confirm("이 FAQ를 등록하시겠습니까?")) {
+                document.getElementById("faqForm").submit();
+            }
+        }
+    </script>
+</th:block>
+</body>
+</html>

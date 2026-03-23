@@ -97,7 +97,6 @@
                         <i class="fas fa-user-circle mr-1"></i>
                         <span th:text="${session.guestSession.guestName}">게스트</span>님 환영합니다
                     </span>
-                    <a href="#">예약조회</a>
                     <a href="javascript:void(0);" onclick="logoutGuest();">로그아웃</a>
                 </th:block>
 
@@ -165,13 +164,25 @@
 					    <strong>CIEL</strong>
 					</a>
                     <ul class="navbar-nav">
-                    	<li class="nav-item"><a class="nav-link" th:href="@{/}">브랜드</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/room/list}">객실</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/dining/all}">다이닝</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/promotion/list}">프로모션</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/}">부대시설</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/hotel/location}">호텔 위치</a></li>
-                    </ul>
+					    <li class="nav-item"><a class="nav-link" th:href="@{/room/list}">객실</a></li>
+					    <li class="nav-item"><a class="nav-link" th:href="@{/dining/all}">다이닝</a></li>
+					    <li class="nav-item"><a class="nav-link" th:href="@{/promotion/list}">프로모션</a></li>
+					
+					    <th:block sec:authorize="!hasAnyRole('ADMIN_HQ','ADMIN_BRANCH')">
+					        <li class="nav-item"><a class="nav-link" th:href="@{/shuttle/confirm/view}">객실 예약확인</a></li>
+					        <li class="nav-item"><a class="nav-link" th:href="@{/dining/reservation_search}">다이닝 내역조회</a></li>
+					    </th:block>
+					
+					    <li class="nav-item"><a class="nav-link" th:href="@{/hotel/location}">호텔위치</a></li>
+					
+					    <th:block th:if="${session.guestSession == null}" sec:authorize="hasRole('ADMIN_HQ')">
+					        <li class="nav-item"><a class="nav-link" th:href="@{/admin/banner/write}">배너관리</a></li>
+					    </th:block>
+					
+					    <th:block th:if="${session.guestSession == null}" sec:authorize="hasAnyRole('ADMIN_HQ','ADMIN_BRANCH')">
+					        <li class="nav-item"><a class="nav-link" th:href="@{/admin/revenue}">수익관리</a></li>
+					    </th:block>
+					</ul>
                 </nav>
             </div>
         </div>

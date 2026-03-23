@@ -64,4 +64,54 @@ public class ReservationMailService {
             e.printStackTrace();
         }
     }
+    
+    public void sendReminderMail(
+            String toEmail,
+            String memberName,
+            String reservationCode,
+            String hotelName,
+            String roomName,
+            String checkIn,
+            String checkOut
+    ) {
+
+        try {
+
+            String subject = "[REMIND] CIEL 호텔 체크인 하루 전 안내";
+
+            String html = ""
+                    + "<div style='font-family:Arial;'>"
+                    + "<h2 style='color:#2c7be5;'>내일 체크인 예정입니다 🏨</h2>"
+                    + "<p><b>" + memberName + "</b>님, 예약을 다시 안내드립니다.</p>"
+
+                    + "<div style='border:1px solid #ddd;padding:15px;border-radius:10px;'>"
+                    + "<p><b>예약번호</b> : " + reservationCode + "</p>"
+                    + "<p><b>호텔</b> : " + hotelName + "</p>"
+                    + "<p><b>객실</b> : " + roomName + "</p>"
+                    + "<p><b>체크인</b> : " + checkIn + "</p>"
+                    + "<p><b>체크아웃</b> : " + checkOut + "</p>"
+                    + "</div>"
+
+                    + "<p style='margin-top:15px;'>"
+                    + "✔ 체크인 시간: 오후 3시 이후<br>"
+                    + "✔ 프론트에서 예약번호 제시해주세요<br>"
+                    + "</p>"
+
+                    + "</div>";
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper =
+                    new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(from);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(html, true);
+
+            mailSender.send(message);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

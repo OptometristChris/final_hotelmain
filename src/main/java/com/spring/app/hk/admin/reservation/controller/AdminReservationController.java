@@ -46,30 +46,20 @@ public class AdminReservationController {
 	    List<Map<String, Object>> checkoutList = reservationService.getTodayCheckoutList();
 	    List<Map<String, Object>> stayList = reservationService.getStayList();
 	    List<Map<String, Object>> checkoutCompleteList = reservationService.getCheckoutCompleteList();
+	    List<Map<String, Object>> overdueList = reservationService.getOverdueList();
 
-	    // ===== KPI 계산 =====
+	    // ===== KPI =====
 
-	    // 오늘 체크인 예정
-	    int todayCheckinReserved = checkinList.size();
+	    // 🔥 오늘 체크인 "전체 대상 수" (변하지 않는 값)
+	    int todayCheckinTotal = reservationService.getTodayCheckinTotalCount();
 
-	    // 오늘 체크인 완료 (투숙중 중에서 오늘 체크인한 것)
-	    int todayCheckinDone = 0;
-
-	    for(Map<String,Object> stay : stayList) {
-
-	        java.sql.Timestamp checkinDate = (java.sql.Timestamp) stay.get("CHECKIN_DATE");
-
-	        java.time.LocalDate today = java.time.LocalDate.now();
-
-	        if(checkinDate.toLocalDateTime().toLocalDate().equals(today)) {
-	            todayCheckinDone++;
-	        }
-	    }
+	    // 🔥 오늘 체크인 완료 수
+	    int todayCheckinDone = reservationService.getTodayCheckinDoneCount();
 
 	    int todayCheckoutCount = checkoutList.size();
 	    int stayCount = stayList.size();
+	    int overdueCount = overdueList.size();
 
-	    // 점유율 계산
 	    int totalRoomCount = 100;
 	    int occupancyRate = 0;
 
@@ -77,28 +67,26 @@ public class AdminReservationController {
 	        occupancyRate = (int)(((double) stayCount / totalRoomCount) * 100);
 	    }
 
-	    // ===== 체크인 진행률 =====
+	    // 🔥 체크인 진행률 (이제 절대 안깨짐)
 	    int checkinProgress = 0;
 
-	    int totalCheckin = todayCheckinReserved + todayCheckinDone;
-
-	    if(totalCheckin > 0) {
-	        checkinProgress = (int)(((double) todayCheckinDone / totalCheckin) * 100);
+	    if(todayCheckinTotal > 0) {
+	        checkinProgress = (int)(((double) todayCheckinDone / todayCheckinTotal) * 100);
 	    }
 
-	    // ===== 리스트 =====
+	    // ===== model =====
 	    model.addAttribute("checkinList", checkinList);
 	    model.addAttribute("checkoutList", checkoutList);
 	    model.addAttribute("stayList", stayList);
 	    model.addAttribute("checkoutCompleteList", checkoutCompleteList);
+	    model.addAttribute("overdueList", overdueList);
 
-	    // ===== KPI =====
-	    model.addAttribute("todayCheckinReserved", todayCheckinReserved);
+	    model.addAttribute("todayCheckinReserved", todayCheckinTotal); // 이름 유지
 	    model.addAttribute("todayCheckinDone", todayCheckinDone);
 	    model.addAttribute("todayCheckoutCount", todayCheckoutCount);
 	    model.addAttribute("stayCount", stayCount);
 	    model.addAttribute("occupancyRate", occupancyRate);
-
+	    model.addAttribute("overdueCount", overdueCount);
 	    model.addAttribute("checkinProgress", checkinProgress);
 
 	    return "hk/admin/reservation/reservationManage";
@@ -131,18 +119,27 @@ public class AdminReservationController {
 	public String adminReservationList(
 	        @RequestParam(value="name", required=false) String name,
 	        @RequestParam(value="status", required=false) String status,
+	        @RequestParam(value="hotelId", required=false) String hotelId,
 	        Model model) {
 
 	    Map<String,Object> param = new HashMap<>();
 	    param.put("name", name);
 	    param.put("status", status);
+	    param.put("hotelId", hotelId);
 
 	    List<Map<String,Object>> reservationList =
 	            reservationService.selectAdminReservationList(param);
 
+	    // 호텔 목록 추가
+	    List<Map<String,Object>> hotelList =
+	            reservationService.selectHotelList();
+
 	    model.addAttribute("reservationList", reservationList);
+	    model.addAttribute("hotelList", hotelList);
+
 	    model.addAttribute("name", name);
 	    model.addAttribute("status", status);
+	    model.addAttribute("hotelId", hotelId);
 
 	    return "hk/admin/reservation/adminreservationList";
 	}
@@ -155,7 +152,7 @@ public class AdminReservationController {
 	        @RequestParam(value="name", required=false) String name,
 	        @RequestParam(value="status", required=false) String status,
 	        HttpServletResponse response) throws Exception {
-
+		
 	    Map<String,Object> param = new HashMap<>();
 	    param.put("name", name);
 	    param.put("status", status);

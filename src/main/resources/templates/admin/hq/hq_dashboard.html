@@ -622,6 +622,11 @@
 	
 	   qnaCount=(${todoSummary != null and todoSummary.qna != null ? todoSummary.qna : 0}),
 	   reviewCount=(${todoSummary != null and todoSummary.review != null ? todoSummary.review : 0})
+	   
+	   rev=(${hqRevenueSummary} != null ? ${hqRevenueSummary} : null),
+		totalRevenue=(${rev} != null and ${rev.totalRevenue} != null ? ${rev.totalRevenue} : 0),
+		totalCount=(${rev} != null and ${rev.totalCount} != null ? ${rev.totalCount} : 0),
+		summaryOccupancyRate=(${rev} != null and ${rev.occupancyRate} != null ? ${rev.occupancyRate} : 0)
 	">
 
   <div class="dash-wrap">
@@ -755,6 +760,8 @@
 			  <div class="pill">📈 결제 전월대비 <b style="margin-left:6px" th:text="|${paidDiffRate}%|">0%</b></div>
 			  <div class="pill">💬 미답변 QnA <b style="margin-left:6px" th:text="${qnaCount}">0</b></div>
 			  <div class="pill">📝 검수대기 <b style="margin-left:6px" th:text="${reviewCount}">0</b></div>
+			  <div class="pill">💰 총 매출액 <b style="margin-left:6px" th:text="${#numbers.formatInteger(totalRevenue, 3, 'COMMA')}">0</b></div>
+			  <div class="pill">🗂️ 예약 건수 <b style="margin-left:6px" th:text="${totalCount}">0</b></div>
 			</div>
         </div>
 
@@ -767,6 +774,11 @@
 		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/hq/admins}'|">
 		    <div class="dot">👤</div>
 		    <div class="txt"><b>지점관리자 관리</b></div>
+		  </button>
+		  
+		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/revenue}'|">
+			<div class="dot">💰</div>
+			<div class="txt"><b>수익 관리</b></div>
 		  </button>
 
 		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/notice/list}'|">
@@ -781,6 +793,48 @@
 		</div>
 
     <div class="row2">
+    
+    <section class="card" style="margin-top:18px;">
+	  <div class="cardHeader">
+	    <h3>수익관리 요약</h3>
+	    <a th:href="@{/admin/revenue}">전체보기</a>
+	  </div>
+	
+	  <div class="list">
+	    <div class="item">
+	      <div class="who">
+	        <div class="p">매</div>
+	        <div class="t">
+	          <b>총 매출액</b>
+	          <span>이번 달 전체 호텔 기준</span>
+	        </div>
+	      </div>
+	      <span class="btnSmall" th:text="${#numbers.formatInteger(totalRevenue, 3, 'COMMA')}">0</span>
+	    </div>
+	
+	    <div class="item">
+	      <div class="who">
+	        <div class="p">건</div>
+	        <div class="t">
+	          <b>예약 건수</b>
+	          <span>이번 달 전체 예약 건수</span>
+	        </div>
+	      </div>
+	      <span class="btnSmall" th:text="${totalCount} + '건'">0건</span>
+	    </div>
+	
+	    <div class="item">
+	      <div class="who">
+	        <div class="p">율</div>
+	        <div class="t">
+	          <b>점유율</b>
+	          <span>수익 요약 기준 점유율</span>
+	        </div>
+	      </div>
+	      <span class="btnSmall primary" th:text="|${summaryOccupancyRate}%|">0%</span>
+	    </div>
+	  </div>
+	</section>
 
 	<section class="card">
 	  <div class="cardHeader">

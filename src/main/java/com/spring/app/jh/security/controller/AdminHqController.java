@@ -1,5 +1,7 @@
 package com.spring.app.jh.security.controller;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,12 +17,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.app.jh.ops.admin.common.domain.AdminDashboardKpiDTO;
+import com.spring.app.jh.ops.admin.common.domain.HqRevenueSummaryDTO;
 import com.spring.app.jh.ops.admin.common.domain.MonthlyReservationSummaryDTO;
 import com.spring.app.jh.ops.admin.service.AdminDashboardService;
 import com.spring.app.jh.security.domain.AdminDTO;
 import com.spring.app.jh.security.domain.MemberDTO;
 import com.spring.app.jh.security.domain.Session_AdminDTO;
 import com.spring.app.jh.security.service.AdminService;
+import com.spring.app.js.revenue.service.RevenueService;
+
 import org.springframework.security.core.Authentication;
 
 import com.spring.app.jh.security.auth.domain.JwtPrincipalDTO;
@@ -38,6 +43,7 @@ public class AdminHqController {
 
 	private final AdminService adminService;
 	private final AdminDashboardService adminDashboardService;
+	private final RevenueService revenueService;
 
 	/*
 	   HQ 전용 기능
@@ -73,6 +79,37 @@ public class AdminHqController {
         
         model.addAttribute("monthlySummary", monthlySummary);
         model.addAttribute("reservationSummary", monthlySummary);
+        
+	     // =========================================================
+	     // HQ 대시보드 - 수익관리 요약 카드
+	     // 기준: 이번 달 / 전체 호텔
+	     // =========================================================
+	     String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+	
+	     Map<String, Object> paraMap = new HashMap<>();
+	     paraMap.put("month", currentMonth);
+	     // hotelId / hotelName 을 안 넣으면 전체 호텔 기준 조회
+	
+	     Map<String, Object> revenueSummary = revenueService.getRevenueSummary(paraMap);
+	
+	     HqRevenueSummaryDTO revenueDto = new HqRevenueSummaryDTO();
+	
+	     if (revenueSummary != null) {
+	         Object totalRevenueObj = revenueSummary.get("TOTAL_REVENUE");
+	         Object totalCountObj = revenueSummary.get("TOTAL_COUNT");
+	         Object occupancyRateObj = revenueSummary.get("OCCUPANCY_RATE");
+	
+	         revenueDto.setTotalRevenue(totalRevenueObj == null ? 0L : Long.parseLong(String.valueOf(totalRevenueObj)));
+	         revenueDto.setTotalCount(totalCountObj == null ? 0 : Integer.parseInt(String.valueOf(totalCountObj)));
+	         revenueDto.setOccupancyRate(occupancyRateObj == null ? 0.0 : Double.parseDouble(String.valueOf(occupancyRateObj)));
+	     }
+	     else {
+	         revenueDto.setTotalRevenue(0L);
+	         revenueDto.setTotalCount(0);
+	         revenueDto.setOccupancyRate(0.0);
+	     }
+	
+	     model.addAttribute("hqRevenueSummary", revenueDto);
 
         return "admin/hq/hq_dashboard";
     }

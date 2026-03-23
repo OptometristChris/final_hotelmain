@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::section})}"
+      lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CIEL HOTEL | 배너 관리 시스템</title>
+
+    <th:block th:fragment="link">
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    </th:block>
+
+    <style th:fragment="style" type="text/css">
+        .admin-section { padding: 80px 0; background-color: #f8f9fa; min-height: 100vh; }
+        .banner-write-container { 
+            max-width: 1200px; margin: 0 auto; padding: 50px; 
+            background: #fff; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.08); 
+        }
+        
+        .admin-title { font-family: 'Playfair Display', serif; font-weight: 700; color: #1a1a1a; margin-bottom: 40px; border-left: 6px solid #d4af37; padding-left: 25px; font-size: 2rem; }
+        
+        /* [핵심] 입력 폼 요소 확대 */
+        .form-label { font-weight: 700; color: #222; margin-bottom: 12px; display: block; font-size: 1.1rem; }
+        
+        .form-control { 
+            border-radius: 8px; border: 1.5px solid #eaeaea; 
+            padding: 15px 20px; /* 안쪽 여백 대폭 확대 */
+            font-size: 1.05rem; /* 폰트 크기 확대 */
+            transition: all 0.3s; 
+            background-color: #fdfdfd;
+            height: auto; /* 고정 높이 해제 */
+        }
+        
+        select.form-control {
+            height: 60px; /* 셀렉트 박스 높이 강조 */
+            cursor: pointer;
+            appearance: auto;
+        }
+
+        .form-control:focus { border-color: #d4af37; box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1); background-color: #fff; }
+        
+        /* 이미지 영역 스타일 */
+        .image-picker-area { 
+            display: grid; grid-template-columns: 1fr; gap: 25px; 
+            max-height: 700px; overflow-y: auto; border: 2px solid #f1f1f1; padding: 25px; 
+            background: #fafafa; border-radius: 12px;
+        }
+        
+        .img-item { cursor: pointer; border: 4px solid transparent; border-radius: 12px; overflow: hidden; transition: all 0.3s ease; position: relative; }
+        .img-item img { width: 100%; height: 280px; object-fit: cover; display: block; filter: grayscale(20%); }
+        .img-item:hover img { filter: grayscale(0%); transform: scale(1.02); }
+        .img-item.active { border-color: #d4af37; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2); }
+        
+        .btn-submit { 
+            background: #1a1a1a; color: #fff; padding: 20px; border: none; width: 100%; 
+            border-radius: 10px; font-weight: 700; font-size: 1.2rem; cursor: pointer; 
+            transition: all 0.3s; margin-top: 30px; letter-spacing: 2px;
+        }
+        .btn-submit:hover { background: #d4af37; color: #fff; transform: translateY(-2px); }
+        
+        .image-picker-area::-webkit-scrollbar { width: 8px; }
+        .image-picker-area::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 10px; }
+    </style>
+
+    <th:block th:fragment="script">
+        <script th:inline="javascript">
+		    function loadHotelImages(hotelId) {
+		        if (!hotelId) {
+		            $("#imagePicker").html('<p style="grid-column: 1/-1; text-align: center; color: #999; padding: 80px 0;">지점을 선택하시면 해당 호텔의 갤러리가 로드됩니다.</p>');
+		            return;
+		        }
+		
+		        $.ajax({
+		            url: /*[[ @{/api/banner/detail} ]]*/ '',
+		            type: "GET",
+		            data: { "hotelId": hotelId },
+		            success: function(res) {
+		                if (res) {
+		                    $("input[name='title']").val(res.TITLE);
+		                    $("textarea[name='subtitle']").val(res.SUBTITLE ? res.SUBTITLE.replace(/<br\s*\/?>/gi, '\n') : "");
+		                    $("input[name='sort_order']").val(res.SORT_ORDER);
+		                    
+		                    // [수정 포인트 1] 기존 이미지 경로를 hidden input에 즉시 복사
+		                    $("#selectedImageUrl").val(res.IMAGE_URL); 
+		                } else {
+		                    $("input[name='title']").val("");
+		                    $("textarea[name='subtitle']").val("");
+		                    $("input[name='sort_order']").val("1");
+		                    $("#selectedImageUrl").val(""); // 데이터 없으면 초기화
+		                }
+		                
+		                fetchGallery(hotelId);
+		            },
+		            error: function() {
+		                fetchGallery(hotelId);
+		            }
+		        });
+		    }
+		
+		    function fetchGallery(hotelId) {
+		        $("#imagePicker").html('<p style="grid-column: 1/-1; text-align: center; color: #d4af37; padding: 80px 0; font-weight:bold;">이미지를 불러오는 중입니다...</p>');
+		        
+		        $.ajax({
+		            url: /*[[@{/api/hotel/images}]]*/ '',
+		            type: "GET",
+		            data: { "hotelId": hotelId },
+		            success: function(data) {
+		                let html = "";
+		                let list = (typeof data === "string") ? JSON.parse(data) : data;
+		                
+		                // [수정 포인트 2] 현재 필드에 담긴 이미지 주소를 기준으로 active 체크
+		                let currentSelected = $("#selectedImageUrl").val(); 
+		
+		                if (list && list.length > 0) {
+		                    list.forEach(function(img) {
+		                        let fileName = img.IMAGE_URL || img.image_url;
+		                        let finalSrc = fileName.includes('/file_images/') ? fileName : '/file_images/hotel/' + fileName;
+		                        
+		                        // 기존에 선택된 이미지라면 active 클래스 자동 부여
+		                        let activeClass = (fileName === currentSelected) ? "active" : "";
+		                        
+		                        html += `
+		                            <div class="img-item ${activeClass}" onclick="selectImage('${fileName}', this)">
+		                                <img src="${finalSrc}" alt="Hotel Gallery">
+		                            </div>`;
+		                    });
+		                } else {
+		                    html = '<p style="grid-column: 1/-1; text-align: center; color: #999; padding: 80px 0;">해당 지점에 등록된 이미지가 없습니다.</p>';
+		                }
+		                $("#imagePicker").html(html);
+		            }
+		        });
+		    }
+		
+		    function selectImage(imgUrl, element) {
+		        $(".img-item").removeClass("active");
+		        $(element).addClass("active");
+		        
+		        // [수정 포인트 3] 클릭한 이미지의 주소를 hidden 필드에 할당
+		        $("#selectedImageUrl").val(imgUrl);
+		        
+		        console.log("선택된 이미지 주소(hidden필드):", $("#selectedImageUrl").val());
+		    }
+		
+		    $(document).ready(function() {
+		        $("#bannerForm").on("submit", function() {
+		            // 제출 직전 이미지 주소가 비어있는지 검사 (방어 코드)
+		            if(!$("#selectedImageUrl").val()) {
+		                alert("배너 이미지를 선택해주세요.");
+		                return false;
+		            }
+		
+		            let subtitleVal = $("textarea[name='subtitle']").val();
+		            subtitleVal = subtitleVal.replace(/(?:\r\n|\r|\n)/g, '<br/>');
+		            $("textarea[name='subtitle']").val(subtitleVal);
+		            
+		            return true;
+		        });
+		    });
+		</script>
+    </th:block>
+</head>
+
+<body>
+<section class="admin-section">
+    <div class="container">
+        <div class="banner-write-container">
+            <h2 class="admin-title">MAIN BANNER REGISTRATION</h2>
+            <p class="text-muted mb-5" style="font-size: 1.1rem;">새로운 메인 비주얼 배너를 등록합니다. 왼쪽의 호텔 정보를 입력하고 오른쪽에서 이미지를 선택하세요.</p>
+            
+            <form th:action="@{/admin/banner/write}" method="post" id="bannerForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                
+                <div class="row">
+                    <div class="col-md-5 pe-md-5">
+                        <div class="form-group mb-5">
+                            <label class="form-label">호텔 지점 선택</label>
+                            <select name="fk_hotel_id" id="hotelId" class="form-control" onchange="loadHotelImages(this.value)" required>
+                                <option value="" disabled selected>관리하실 호텔 지점을 선택하세요</option>
+                                <th:block th:each="hotel : ${hotelList}">
+                                    <option th:value="${hotel.HOTEL_ID}" th:text="${hotel.HOTEL_NAME}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-5">
+                            <label class="form-label">메인 타이틀 (Banner Title)</label>
+                            <input type="text" name="title" class="form-control" placeholder="예: THE CIEL SEOUL" required>
+                        </div>
+                        
+                        <div class="form-group mb-5">
+                            <label class="form-label">서브 설명 (HTML 사용 가능)</label>
+                            <textarea name="subtitle" class="form-control" rows="5" placeholder="지상 최고의 휴식을 경험해보세요. <br/> 씨엘 호텔입니다."></textarea>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label">노출 우선순위</label>
+                            <input type="number" name="sort_order" class="form-control" value="1" min="1">
+                            <small class="text-muted mt-2 d-inline-block">* 숫자가 작을수록 먼저 노출됩니다.</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7">
+                        <label class="form-label">배너 이미지 라이브러리</label>
+                        <div id="imagePicker" class="image-picker-area">
+                            <p style="grid-column: 1/-1; text-align: center; color: #999; padding: 100px 0;">
+                                호텔 지점을 선택하면 이미지가 로드됩니다.
+                            </p>
+                        </div>
+                        <input type="hidden" name="image_url" id="selectedImageUrl" required>
+                    </div>
+                </div>
+
+                <input type="hidden" name="banner_type" value="MAIN">
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <button type="submit" class="btn-submit">CONFIRM & PUBLISH BANNER</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

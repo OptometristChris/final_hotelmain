@@ -70,6 +70,23 @@ background:#f3f3f3;
 button{
 padding:6px 12px;
 cursor:pointer;
+border:none;
+border-radius:5px;
+}
+
+.checkin-btn{
+background:#4CAF50;
+color:white;
+}
+
+.checkout-btn{
+background:#2196F3;
+color:white;
+}
+
+.danger-btn{
+background:red;
+color:white;
 }
 
 /* 체크인 진행률 */
@@ -89,6 +106,27 @@ height:20px;
 background:#4CAF50;
 height:100%;
 }
+
+/* 지연 강조 */
+.overdue{
+background:#ffe5e5;
+}
+
+.table-container{
+max-height:300px;   /* 원하는 높이 */
+overflow-y:auto;
+border:1px solid #ddd;
+border-radius:8px;
+}
+
+/* 헤더 고정까지 하고 싶으면 추가 */
+.table-container thead th{
+position:sticky;
+top:0;
+background:#f3f3f3;
+z-index:1;
+}
+
 </style>
 
 </head>
@@ -153,6 +191,44 @@ height:100%;
 </div>
 
 <!-- ================================ -->
+<!-- 🔴 체크아웃 지연 (핵심 추가) -->
+<!-- ================================ -->
+
+<h3 style="color:red;">⚠ 체크아웃 지연</h3>
+
+<table>
+
+<tr>
+<th>예약번호</th>
+<th>예약자</th>
+<th>객실</th>
+<th>체크아웃</th>
+<th>관리</th>
+</tr>
+
+<tr th:each="r : ${overdueList}">
+
+<td th:text="${r['RESERVATION_ID']}"></td>
+<td th:text="${r['NAME']}"></td>
+<td th:text="${r['ROOM_NAME']}"></td>
+
+<td th:text="${#dates.format(r['CHECKOUT_DATE'],'yyyy-MM-dd')}"></td>
+
+<td>
+<form th:action="@{/admin/reservation/checkout}" method="post">
+    <input type="hidden"
+           name="reservationId"
+           th:value="${r['RESERVATION_ID']}">
+    <button type="submit" class="danger-btn">즉시 체크아웃</button>
+</form>
+</td>
+
+</tr>
+
+</table>
+
+
+<!-- ================================ -->
 <!-- 1. 오늘 체크인 -->
 <!-- ================================ -->
 
@@ -173,38 +249,30 @@ height:100%;
 <tr th:each="r : ${checkinList}">
 
 <td th:text="${r['RESERVATION_ID']}"></td>
-
 <td th:text="${r['NAME']}"></td>
-
 <td th:text="${r['ROOM_NAME']}"></td>
 
-<!-- 날짜 포맷 -->
 <td th:text="${#dates.format(r['CHECKIN_DATE'],'yyyy-MM-dd')}"></td>
-
 <td th:text="${#dates.format(r['CHECKOUT_DATE'],'yyyy-MM-dd')}"></td>
 
 <td th:text="${#numbers.formatInteger(r['TOTAL_PRICE'],3,'COMMA')} + '원'"></td>
 
 <td>
-
-<!-- 체크인 버튼 -->
 <form th:action="@{/admin/reservation/checkin}" method="post"
-onsubmit="return confirm('체크인 처리하시겠습니까?')">
+      onsubmit="return confirm('체크인 처리하시겠습니까?')">
 
-<input type="hidden"
-name="reservationId"
-th:value="${r['RESERVATION_ID']}">
+    <input type="hidden"
+           name="reservationId"
+           th:value="${r['RESERVATION_ID']}">
 
-<button type="submit">체크인</button>
+    <button type="submit" class="checkin-btn">체크인</button>
 
 </form>
-
 </td>
 
 </tr>
 
 </table>
-
 
 
 <!-- ================================ -->
@@ -222,43 +290,38 @@ th:value="${r['RESERVATION_ID']}">
 <th>체크인</th>
 <th>체크아웃</th>
 <th>금액</th>
-<th>관리</th>
+<!-- <th>관리</th> -->
 </tr>
 
-<tr th:each="r : ${stayList}">
+<tr th:each="r : ${stayList}"
+    th:classappend="${#dates.format(r['CHECKOUT_DATE'],'yyyy-MM-dd') < #dates.format(#dates.createNow(),'yyyy-MM-dd')} ? 'overdue' : ''">
 
 <td th:text="${r['RESERVATION_ID']}"></td>
-
 <td th:text="${r['NAME']}"></td>
-
 <td th:text="${r['ROOM_NAME']}"></td>
 
 <td th:text="${#dates.format(r['CHECKIN_DATE'],'yyyy-MM-dd')}"></td>
-
 <td th:text="${#dates.format(r['CHECKOUT_DATE'],'yyyy-MM-dd')}"></td>
 
 <td th:text="${r['TOTAL_PRICE']}"></td>
 
-<td>
 
-<!-- 체크아웃 버튼 -->
+<!-- <td>
 <form th:action="@{/admin/reservation/checkout}" method="post"
-onsubmit="return confirm('체크아웃 처리하시겠습니까?')">
+      onsubmit="return confirm('체크아웃 처리하시겠습니까?')">
 
-<input type="hidden"
-name="reservationId"
-th:value="${r['RESERVATION_ID']}">
+    <input type="hidden"
+           name="reservationId"
+           th:value="${r['RESERVATION_ID']}">
 
-<button type="submit">체크아웃</button>
+    <button type="submit" class="checkout-btn">체크아웃</button>
 
 </form>
-
 </td>
-
+ -->
 </tr>
 
 </table>
-
 
 
 <!-- ================================ -->
@@ -277,28 +340,38 @@ th:value="${r['RESERVATION_ID']}">
 <th>체크아웃</th>
 <th>금액</th>
 <th>상태</th>
+<th>관리</th>
 </tr>
 
 <tr th:each="r : ${checkoutList}">
 
 <td th:text="${r['RESERVATION_ID']}"></td>
-
 <td th:text="${r['NAME']}"></td>
-
 <td th:text="${r['ROOM_NAME']}"></td>
 
 <td th:text="${#dates.format(r['CHECKIN_DATE'],'yyyy-MM-dd')}"></td>
-
 <td th:text="${#dates.format(r['CHECKOUT_DATE'],'yyyy-MM-dd')}"></td>
 
 <td th:text="${r['TOTAL_PRICE']}"></td>
 
 <td>체크아웃 예정</td>
 
+<td>
+<form th:action="@{/admin/reservation/checkout}" method="post"
+      onsubmit="return confirm('체크아웃 처리하시겠습니까?')">
+
+    <input type="hidden"
+           name="reservationId"
+           th:value="${r['RESERVATION_ID']}">
+
+    <button type="submit" class="checkout-btn">체크아웃</button>
+
+</form>
+</td>
+
 </tr>
 
 </table>
-
 
 
 <!-- ================================ -->
@@ -322,13 +395,10 @@ th:value="${r['RESERVATION_ID']}">
 <tr th:each="r : ${checkoutCompleteList}">
 
 <td th:text="${r['RESERVATION_ID']}"></td>
-
 <td th:text="${r['NAME']}"></td>
-
 <td th:text="${r['ROOM_NAME']}"></td>
 
 <td th:text="${#dates.format(r['CHECKIN_DATE'],'yyyy-MM-dd')}"></td>
-
 <td th:text="${#dates.format(r['CHECKOUT_DATE'],'yyyy-MM-dd')}"></td>
 
 <td th:text="${r['TOTAL_PRICE']}"></td>
@@ -338,7 +408,6 @@ th:value="${r['RESERVATION_ID']}">
 </tr>
 
 </table>
-
 
 </body>
 </html>

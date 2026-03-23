@@ -4,266 +4,429 @@
 <mapper namespace="com.spring.app.ih.dining.mapper.DiningMapper">
 
     <select id="getDiningList" resultType="DiningDTO" parameterType="HashMap">
-	    SELECT 
-	        dining_id, name, d_type, description,
-	        tel, floor, main_img, fk_hotel_id, business_hours
-	    FROM tbl_dining
-	    <where>
-	        <if test="hotel_id != null and hotel_id != ''">
-	            AND fk_hotel_id = #{hotel_id}
-	        </if>
-	        <if test="d_type != null and d_type != ''">
-	            AND UPPER(d_type) = UPPER(#{d_type})
-	        </if>
-	    </where>
-	    ORDER BY dining_id ASC
-	</select>
-	
+        SELECT
+            dining_id, name, d_type, description,
+            tel, floor, main_img, fk_hotel_id, business_hours,
+            available_times
+        FROM tbl_dining
+        <where>
+            <if test="hotel_id != null and hotel_id != ''">
+                AND fk_hotel_id = #{hotel_id}
+            </if>
+            <if test="d_type != null and d_type != ''">
+                AND UPPER(d_type) = UPPER(#{d_type})
+            </if>
+        </where>
+        ORDER BY dining_id ASC
+    </select>
+
     <select id="getDiningDetail" resultType="DiningDTO">
-        SELECT 
+        SELECT
             dining_id, name, d_type, description,
             introduction, business_hours,
             tel, floor, main_img, store_imgs,
             food_imgs, menu_pdf, extra_info, fk_hotel_id,
-            open_time, close_time, available_times       
-            FROM tbl_dining
+            open_time, close_time, available_times
+        FROM tbl_dining
         WHERE dining_id = #{dining_id}
     </select>
-    
+
     <insert id="registerReservation" parameterType="DiningReservationDTO">
-	    INSERT INTO dining_reservations (
-	        dining_reservation_id,
-	        fk_hotel_id,
-	        dining_id,
-	        fk_member_no,
-	        guest_name,
-	        guest_phone,
-	        guest_email,
-	        res_password,
-	        adult_count,
-	        child_count,
-	        infant_count,
-	        res_date,
-	        res_time,
-	        special_requests,
-	        allergy_info,
-	        status,
-	        created_at
-	    ) VALUES (
-	        seq_dining_reservation.NEXTVAL,
-	        #{fkHotelId, jdbcType=NUMERIC},
-	        #{diningId, jdbcType=NUMERIC},  #{fkMemberNo, jdbcType=NUMERIC},
-	        #{guestName},
-	        #{guestPhone},
-	        #{guestEmail, jdbcType=VARCHAR},
-	        #{resPassword, jdbcType=VARCHAR},
-	        #{adultCount},
-	        #{childCount, jdbcType=NUMERIC},
-	        #{infantCount, jdbcType=NUMERIC},
-	        #{resDate},
-	        #{resTime},
-	        #{specialRequests, jdbcType=CLOB},
-	        #{allergyInfo, jdbcType=CLOB},
-	        'CONFIRMED',
-	        CURRENT_TIMESTAMP
-	    )
-	</insert>
+        INSERT INTO dining_reservations (
+            dining_reservation_id, fk_hotel_id, dining_id, fk_member_no,
+            guest_name, guest_phone, guest_email, res_password,
+            adult_count, child_count, infant_count,
+            res_date, res_time, special_requests, allergy_info,
+            status, created_at
+        ) VALUES (
+            seq_dining_reservation.NEXTVAL,
+            #{fkHotelId, jdbcType=NUMERIC}, #{diningId, jdbcType=NUMERIC}, #{fkMemberNo, jdbcType=NUMERIC},
+            #{guestName}, #{guestPhone}, #{guestEmail, jdbcType=VARCHAR}, #{resPassword, jdbcType=VARCHAR},
+            #{adultCount}, #{childCount, jdbcType=NUMERIC}, #{infantCount, jdbcType=NUMERIC},
+            #{resDate}, #{resTime}, #{specialRequests, jdbcType=CLOB}, #{allergyInfo, jdbcType=CLOB},
+            'CONFIRMED', CURRENT_TIMESTAMP
+        )
+    </insert>
 
     <select id="getReservationConfirmInfo" parameterType="long" resultType="DiningReservationDTO">
-	    SELECT 
-	        R.*, 
-	        D.NAME AS diningName  FROM dining_reservations R
-	    JOIN tbl_dining D ON R.dining_id = D.dining_id  WHERE R.dining_reservation_id = #{diningReservationId}
-	</select>
-		
+        SELECT R.*, D.NAME AS diningName
+        FROM dining_reservations R
+        JOIN tbl_dining D ON R.dining_id = D.dining_id
+        WHERE R.dining_reservation_id = #{diningReservationId}
+    </select>
+
     <select id="getDiningName" parameterType="long" resultType="string">
-	    SELECT name 
-	    FROM tbl_dining 
-	    WHERE dining_id = #{diningId}
-	</select>	    
-    
-	<insert id="insertReservation" parameterType="DiningReservationDTO">
-	    <selectKey keyProperty="diningReservationId" resultType="long" order="BEFORE">
-	        SELECT seq_dining_reservation.nextval FROM dual
-	    </selectKey>
-	
-	    INSERT INTO dining_reservations (
-	        dining_reservation_id,  
-	        fk_hotel_id,            
-	        dining_id,
-	        fk_member_no,           
-	        guest_name,
-	        guest_phone,
-	        guest_email,            
-	        res_password,           
-	        adult_count,
-	        child_count,
-	        infant_count,
-	        res_date,
-	        res_time,
-	        special_requests,
-	        status,
-	        created_at
-	    ) VALUES (
-	        #{diningReservationId}, 
-	        #{fkHotelId},           
-	        #{diningId},
-	        #{fkMemberNo, jdbcType=NUMERIC},     #{guestName},
-	        #{guestPhone},
-	        #{guestEmail, jdbcType=VARCHAR},     #{resPassword, jdbcType=VARCHAR},    #{adultCount},
-	        #{childCount, jdbcType=NUMERIC},     #{infantCount, jdbcType=NUMERIC},    #{resDate},
-	        #{resTime},
-	        #{specialRequests, jdbcType=VARCHAR}, 'CONFIRMED',
-	        SYSTIMESTAMP
-	    )
-	</insert>
-	
-	
-	<insert id="insertPayment" parameterType="map">
-	    INSERT INTO dining_payments (
-	        payment_id, 
-	        dining_res_no,      amount, 
-	        original_amount, 
-	        cancellation_fee, 
-	        payment_method, 
-	        status, 
-	        pg_tid, 
-	        paid_at
-	    ) VALUES (
-	        SEQ_DINING_PAYMENTS.nextval, 
-	        #{resNo, jdbcType=NUMERIC}, #{amount, jdbcType=NUMERIC}, 
-	        #{originalAmount, jdbcType=NUMERIC}, 
-	        0, 
-	        #{paymentMethod, jdbcType=VARCHAR}, 
-	        #{status, jdbcType=VARCHAR}, 
-	        #{pgTid, jdbcType=VARCHAR}, 
-	        SYSTIMESTAMP
-	    )
-	</insert>
-	
+        SELECT name
+        FROM tbl_dining
+        WHERE dining_id = #{diningId}
+    </select>
 
-	<select id="findNonMemberReservations" resultType="DiningReservationDTO">
-	    SELECT 
-	        R.DINING_RESERVATION_ID as diningReservationId,
-	        (SELECT D.NAME FROM tbl_dining D WHERE D.DINING_ID = R.DINING_ID) as diningName,
-	        R.RES_DATE as resDate,
-	        R.RES_TIME as resTime,
-	        R.ADULT_COUNT as adultCount,
-	        R.CHILD_COUNT as childCount,
-	        R.STATUS as status
-	    FROM DINING_RESERVATIONS R
-	    WHERE R.GUEST_NAME = #{name}
-	      AND R.GUEST_EMAIL = #{email}
-	      AND R.RES_PASSWORD = #{password}
-	      AND R.FK_MEMBER_NO IS NULL  ORDER BY R.RES_DATE DESC, R.RES_TIME DESC
-	</select>
+    <insert id="insertReservation" parameterType="DiningReservationDTO">
+        <selectKey keyProperty="diningReservationId" resultType="long" order="BEFORE">
+            SELECT seq_dining_reservation.nextval FROM dual
+        </selectKey>
+        INSERT INTO dining_reservations (
+            dining_reservation_id, fk_hotel_id, dining_id, fk_member_no,
+            guest_name, guest_phone, guest_email, res_password,
+            adult_count, child_count, infant_count,
+            res_date, res_time, special_requests, status, created_at
+        ) VALUES (
+            #{diningReservationId}, #{fkHotelId}, #{diningId}, #{fkMemberNo, jdbcType=NUMERIC},
+            #{guestName}, #{guestPhone}, #{guestEmail, jdbcType=VARCHAR}, #{resPassword, jdbcType=VARCHAR},
+            #{adultCount}, #{childCount, jdbcType=NUMERIC}, #{infantCount, jdbcType=NUMERIC},
+            #{resDate}, #{resTime}, #{specialRequests, jdbcType=VARCHAR}, 'CONFIRMED', SYSTIMESTAMP
+        )
+    </insert>
 
-	
-	<select id="findMemberReservations" resultType="DiningReservationDTO">
-	    SELECT 
-	        R.dining_reservation_id as diningReservationId,
-	        (SELECT D.NAME FROM TBL_DINING D WHERE D.DINING_ID = R.dining_id) as diningName,
-	        R.res_date as resDate,
-	        R.res_time as resTime,
-	        R.adult_count as adultCount,
-	        R.child_count as childCount,
-	        R.infant_count as infantCount,
-	        R.status as status
-	    FROM dining_reservations R
-	    INNER JOIN TBL_MEMBER_SECURITY M ON R.fk_member_no = M.member_no  WHERE M.memberid = #{memberid}
-	    ORDER BY R.res_date DESC, R.res_time DESC
-	</select>
+    <insert id="insertPayment" parameterType="map">
+        INSERT INTO dining_payments (
+            payment_id, dining_res_no, amount, original_amount,
+            cancellation_fee, payment_method, status, pg_tid, paid_at
+        ) VALUES (
+            SEQ_DINING_PAYMENTS.nextval,
+            #{resNo, jdbcType=NUMERIC}, #{amount, jdbcType=NUMERIC}, #{originalAmount, jdbcType=NUMERIC},
+            0, #{paymentMethod, jdbcType=VARCHAR}, #{status, jdbcType=VARCHAR}, #{pgTid, jdbcType=VARCHAR}, SYSTIMESTAMP
+        )
+    </insert>
 
+    <select id="findNonMemberReservations" resultType="DiningReservationDTO">
+        SELECT
+            R.DINING_RESERVATION_ID AS diningReservationId,
+            (SELECT D.NAME FROM tbl_dining D WHERE D.DINING_ID = R.DINING_ID) AS diningName,
+            R.RES_DATE AS resDate,
+            R.RES_TIME AS resTime,
+            R.ADULT_COUNT AS adultCount,
+            R.CHILD_COUNT AS childCount,
+            R.STATUS AS status
+        FROM DINING_RESERVATIONS R
+        WHERE R.GUEST_NAME = #{name}
+          AND R.GUEST_EMAIL = #{email}
+          AND R.RES_PASSWORD = #{password}
+          AND R.FK_MEMBER_NO IS NULL
+        ORDER BY R.RES_DATE DESC, R.RES_TIME DESC
+    </select>
+
+    <select id="findMemberReservations" resultType="DiningReservationDTO">
+        SELECT
+            R.dining_reservation_id AS diningReservationId,
+            (SELECT D.NAME FROM TBL_DINING D WHERE D.DINING_ID = R.dining_id) AS diningName,
+            R.res_date AS resDate,
+            R.res_time AS resTime,
+            R.adult_count AS adultCount,
+            R.child_count AS childCount,
+            R.infant_count AS infantCount,
+            R.status AS status
+        FROM dining_reservations R
+        INNER JOIN TBL_MEMBER_SECURITY M ON R.fk_member_no = M.member_no
+        WHERE M.memberid = #{memberid}
+        ORDER BY R.res_date DESC, R.res_time DESC
+    </select>
 
     <update id="updateStatus">
         UPDATE DINING_RESERVATIONS
-	    SET STATUS = #{status},
-	        UPDATED_AT = CURRENT_TIMESTAMP
-	    WHERE DINING_RESERVATION_ID = #{id}
+        SET STATUS = #{status}, UPDATED_AT = CURRENT_TIMESTAMP
+        WHERE DINING_RESERVATION_ID = #{id}
     </update>
-    
+
+    <select id="getTotalReservationCount" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM dining_reservations
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (guest_name LIKE '%' || #{keyword} || '%' OR guest_phone LIKE '%' || #{keyword} || '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
     <select id="findAllReservationsAdmin" parameterType="map" resultType="DiningReservationDTO">
-	    SELECT 
-	        R.dining_reservation_id as diningReservationId,
-	        (SELECT D.NAME FROM TBL_DINING D WHERE D.DINING_ID = R.dining_id) as diningName,
-	        R.guest_name as guestName,
-	        R.guest_phone as guestPhone,
-	        R.res_date as resDate,
-	        R.res_time as resTime,
-	        R.adult_count as adultCount,
-	        R.child_count as childCount,
-	        R.status as status,
-	        R.fk_member_no as fkMemberNo,
-	        R.created_at as createdAt
-	    FROM dining_reservations R
-	    <where>
-	        <if test="keyword != null and keyword != ''">
-	            AND (R.guest_name LIKE '%' || #{keyword} || '%' OR R.guest_phone LIKE '%' || #{keyword} || '%')
-	        </if>
-	        <if test="status != null and status != ''">
-	            AND R.status = #{status}
-	        </if>
-	    </where>
-	    ORDER BY R.res_date DESC, R.res_time DESC
-	</select>
-	
-	<select id="getAdminDashboardCounts" resultType="map">
-	    SELECT 
-	        COUNT(*) as TOTAL,
-	        COUNT(CASE WHEN status = 'CONFIRMED' AND res_date = TRUNC(SYSDATE) THEN 1 END) as TODAY_RESERVE,
-	        COUNT(CASE WHEN status = 'VISITED' THEN 1 END) as VISITED, COUNT(CASE WHEN status = 'NOSHOW' THEN 1 END) as NOSHOW
-	    FROM dining_reservations
-	</select>
-	
-	<update id="updateReservationStatusAdmin">
-	    UPDATE dining_reservations
-	    SET status = #{status}
-	    WHERE dining_reservation_id = #{resId}
-	</update>
-	
-	<insert id="insertManualReservation">
-	    INSERT INTO dining_reservations (
-	        dining_reservation_id, 
-	        dining_id, 
-	        fk_hotel_id,  guest_name, 
-	        guest_phone, 
-	        res_date, 
-	        res_time, 
-	        adult_count, 
-	        child_count, 
-	        infant_count, 
-	        status, 
-	        created_at
-	    ) VALUES (
-	        seq_dining_reservation.nextval, 
-	        #{diningId}, 
-	        #{fkHotelId}, #{guestName}, 
-	        #{guestPhone}, 
-	        #{resDate}, 
-	        #{resTime}, 
-	        #{adultCount}, 
-	        #{childCount}, 
-	        #{infantCount}, 
-	        'CONFIRMED', 
-	        SYSTIMESTAMP
-	    )
-	</insert>
-	
-	<select id="getReservationDetail" resultType="com.spring.app.ih.dining.model.DiningReservationDTO">
-	    SELECT 
-	        res.dining_reservation_id, 
-	        res.guest_name, 
-	        res.guest_phone, 
-	        res.res_date, 
-	        res.res_time, 
-	        res.adult_count, 
-	        res.child_count, 
-	        res.infant_count, 
-	        res.status,
-	        res.request_term,  
-	        d.name AS diningName  FROM dining_reservations res
-	    JOIN tbl_dining d ON res.dining_id = d.dining_id
-	    WHERE res.dining_reservation_id = #{resId}
-	</select>
-			
+        SELECT *
+        FROM (
+            SELECT rownum AS rno, T.*
+            FROM (
+                SELECT
+                    R.dining_reservation_id AS diningReservationId,
+                    (SELECT D.NAME FROM TBL_DINING D WHERE D.DINING_ID = R.dining_id) AS diningName,
+                    R.guest_name AS guestName,
+                    R.guest_phone AS guestPhone,
+                    R.res_date AS resDate,
+                    R.res_time AS resTime,
+                    R.adult_count AS adultCount,
+                    R.child_count AS childCount,
+                    R.infant_count AS infantCount,
+                    R.status AS status,
+                    R.fk_member_no AS fkMemberNo,
+                    R.created_at AS createdAt
+                FROM dining_reservations R
+                <where>
+                    <if test="keyword != null and keyword != ''">
+                        AND (R.guest_name LIKE '%' || #{keyword} || '%' OR R.guest_phone LIKE '%' || #{keyword} || '%')
+                    </if>
+                    <if test="status != null and status != ''">
+                        AND R.status = #{status}
+                    </if>
+                </where>
+                ORDER BY R.res_date DESC, R.res_time DESC
+            ) T
+        )
+        <if test="startRow != null and endRow != null">
+            WHERE rno BETWEEN #{startRow} AND #{endRow}
+        </if>
+    </select>
+
+    <select id="getAdminDashboardCounts" resultType="map">
+        SELECT
+            COUNT(*) AS TOTAL,
+            COUNT(CASE WHEN status = 'CONFIRMED' AND res_date = TRUNC(SYSDATE) THEN 1 END) AS TODAY_RESERVE,
+            COUNT(CASE WHEN status = 'VISITED' THEN 1 END) AS VISITED,
+            COUNT(CASE WHEN status = 'NOSHOW' THEN 1 END) AS NOSHOW
+        FROM dining_reservations
+    </select>
+
+    <update id="updateReservationStatusAdmin">
+        UPDATE dining_reservations
+        SET status = #{status}
+        WHERE dining_reservation_id = #{resId}
+    </update>
+
+    <insert id="insertManualReservation">
+        INSERT INTO dining_reservations (
+            dining_reservation_id, dining_id, fk_hotel_id, guest_name,
+            guest_phone, res_date, res_time, adult_count, child_count, infant_count,
+            status, created_at
+        ) VALUES (
+            seq_dining_reservation.nextval, #{diningId}, #{fkHotelId}, #{guestName},
+            #{guestPhone}, #{resDate}, #{resTime}, #{adultCount}, #{childCount}, #{infantCount},
+            'CONFIRMED', SYSTIMESTAMP
+        )
+    </insert>
+
+    <select id="getReservationDetail" resultType="com.spring.app.ih.dining.model.DiningReservationDTO">
+        SELECT
+            res.dining_reservation_id AS diningReservationId,
+            res.guest_name AS guestName,
+            res.guest_phone AS guestPhone,
+            res.res_date AS resDate,
+            res.res_time AS resTime,
+            res.adult_count AS adultCount,
+            res.child_count AS childCount,
+            res.infant_count AS infantCount,
+            res.status,
+            res.special_requests AS specialRequests,
+            res.request_term AS requestTerm,
+            res.created_at AS createdAt,
+            res.fk_member_no AS fkMemberNo,
+            d.name AS diningName
+        FROM dining_reservations res
+        JOIN tbl_dining d ON res.dining_id = d.dining_id
+        WHERE res.dining_reservation_id = #{resId}
+    </select>
+
+    <select id="checkAvailability" resultType="int">
+        <![CDATA[
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM tbl_dining d
+        WHERE d.dining_id = #{diningId}
+          AND d.active_yn = 'Y'
+          AND NOT EXISTS (
+              SELECT 1 FROM tbl_dining_block b
+              WHERE b.fk_dining_id = d.dining_id
+                AND b.block_date = #{resDate}
+                AND (b.block_time = 'ALL' OR b.block_time = #{resTime})
+          )
+          AND (
+              SELECT COALESCE(SUM(r.adult_count + r.child_count + r.infant_count), 0)
+              FROM dining_reservations r
+              WHERE r.dining_id = d.dining_id
+                AND r.res_date = #{resDate}
+                AND r.res_time = #{resTime}
+                AND r.status != 'CANCELED'
+          ) + (TO_NUMBER(#{adult_count}) + TO_NUMBER(#{child_count}) + TO_NUMBER(#{infant_count})) <= d.max_total_capacity
+        ]]>
+    </select>
+
+    <select id="getBlockList" resultType="map">
+        SELECT
+            b.BLOCK_ID AS "blockId",
+            b.FK_DINING_ID AS "diningId",
+            TO_CHAR(b.BLOCK_DATE, 'YYYY-MM-DD') AS "blockDate",
+            b.BLOCK_TIME AS "blockTime",
+            b.REASON AS "reason",
+            d.NAME AS "diningName"
+        FROM tbl_dining_block b
+        JOIN tbl_dining d ON b.FK_DINING_ID = d.DINING_ID
+        ORDER BY b.BLOCK_DATE DESC, b.BLOCK_TIME ASC
+    </select>
+
+    <insert id="insertBlock" parameterType="map">
+        INSERT INTO tbl_dining_block (
+            BLOCK_ID, FK_DINING_ID, BLOCK_DATE, BLOCK_TIME, REASON, CREATED_AT
+        ) VALUES (
+            SEQ_BLOCK_ID.NEXTVAL, #{fkDiningId}, TO_DATE(#{blockDate}, 'YYYY-MM-DD'), #{blockTime}, #{reason, jdbcType=VARCHAR}, SYSDATE
+        )
+    </insert>
+
+    <delete id="deleteBlock">
+        DELETE FROM tbl_dining_block WHERE BLOCK_ID = #{blockId}
+    </delete>
+
+    <select id="isBlocked" resultType="int">
+        SELECT COUNT(*)
+        FROM tbl_dining_block
+        WHERE FK_DINING_ID = #{diningId}
+          AND BLOCK_DATE = #{resDate}
+          AND (BLOCK_TIME = 'ALL' OR BLOCK_TIME = #{resTime})
+    </select>
+
+    <select id="getUnavailableTimeList" parameterType="map" resultType="string">
+        SELECT 'ALL' AS res_time
+        FROM tbl_dining_block
+        WHERE fk_dining_id = #{diningId}
+          AND block_date = #{resDate}
+          AND block_time = 'ALL'
+        UNION
+        SELECT block_time AS res_time
+        FROM tbl_dining_block
+        WHERE fk_dining_id = #{diningId}
+          AND block_date = #{resDate}
+          AND block_time != 'ALL'
+        UNION
+        SELECT r.res_time
+        FROM dining_reservations r
+        JOIN tbl_dining d ON r.dining_id = d.dining_id
+        WHERE r.dining_id = #{diningId}
+          AND r.res_date = #{resDate}
+          AND r.status != 'CANCELED'
+        GROUP BY r.res_time, d.max_total_capacity
+        HAVING SUM(r.adult_count + r.child_count + r.infant_count) >= d.max_total_capacity
+    </select>
+
+    <select id="getTodayShopStats" resultType="com.spring.app.ih.dining.model.ShopReservationStatDTO">
+        SELECT
+            d.dining_id AS "diningId",
+            d.name AS "shopName",
+            COUNT(res.dining_reservation_id) AS "totalCount",
+            COUNT(CASE WHEN res.status = 'VISITED' THEN 1 END) AS "visitedCount",
+            NVL(SUM(res.adult_count + res.child_count + res.infant_count), 0) AS "currentPeople",
+            d.max_total_capacity AS "maxCapacity"
+        FROM tbl_dining d
+        LEFT JOIN dining_reservations res
+          ON d.dining_id = res.dining_id
+         AND res.res_date = TRUNC(SYSDATE)
+         AND res.status != 'CANCELED'
+        GROUP BY d.dining_id, d.name, d.max_total_capacity
+        ORDER BY d.dining_id ASC
+    </select>
+
+    <update id="updateMaxCapacity">
+        UPDATE tbl_dining SET max_total_capacity = #{maxCapacity} WHERE dining_id = #{diningId}
+    </update>
+
+    <update id="updateSlotCapacity">
+        UPDATE tbl_dining_time_slot SET max_slot_capacity = #{maxSlotCapacity} WHERE slot_id = #{slotId}
+    </update>
+
+    <select id="getDiningConfig" resultType="com.spring.app.ih.dining.model.ShopReservationStatDTO">
+        SELECT
+            d.dining_id AS diningId,
+            d.name AS shopName,
+            d.max_total_capacity AS maxTotal,
+            s.slot_id AS slotId,
+            s.res_time AS resTime,
+            s.max_slot_capacity AS slotCapacity
+        FROM tbl_dining d
+        LEFT JOIN tbl_dining_time_slot s ON d.dining_id = s.dining_id
+        WHERE d.dining_id = #{diningId}
+        ORDER BY s.res_time ASC
+    </select>
+
+    <select id="getTodayShopResList" resultType="map">
+        SELECT guest_name AS "guestName", res_time AS "resTime", status AS "status"
+        FROM dining_reservations
+        WHERE dining_id = #{diningId}
+          AND res_date = TRUNC(SYSDATE)
+        ORDER BY res_time ASC
+    </select>
+
+    <select id="getAvailableSeatCount" resultType="int">
+        SELECT
+            (SELECT max_slot_capacity FROM tbl_dining_time_slot WHERE dining_id = #{diningId} AND res_time = #{resTime})
+            -
+            (SELECT NVL(SUM(adult_count + child_count + infant_count), 0)
+             FROM dining_reservations
+             WHERE dining_id = #{diningId}
+               AND res_date = #{resDate}
+               AND res_time = #{resTime}
+               AND status IN ('CONFIRMED', 'VISITED')) AS available_seat
+        FROM DUAL
+    </select>
+
+    <update id="updateDiningDetails" parameterType="DiningDTO">
+        UPDATE tbl_dining
+        <set>
+            business_hours = #{business_hours},
+            tel = #{tel},
+            introduction = #{introduction},
+            description = #{description},
+            extra_info = #{extra_info},
+            <if test="main_img != null">main_img = #{main_img},</if>
+            <if test="store_imgs != null">store_imgs = #{store_imgs},</if>
+            <if test="food_imgs != null">food_imgs = #{food_imgs},</if>
+            <if test="menu_pdf != null">menu_pdf = #{menu_pdf}</if>
+        </set>
+        WHERE dining_id = #{dining_id}
+    </update>
+
+    <select id="getAdminDiningList" resultType="DiningDTO" parameterType="HashMap">
+        SELECT
+            dining_id, name, d_type, description,
+            tel, floor, main_img, fk_hotel_id, business_hours, available_times
+        FROM tbl_dining
+        <where>
+            <if test="hotel_id != null and hotel_id != ''">
+                AND fk_hotel_id = #{hotel_id}
+            </if>
+            <if test="d_type != null and d_type != ''">
+                AND UPPER(d_type) = UPPER(#{d_type})
+            </if>
+        </where>
+        ORDER BY dining_id ASC
+    </select>
+
+    <select id="getDailyStatistics" resultType="map">
+        <![CDATA[
+        SELECT
+            TO_CHAR(R.RES_DATE, 'YYYY-MM-DD') AS RES_DATE,
+            COUNT(R.DINING_RESERVATION_ID) AS DAILY_COUNT,
+            SUM(
+                CASE
+                    WHEN R.DINING_ID = '1' THEN (R.ADULT_COUNT * 100000) + (R.CHILD_COUNT * 50000)
+                    WHEN R.DINING_ID = '2' THEN (R.ADULT_COUNT * 70000) + (R.CHILD_COUNT * 40000)
+                    WHEN R.DINING_ID = '3' THEN (R.ADULT_COUNT * 80000) + (R.CHILD_COUNT * 30000)
+                    WHEN R.DINING_ID = '4' THEN (R.ADULT_COUNT * 80000) + (R.CHILD_COUNT * 20000)
+                    ELSE NVL(P.AMOUNT, 0)
+                END
+            ) AS DAILY_REVENUE
+        FROM DINING_RESERVATIONS R
+        LEFT JOIN DINING_PAYMENTS P ON R.DINING_RESERVATION_ID = P.DINING_RES_NO
+        WHERE R.DINING_ID = #{diningId, jdbcType=VARCHAR}
+          AND R.STATUS = 'VISITED'
+          AND R.RES_DATE >= TRUNC(SYSDATE) - 7
+        GROUP BY TO_CHAR(R.RES_DATE, 'YYYY-MM-DD')
+        ORDER BY TO_CHAR(R.RES_DATE, 'YYYY-MM-DD') ASC
+        ]]>
+    </select>
+
+    <select id="getTimeSlotStatistics" resultType="map">
+        SELECT RES_TIME, COUNT(*) AS TIME_COUNT
+        FROM DINING_RESERVATIONS
+        WHERE DINING_ID = #{diningId}
+          AND STATUS = 'VISITED'
+          AND RES_DATE >= TRUNC(SYSDATE) - 7
+        GROUP BY RES_TIME
+        ORDER BY RES_TIME ASC
+    </select>
+
 </mapper>

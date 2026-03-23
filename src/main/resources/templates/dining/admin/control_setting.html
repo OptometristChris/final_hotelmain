@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+<head>
+    <title>다이닝 예약 제어 관리</title>
+    
+    <th:block th:fragment="link"></th:block>
+
+    <th:block th:fragment="style">
+        <style>
+            #mycontent { padding-top: 150px; padding-bottom: 100px; background: #f4f4f2; min-height: 100vh; }
+            .setting-card { background: #fff; border-radius: 12px; padding: 40px; margin-bottom: 40px; border: none; }
+            .table-container { background: #fff; border-radius: 12px; padding: 30px; border: none; }
+            
+            /* 포인트 컬러 통일 (#9d815d: 골드베이지 계열) */
+            .gold-title { color: #9d815d; font-family: 'Noto Serif KR', serif; font-weight: 700; }
+            .btn-gold { background: #9d815d; border: none; color: white; transition: 0.3s; }
+            .btn-gold:hover { background: #846c4d; color: white; }
+            
+            /* 테이블 디자인 */
+            .table thead { background-color: #fcfaf7; border-top: 2px solid #9d815d; }
+            .table th { font-weight: 600; color: #555; font-size: 14px; }
+            .btn-delete { color: #d32f2f; border: 1px solid #d32f2f; background: none; border-radius: 4px; padding: 2px 10px; font-size: 12px; transition: 0.2s; }
+            .btn-delete:hover { background: #d32f2f; color: #fff; }
+            
+            .form-label { color: #666; font-size: 13px; margin-bottom: 8px; }
+            .form-select, .form-control { border: 1px solid #ddd; padding: 10px; font-size: 14px; }
+            .form-select:focus, .form-control:focus { border-color: #9d815d; box-shadow: 0 0 0 0.2rem rgba(157, 129, 93, 0.15); }
+        </style>
+    </th:block>
+
+	<th:block th:fragment="script">
+	    <script th:inline="javascript">
+	        /*<![CDATA[*/
+	        
+	        function changeDining(obj) {
+	            const selectedOption = obj.options[obj.selectedIndex];
+	            const timesStr = selectedOption.getAttribute('data-times'); 
+	            const timeSelect = $('#blockTime');
+	
+	            timeSelect.empty();
+	            timeSelect.append('<option value="ALL">종일 (Full Day)</option>');
+	
+	            if (timesStr) {
+	                const times = timesStr.split(',');
+	                times.forEach(time => {
+	                    const t = time.trim();
+	                    if(t) {
+	                        timeSelect.append(`<option value="${t}">${t}</option>`);
+	                    }
+	                });
+	            }
+	        }
+	    
+	        // 차단 등록
+	        function submitBlock() {
+	            const url = /*[[@{/admin/dining/block/register}]]*/ "/admin/dining/block/register";
+	            
+	            const dining = $('select[name="fkDiningId"]').val();
+	            const date = $('input[name="blockDate"]').val();
+	            
+	            if(!dining) { alert("업장을 선택해주세요."); return; }
+	            if(!date) { alert("날짜를 선택해주세요."); return; }
+	            
+	            if(!confirm("해당 시간의 예약을 차단하시겠습니까?")) return;
+	
+	            const formData = $('#blockForm').serialize();
+	            
+	            $.ajax({
+	                url: url,
+	                type: "POST",
+	                data: formData,
+	                success: function(res) {
+	                    if(res === "success") {
+	                        alert("차단 설정이 완료되었습니다.");
+	                        location.reload();
+	                    } else {
+	                        alert("등록 실패: " + res);
+	                    }
+	                },
+	                error: function() { 
+	                    alert("저장에 실패했습니다. 주소(404) 또는 서버 에러(500)를 확인해주세요."); 
+	                }
+	            });
+	        }
+	
+	        // 차단 해제
+	        function deleteBlock(blockId) {
+	            const url = /*[[@{/admin/dining/block/delete}]]*/ "/admin/dining/block/delete";
+	            
+	            if(!confirm("해당 차단 설정을 해제하시겠습니까?")) return;
+	            $.ajax({
+	                url: url,
+	                type: "POST",
+	                data: { "blockId": blockId },
+	                success: function(res) {
+	                    if(res === "success") {
+	                        alert("해제되었습니다.");
+	                        location.reload();
+	                    }
+	                },
+	                error: function() { alert("통신 오류가 발생했습니다."); }
+	            });
+	        }
+	        
+	        $(document).ready(function() {
+	            const today = new Date().toISOString().split('T')[0];
+	            $('input[name="blockDate"]').attr('min', today);
+	
+	            const token = $("meta[name='_csrf']").attr("content");
+	            const header = $("meta[name='_csrf_header']").attr("content");
+	            $(document).ajaxSend(function(e, xhr, options) {
+	                if (token && header) { xhr.setRequestHeader(header, token); }
+	            });
+	        });
+	        /*]]>*/
+	    </script>
+	</th:block>
+</head>
+<body>
+    <div th:fragment="content">
+        <div id="mycontent">
+            <div class="container">
+                <div class="mb-5 text-center">
+                    <h2 class="gold-title">Reservation Control Management</h2>
+                    <p class="text-muted">다이닝 업장별 예약 차단 및 스케줄을 관리합니다.</p>
+                </div>
+
+                <div class="setting-card shadow-sm">
+                    <h5 class="gold-title mb-4"><i class="bi bi-calendar-check"></i> 신규 차단 등록</h5>
+                    <form id="blockForm">
+                        <div class="row g-3">
+                        
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">1. 업장 선택</label>
+                                <select name="fkDiningId" class="form-select" onchange="changeDining(this)">
+                                    <option value="">-- 업장 선택 --</option>
+                                    <option th:each="dining : ${diningList}" 
+                                            th:value="${dining.DINING_ID}" 
+                                            th:data-times="${dining.AVAILABLE_TIMES}" 
+                                            th:text="${dining.NAME}"></option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">2. 시간 선택</label>
+                                <select id="blockTime" name="blockTime" class="form-select">
+                                    <option value="ALL">종일 (Full Day)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">3. 날짜 선택</label>
+                                <input type="date" name="blockDate" class="form-control">
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">4. 차단 사유</label>
+                                <div class="input-group">
+                                    <input type="text" name="reason" class="form-control" placeholder="사유를 입력하세요 (예: 단체 대관)">
+                                    <button type="button" class="btn btn-gold" onclick="submitBlock()">등록</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-container shadow-sm">
+                    <h5 class="gold-title mb-3">현재 차단 설정 내역</h5>
+                    <div class="table-responsive">
+                        <table class="table text-center align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%;">업장명</th>
+                                    <th style="width: 15%;">날짜</th>
+                                    <th style="width: 15%;">차단 시간</th>
+                                    <th style="width: 35%;">차단 사유</th>
+                                    <th style="width: 15%;">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="block : ${blockList}">
+                                    <td th:text="${block.diningName}" class="fw-bold">업장명</td>
+                                    <td th:text="${block.blockDate}">2026-03-18</td>
+                                    <td>
+                                        <span th:text="${block.blockTime}" 
+                                              th:class="${block.blockTime == 'ALL' ? 'badge bg-secondary' : ''}"></span>
+                                    </td>
+                                    <td th:text="${block.reason}" class="text-start ps-4">사유 내용</td>
+                                    <td>
+                                        <button class="btn-delete" th:onclick="deleteBlock([[${block.blockId}]])">차단 해제</button>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(blockList)}">
+                                    <td colspan="5" class="py-5 text-muted">현재 설정된 차단 내역이 없습니다.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

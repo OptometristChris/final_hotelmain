@@ -50,4 +50,26 @@ public class AdminReservationService_imple implements AdminReservationService {
 		return reservationDAO.selectAdminReservationList(param);
 	}
 
+	@Override
+	public List<Map<String, Object>> getOverdueList() {
+	    return reservationDAO.getOverdueList();
+	}
+
+	@Override
+	public int getTodayCheckinTotalCount() {
+	    return reservationDAO.getTodayCheckinTotalCount();
+	}
+
+	@Override
+	public int getTodayCheckinDoneCount() {
+	    return reservationDAO.getTodayCheckinDoneCount();
+	}
+
+	@Override
+	public List<Map<String, Object>> selectHotelList() {
+		return reservationDAO.selectHotelList();
+	}
+
+	
+	
 }

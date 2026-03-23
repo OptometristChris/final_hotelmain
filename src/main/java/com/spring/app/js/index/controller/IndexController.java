@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +24,7 @@ import java.util.Map;
 public class IndexController {
 
     @Autowired
-    private IndexService service; 
+    private IndexService service;
 
     @GetMapping("/")
     public String redirectToIndex() {
@@ -30,50 +33,34 @@ public class IndexController {
 
     @GetMapping("/index")
     public String indexPage(Model model) {
-        
-        // 1. [수정] 메인 비주얼 슬라이더용 (BANNER_TYPE = 'MAIN')
-        // 기존 bannerList 대신 통합된 PromotionDTO 리스트 사용
         List<BannerDTO> mainBannerList = service.getMainBannerList();
-        
-        // 2. [수정] 하단 프로모션 카드용 (BANNER_TYPE = 'CARD')
-        // 기존 promoList 대신 통합된 PromotionDTO 리스트 사용
         List<PromotionDTO> promoCardList = service.getPromoCardList();
-
-        // 3. 객실 목록 (상위 2개) 가져오기
         List<RoomTypeDTO> roomList = service.getMainRoomList();
-        
-        // 4. 다이닝 목록 (상위 3개) 가져오기
         List<DiningDTO> diningList = service.getMainDiningList();
+        List<Map<String, String>> hotelList = service.getHotelList();
 
-        // 뷰(HTML)로 전달
-        // HTML에서 사용하는 th:each 명칭과 일치시켜야 합니다.
-        model.addAttribute("mainBannerList", mainBannerList); // 슬라이더용
-        model.addAttribute("promoCardList", promoCardList);   // 하단 카드용
+        model.addAttribute("mainBannerList", mainBannerList);
+        model.addAttribute("promoCardList", promoCardList);
         model.addAttribute("roomList", roomList);
         model.addAttribute("diningList", diningList);
+        model.addAttribute("hotelList", hotelList);
 
         return "js/index/index";
     }
-    
+
     @GetMapping("/search")
     public String searchRooms(HttpServletRequest request, Model model) {
-        // 1. 공통 파라미터 수집
-        String reserveType = request.getParameter("reserveType"); // 객실/다이닝 구분
-        String hotelId = request.getParameter("hotelId");         // 선택한 호텔 ID
+        String reserveType = request.getParameter("reserveType");
+        String hotelId = request.getParameter("hotelId");
 
-        // 2. 다이닝 예약일 경우 처리
         if ("dining".equals(reserveType)) {
-            String diningType = request.getParameter("diningType"); // 다이닝 타입 (d_type)
-            
-            // 요청하신 경로 형식으로 리다이렉트
+            String diningType = request.getParameter("diningType");
             return "redirect:/dining/all?hotel_id=" + hotelId + "&d_type=" + diningType;
         }
 
-        // 3. 객실 예약일 경우 처리 (기존 로직)
-        String daterange = request.getParameter("daterange"); 
+        String daterange = request.getParameter("daterange");
         String bedType = request.getParameter("bedType");
 
-        // 날짜 파싱 (안전하게 처리)
         String checkIn = "";
         String checkOut = "";
         if (daterange != null && daterange.contains(" ~ ")) {
@@ -88,17 +75,45 @@ public class IndexController {
         paraMap.put("checkOut", checkOut);
         paraMap.put("bedType", bedType);
 
-        // 필터용 호텔 목록
-        List<Map<String, String>> hotelList = service.getHotelList(); 
+        List<Map<String, String>> hotelList = service.getHotelList();
         model.addAttribute("hotelList", hotelList);
 
-        // 검색 결과 객실 목록
         List<RoomTypeDTO> roomList = service.getAvailableRooms(paraMap);
         model.addAttribute("roomList", roomList);
-        
-        // UI 유지용 파라미터 전달
         model.addAttribute("searchParams", paraMap);
 
-        return "hk/room/list"; 
+        return "hk/room/list";
+    }
+
+    @GetMapping("/admin/banner/write")
+    public String bannerWrite(Model model) {
+        List<Map<String, String>> hotelList = service.getHotelList();
+        model.addAttribute("hotelList", hotelList);
+        return "js/index/banner_write";
+    }
+
+    @GetMapping("/api/banner/detail")
+    @ResponseBody
+    public Map<String, Object> getBannerDetail(@RequestParam("hotelId") String hotelId) {
+        return service.getBannerByHotelId(hotelId);
+    }
+
+    @PostMapping("/admin/banner/write")
+    public String bannerWriteEnd(@RequestParam Map<String, String> paraMap) {
+        if (!paraMap.containsKey("banner_type") || paraMap.get("banner_type").isEmpty()) {
+            paraMap.put("banner_type", "MAIN");
+        }
+
+        int n = service.saveBanner(paraMap);
+        if (n >= 1) {
+            return "redirect:/index";
+        }
+        return "js/index/banner_write";
+    }
+
+    @GetMapping("/api/hotel/images")
+    @ResponseBody
+    public List<Map<String, Object>> getHotelImages(@RequestParam(value = "hotelId") String hotelId) {
+        return service.getHotelImages(hotelId);
     }
 }

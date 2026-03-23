@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.app.js.revenue.model.RevenueDAO">
+
+    <select id="selectRevenueSummary" parameterType="map" resultType="map">
+        SELECT 
+            A.TOTAL_REVENUE, 
+            A.TOTAL_COUNT, 
+            A.CANCEL_COUNT,
+            ROUND((A.TOTAL_STAYS / NULLIF(B.HOTEL_CAPACITY, 0)) * 100, 1) AS OCCUPANCY_RATE
+        FROM (
+            SELECT 
+                NVL(SUM(CASE WHEN r.reservation_status IN ('CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT') THEN p.payment_amount ELSE 0 END), 0) AS TOTAL_REVENUE,
+                COUNT(CASE WHEN r.reservation_status IN ('CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT') THEN 1 END) AS TOTAL_COUNT,
+                COUNT(CASE WHEN r.reservation_status = 'CANCELLED' THEN 1 END) AS CANCEL_COUNT,
+                NVL(SUM(CASE WHEN r.reservation_status IN ('CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT') 
+                             THEN (r.checkout_date - r.checkin_date) ELSE 0 END), 0) AS TOTAL_STAYS
+            FROM PAYMENT p
+            JOIN RESERVATION r ON p.payment_id = r.payment_id
+            JOIN ROOM_TYPE rt ON r.room_type_id = rt.room_type_id
+            JOIN tbl_hotel h ON rt.fk_hotel_id = h.hotel_id 
+            WHERE TO_CHAR(p.paid_at, 'YYYY-MM') = #{month}
+            <if test="hotelId != null and hotelId != ''">
+              AND h.hotel_id = #{hotelId}
+            </if>
+            <if test="(hotelId == null or hotelId == '') and hotelName != null and hotelName != ''">
+              AND h.hotel_name = #{hotelName}
+            </if>
+        ) A,
+        (
+            SELECT NVL(SUM(rt2.total_count), 0) * TO_NUMBER(TO_CHAR(LAST_DAY(TO_DATE(#{month}, 'YYYY-MM')), 'DD')) AS HOTEL_CAPACITY
+            FROM ROOM_TYPE rt2
+            JOIN tbl_hotel h2 ON rt2.fk_hotel_id = h2.hotel_id
+            <where>
+                <if test="hotelId != null and hotelId != ''">
+                    h2.hotel_id = #{hotelId}
+                </if>
+                <if test="(hotelId == null or hotelId == '') and hotelName != null and hotelName != ''">
+                    AND h2.hotel_name = #{hotelName}
+                </if>
+            </where>
+        ) B
+    </select>
+
+    <select id="selectDailyRevenue" parameterType="map" resultType="map">
+        SELECT 
+            TO_CHAR(p.paid_at, 'DD') AS PAID_DAY,
+            SUM(p.payment_amount) AS DAILY_REVENUE
+        FROM PAYMENT p
+        JOIN RESERVATION r ON p.payment_id = r.payment_id
+        JOIN ROOM_TYPE rt ON r.room_type_id = rt.room_type_id
+        JOIN tbl_hotel h ON rt.fk_hotel_id = h.hotel_id
+        WHERE TO_CHAR(p.paid_at, 'YYYY-MM') = #{month}
+          AND r.reservation_status IN ('CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT')
+        <if test="hotelId != null and hotelId != ''">
+          AND h.hotel_id = #{hotelId}
+        </if>
+        <if test="(hotelId == null or hotelId == '') and hotelName != null and hotelName != ''">
+          AND h.hotel_name = #{hotelName}
+        </if>
+        GROUP BY TO_CHAR(p.paid_at, 'DD')
+        ORDER BY PAID_DAY
+    </select>
+
+    <select id="selectMonthlyPaymentList" parameterType="map" resultType="map">
+        SELECT 
+            TO_CHAR(p.paid_at, 'YYYY-MM-DD HH24:MI') AS PAID_AT,
+            p.payment_id AS PAYMENT_ID,
+            m.name AS MEMBER_NAME,
+            p.payment_amount AS PAYMENT_AMOUNT,
+            r.reservation_status AS PAYMENT_STATUS,
+            h.hotel_name AS HOTEL_NAME
+        FROM PAYMENT p
+        JOIN RESERVATION r ON p.payment_id = r.payment_id
+        JOIN tbl_member_security m ON p.member_no = m.member_no
+        JOIN ROOM_TYPE rt ON r.room_type_id = rt.room_type_id
+        JOIN tbl_hotel h ON rt.fk_hotel_id = h.hotel_id
+        WHERE TO_CHAR(p.paid_at, 'YYYY-MM') = #{month}
+        <if test="hotelId != null and hotelId != ''">
+          AND h.hotel_id = #{hotelId}
+        </if>
+        <if test="(hotelId == null or hotelId == '') and hotelName != null and hotelName != ''">
+          AND h.hotel_name = #{hotelName}
+        </if>
+        ORDER BY p.paid_at DESC
+    </select>
+
+    <select id="selectRoomTypePortion" parameterType="map" resultType="map">
+        SELECT 
+            rt.room_name AS ROOM_TYPE, 
+            SUM(p.payment_amount) AS TYPE_REVENUE
+        FROM PAYMENT p
+        JOIN RESERVATION r ON p.payment_id = r.payment_id 
+        JOIN ROOM_TYPE rt ON r.room_type_id = rt.room_type_id
+        JOIN tbl_hotel h ON rt.fk_hotel_id = h.hotel_id
+        WHERE TO_CHAR(p.paid_at, 'YYYY-MM') = #{month}
+          AND r.reservation_status IN ('CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT')
+        <if test="hotelId != null and hotelId != ''">
+          AND h.hotel_id = #{hotelId}
+        </if>
+        <if test="(hotelId == null or hotelId == '') and hotelName != null and hotelName != ''">
+          AND h.hotel_name = #{hotelName}
+        </if>
+        GROUP BY rt.room_name
+    </select>
+
+    <select id="selectHotelList" resultType="map">
+        SELECT hotel_id AS HOTEL_ID, 
+               hotel_name AS HOTEL_NAME 
+        FROM tbl_hotel
+        WHERE active_yn = 'Y'
+        ORDER BY hotel_id ASC
+    </select>
+
+</mapper>

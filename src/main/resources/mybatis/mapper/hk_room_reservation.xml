@@ -18,6 +18,19 @@
 	    WHERE r.ROOM_TYPE_ID = #{value}	
 	</select>
 
+	 <!-- 소셜로그인용 -->
+	  <select id="findMemberByEmail" parameterType="string" resultType="map">
+	    SELECT 
+	        MEMBER_NO,
+	        NAME,
+	        MOBILE,
+	        EMAIL
+	    FROM TBL_MEMBER_SECURITY
+	    WHERE LOWER(EMAIL) = LOWER(#{email, jdbcType=VARCHAR})
+	</select>
+
+
+
 	<!-- payment 테이블에 insert -->
     <insert id="insertPayment" parameterType="map" useGeneratedKeys="false">
 	    <selectKey keyProperty="payment_id" resultType="long" order="BEFORE">
@@ -92,24 +105,24 @@
 	    )
 	  </insert>
 	
-	  <!-- 예약 완료 페이지 -->
+	  <!-- 예약 완료 페이지 + 셔틀 이동 -->
 	  <select id="findByReservationCode" parameterType="string" resultType="map">
-	    SELECT
-		    r.reservation_code,
-		    m.name,
-		    r.checkin_date,
-		    r.checkout_date,
-		    r.total_price,
-		    r.guest_count,
-		    rt.room_name,
-		    h.hotel_name
-		FROM reservation r
-		JOIN tbl_member_security m ON r.member_no = m.member_no
-		JOIN room_type rt ON r.room_type_id = rt.room_type_id
-		JOIN tbl_hotel h ON rt.fk_hotel_id = h.hotel_id
-		WHERE r.reservation_code = #{value}
-	  </select>
-	  
+		  SELECT
+		      r.reservation_id,
+		      r.reservation_code,
+		      m.name,
+		      r.checkin_date,
+		      r.checkout_date,
+		      r.total_price,
+		      r.guest_count,
+		      rt.room_name,
+		      h.hotel_name
+		  FROM reservation r
+		  JOIN tbl_member_security m ON r.member_no = m.member_no
+		  JOIN room_type rt ON r.room_type_id = rt.room_type_id
+		  JOIN tbl_hotel h ON rt.fk_hotel_id = h.hotel_id
+		  WHERE r.reservation_code = #{value}
+		</select>
 	  
 	  
 	<!-- ========================================================= -->
@@ -201,6 +214,41 @@
 	    WHERE RESERVATION_CODE = #{reservation_code}
 	    AND TRUNC(SYSDATE) &lt;= TRUNC(CANCEL_DEADLINE)
 	</update>
+	
+	
+	<!-- 스프링 스케줄러로 예약 메일 보내기 -->
+	<select id="selectTomorrowCheckinForMail" resultType="map">
+	    SELECT
+	        r.RESERVATION_ID,
+	        r.CHECKIN_DATE,
+	        r.CHECKOUT_DATE,
+	        r.RESERVATION_CODE,
+	        r.TOTAL_PRICE,
+	        m.EMAIL,
+	        m.NAME,
+	        rt.ROOM_NAME,
+	        h.HOTEL_NAME
+	    FROM RESERVATION r
+	    JOIN TBL_MEMBER_SECURITY m
+	      ON r.MEMBER_NO = m.MEMBER_NO
+	    JOIN ROOM_TYPE rt
+	      ON r.ROOM_TYPE_ID = rt.ROOM_TYPE_ID
+	    JOIN TBL_HOTEL h
+	      ON rt.FK_HOTEL_ID = h.HOTEL_ID
+	    WHERE r.RESERVATION_STATUS = 'CONFIRMED'
+	      AND TRUNC(r.CHECKIN_DATE) = TRUNC(SYSDATE + 1)
+	</select>
+	  
+	  
+
+	
+	
+	<!-- 암호화 조회 후 없으면 회원 생성 -->
+	<insert id="insertSocialMember" parameterType="string">
+	    INSERT INTO MEMBER (MEMBER_NO, EMAIL, NAME)
+	    VALUES (MEMBER_SEQ.NEXTVAL, #{_parameter}, '소셜사용자')
+	</insert>
+	
 	  
 
 </mapper>

@@ -18,7 +18,19 @@ public interface CsService {
 
     // Qna 작성
 	int insertQna(Map<String, String> paraMap);
+	
+	// Qna 수정
+	int updateQna(Map<String, String> paraMap);
 
 	// Qna 삭제
 	int deleteQna(String qnaId);
+	
+	// 어드민 답변 등록
+	int updateQnaAnswer(Map<String, String> paraMap);
+
+	// faq 등록
+	int insertFaq(Map<String, String> paraMap);
+
+	// faq 삭제
+	int deleteFaq(String faqId);
 }

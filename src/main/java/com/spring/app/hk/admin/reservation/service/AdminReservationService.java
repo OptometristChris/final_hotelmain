@@ -24,9 +24,21 @@ public interface AdminReservationService {
 	// 체크아웃 완료 목록 조회
 	List<Map<String, Object>> getCheckoutCompleteList();
 	
+	List<Map<String, Object>> getOverdueList();
+	
+	int getTodayCheckinTotalCount();
+
+	int getTodayCheckinDoneCount();
+	
 	
 	// ----- 총괄관리자 ----- 
 	// 전체 객실 예약 리스트 조회
 	List<Map<String,Object>> selectAdminReservationList(Map<String, Object> param);
+
+	List<Map<String, Object>> selectHotelList();
+
+	
+
+	
 
 }

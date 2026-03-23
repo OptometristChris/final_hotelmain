@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
+<head>
+    <title>수익 관리 | CIEL HOTEL Admin</title>
+    
+    <th:block th:fragment="link">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </th:block>
+
+    <th:block th:fragment="style">
+        <style>
+            .admin-content-wrap { padding: 150px 80px; background: #f4f7f6; min-height: 100vh; }
+            .page-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+            .stat-cards-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+            .stat-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px; }
+            .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+            .icon-revenue { background: #e3f2fd; color: #1976d2; }
+            .icon-booking { background: #f1f8e9; color: #689f38; }
+            .icon-cancel { background: #fff3e0; color: #f57c00; }
+            .icon-occupancy { background: #f3e5f5; color: #7b1fa2; }
+            .stat-info h4 { font-size: 0.9rem; color: #888; margin: 0 0 5px 0; }
+            .stat-info .value { font-size: 1.4rem; font-weight: 700; color: #333; }
+            .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
+            .chart-box { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+            
+            .revenue-table-box { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+            .table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 0; }
+            .table thead th { background: #f8f9fa; color: #666; font-weight: 600; padding: 15px; border-bottom: 2px solid #eee; text-align: left; }
+            .table-scroll-body { max-height: 400px; overflow-y: auto; border-bottom: 1px solid #eee; }
+            .table td { padding: 15px; border-bottom: 1px solid #eee; color: #444; word-break: break-all; }
+            .table-scroll-body::-webkit-scrollbar { width: 6px; }
+            .table-scroll-body::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+
+            .badge-success { background: #e8f5e9; color: #2e7d32; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; }
+            .badge-danger { background: #ffebee; color: #c62828; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; }
+            .date-filter-group { display: flex; gap: 10px; align-items: center; }
+        </style>
+    </th:block>
+</head>
+<body>
+
+<th:block th:fragment="content">
+    <div class="admin-content-wrap">
+        <div class="page-header">
+            <h2><i class="bi bi-graph-up-arrow mr-2"></i>수익 및 분석 관리</h2>
+            <div class="date-filter-group">
+                <select sec:authorize="hasRole('ADMIN_HQ')" 
+                        id="searchHotel" class="form-control" style="width: 180px;" onchange="loadRevenueData()">
+                    <option value="">전체 호텔</option>
+                    <option th:each="hotel : ${hotelList}" 
+                            th:value="${hotel.HOTEL_NAME}" 
+                            th:text="${hotel.HOTEL_NAME}">
+                    </option>
+                </select>
+
+                <select sec:authorize="hasRole('ADMIN_BRANCH')" 
+                        id="searchHotelDisplay" class="form-control" style="width: 180px;" disabled>
+                    <option th:each="hotel : ${hotelList}" 
+                            th:if="${hotel.HOTEL_ID == #authentication.principal.adminDto.fk_hotel_id}"
+                            th:value="${hotel.HOTEL_NAME}" 
+                            th:text="${hotel.HOTEL_NAME}"
+                            selected>
+                    </option>
+                </select>
+                
+                <input type="hidden" id="adminHotelName" th:value="${adminHotelName}">
+
+                <input type="month" id="searchMonth" class="form-control" th:value="${selectedMonth}" onchange="loadRevenueData()">
+            </div>
+        </div>
+
+        <div class="stat-cards-row">
+            <div class="stat-card">
+                <div class="stat-icon icon-revenue"><i class="bi bi-currency-dollar"></i></div>
+                <div class="stat-info">
+                    <h4>총 매출액</h4>
+                    <div class="value" id="totalRevenue">₩ 0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-booking"><i class="bi bi-calendar-check"></i></div>
+                <div class="stat-info">
+                    <h4>예약 건수</h4>
+                    <div class="value" id="totalBookings">0건</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-occupancy"><i class="bi bi-house-door"></i></div>
+                <div class="stat-info">
+                    <h4>평균 객실 점유율</h4>
+                    <div class="value" id="occupancyRate">0%</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-cancel"><i class="bi bi-x-circle"></i></div>
+                <div class="stat-info">
+                    <h4>취소 건수</h4>
+                    <div class="value" id="cancelCount">0건</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-row">
+            <div class="chart-box">
+                <div class="chart-title" style="font-weight: 600; margin-bottom: 15px;">월간 수익 추이</div>
+                <div style="height: 300px; position: relative;"><canvas id="revenueLineChart"></canvas></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title" style="font-weight: 600; margin-bottom: 15px;">객실 등급별 매출 비중</div>
+                <div style="height: 300px; position: relative;"><canvas id="roomDoughnutChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="revenue-table-box">
+            <div class="chart-title" id="tableTitle" style="font-weight: 600; margin-bottom: 15px;">결제 상세 내역</div>
+            <div class="table-fixed-header">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">결제일자</th>
+                            <th style="width: 20%;">결제번호</th>
+                            <th style="width: 20%;">고객명</th>
+                            <th style="width: 20%;">결제금액</th>
+                            <th style="width: 15%;">상태</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="table-scroll-body">
+                <table class="table">
+                    <tbody id="revenueTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<th:block th:fragment="script">
+    <script th:inline="javascript">
+        let lineChart, doughnutChart;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRevenueData(); 
+        });
+
+        async function loadRevenueData() {
+            const targetMonth = document.getElementById('searchMonth').value;
+            
+            // 호텔명 추출 로직 (HQ 선택값 우선 -> 그 다음 지점 히든값 -> 마지막으로 지점 셀렉트값)
+            let hotelName = "";
+            const hqSelect = document.getElementById('searchHotel');
+            const branchHidden = document.getElementById('adminHotelName');
+            const branchDisplay = document.getElementById('searchHotelDisplay');
+
+            if (hqSelect) {
+                hotelName = hqSelect.value;
+            } else if (branchHidden && branchHidden.value !== "") {
+                hotelName = branchHidden.value;
+            } else if (branchDisplay) {
+                hotelName = branchDisplay.value;
+            }
+
+            // 디버깅용 로그: 지점명이 정상적으로 찍히는지 F12 콘솔에서 확인하세요.
+            console.log("Requesting Data for Hotel:", hotelName);
+
+            const params = new URLSearchParams({
+                month: targetMonth,
+                hotelName: hotelName
+            });
+
+            const url = `/admin/revenue/data?${params.toString()}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('데이터 요청 실패');
+                
+                const data = await response.json();
+
+                // 1. 통계 요약 정보 업데이트 (서버에서 넘겨주는 Map 키값이 대문자인 경우)
+                const summary = data.summary || {};
+                document.getElementById('totalRevenue').innerText = '₩ ' + (Number(summary.TOTAL_REVENUE) || 0).toLocaleString();
+                document.getElementById('totalBookings').innerText = (Number(summary.TOTAL_COUNT) || 0) + '건';
+                document.getElementById('cancelCount').innerText = (Number(summary.CANCEL_COUNT) || 0) + '건';
+                document.getElementById('occupancyRate').innerText = (Number(summary.OCCUPANCY_RATE) || 0) + '%';
+
+                // 2. 차트 및 테이블 업데이트
+                updateLineChart(data.dailyTrends);
+                updateDoughnutChart(data.roomTypePortion);
+                updateTable(data.revenueList, targetMonth);
+
+            } catch (error) {
+                console.error("데이터 로드 중 오류 발생:", error);
+            }
+        }
+
+        function updateLineChart(trends) {
+            const ctx = document.getElementById('revenueLineChart').getContext('2d');
+            const labels = (trends && trends.length > 0) ? trends.map(item => item.PAID_DAY + '일') : [];
+            const values = (trends && trends.length > 0) ? trends.map(item => item.DAILY_REVENUE) : [];
+            
+            if (lineChart) lineChart.destroy();
+            lineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ 
+                        label: '일별 매출', 
+                        data: values, 
+                        borderColor: '#1976d2', 
+                        backgroundColor: 'rgba(25, 118, 210, 0.1)', 
+                        fill: true, 
+                        tension: 0.4 
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { y: { beginAtZero: true } } 
+                }
+            });
+        }
+
+        function updateDoughnutChart(portions) {
+            const ctx = document.getElementById('roomDoughnutChart').getContext('2d');
+            const labels = (portions && portions.length > 0) ? portions.map(item => item.ROOM_TYPE) : ['데이터 없음'];
+            const values = (portions && portions.length > 0) ? portions.map(item => item.TYPE_REVENUE) : [1];
+            
+            if (doughnutChart) doughnutChart.destroy();
+            doughnutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: values, 
+                        backgroundColor: ['#1976d2', '#689f38', '#d4af37', '#7b1fa2', '#f44336'] 
+                    }] 
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function updateTable(list, month) {
+            const tbody = document.getElementById('revenueTableBody');
+            document.getElementById('tableTitle').innerText = month + ' 결제 상세 내역';
+            tbody.innerHTML = '';
+            
+            if (!list || list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 50px;">내역이 없습니다.</td></tr>';
+                return;
+            }
+
+            const rows = list.map(item => {
+                const isCancel = item.PAYMENT_STATUS === 'CANCELLED';
+                return `<tr>
+                    <td style="width: 25%;">${item.PAID_AT || '-'}</td>
+                    <td style="width: 20%;">${item.PAYMENT_ID || '-'}</td>
+                    <td style="width: 20%;">${item.MEMBER_NAME || '-'}</td>
+                    <td style="width: 20%;">₩ ${(Number(item.PAYMENT_AMOUNT) || 0).toLocaleString()}</td>
+                    <td style="width: 15%;"><span class="${isCancel ? 'badge-danger' : 'badge-success'}">${isCancel ? '취소됨' : '결제완료'}</span></td>
+                </tr>`;
+            }).join('');
+            tbody.innerHTML = rows;
+        }
+    </script>
+</th:block>
+</body>
+</html>

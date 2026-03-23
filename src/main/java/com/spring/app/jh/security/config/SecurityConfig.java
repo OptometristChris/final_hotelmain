@@ -204,10 +204,14 @@ public class SecurityConfig {
             "/product/list",
             "/room/**",
             "/js_images/**",
-            "/notice/**",
+            "/notice/list",
+            "/notice/detail/**",
             "/cs/**",
             "/hotel/location",
-            
+            "/images/dining/**",
+            "/images/food/**",
+            "/files/menu/**",
+            "/search",
             "/dining/**"
         };
 
@@ -222,8 +226,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/member/login", "/api/auth/member/refresh").permitAll()
                 .requestMatchers(excludeUri).permitAll()
                 .requestMatchers("/notice/write", "/notice/edit/**", "/notice/delete")
-                    .hasAnyRole("ADMIN_HQ", "ADMIN_BRANCH")
-                .requestMatchers("/cs/qnaWrite", "/cs/qnaDelete").authenticated()
+	                .hasAnyRole("ADMIN_HQ", "ADMIN_BRANCH")
+	            .requestMatchers("/promotion/reserve").authenticated()
+	            .requestMatchers("/promotion/**").permitAll()
+	            .requestMatchers("/cs/qnaWrite", "/cs/qnaDelete").authenticated()
                 .requestMatchers("/reservation/**").permitAll()
                 .requestMatchers("/payment/**").permitAll()
                 .requestMatchers("/shuttle/**").permitAll()
@@ -273,6 +279,7 @@ public class SecurityConfig {
                              "/fullcalendar_5.10.1/**",
                              "/Highcharts-10.3.1/**",
                              "/images/**",
+                             "/files/**",
                              "/jquery-ui-1.13.1.custom/**",
                              "/js/**",
                              "/smarteditor/**",
