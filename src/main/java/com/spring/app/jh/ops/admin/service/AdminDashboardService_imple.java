@@ -1,8 +1,13 @@
 package com.spring.app.jh.ops.admin.service;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.spring.app.jh.ops.admin.common.domain.AdminDashboardKpiDTO;
+import com.spring.app.jh.ops.admin.common.domain.BranchDashboardQnaDTO;
+import com.spring.app.jh.ops.admin.common.domain.BranchDashboardReservationDTO;
 import com.spring.app.jh.ops.admin.common.domain.MonthlyReservationSummaryDTO;
 import com.spring.app.jh.ops.admin.model.AdminDashboardDAO;
 
@@ -49,7 +54,7 @@ public class AdminDashboardService_imple implements AdminDashboardService {
 
         return dto;
     }
-    
+
     @Override
     public MonthlyReservationSummaryDTO getBranchMonthlyReservationSummary(int hotelId) {
 
@@ -110,5 +115,15 @@ public class AdminDashboardService_imple implements AdminDashboardService {
         return n == null ? 0 : n;
     }
 
-    
+    @Override
+    public List<BranchDashboardQnaDTO> getBranchPendingQnaTopList(int hotelId) {
+        List<BranchDashboardQnaDTO> list = adminDashboardDAO.selectBranchPendingQnaTopList(hotelId);
+        return list == null ? Collections.emptyList() : list;
+    }
+
+    @Override
+    public List<BranchDashboardReservationDTO> getBranchTodayOperationReservationList(int hotelId) {
+        List<BranchDashboardReservationDTO> list = adminDashboardDAO.selectBranchTodayOperationReservationList(hotelId);
+        return list == null ? Collections.emptyList() : list;
+    }
 }

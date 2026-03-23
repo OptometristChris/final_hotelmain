@@ -81,6 +81,10 @@ public class AdminBranchController {
 	    model.addAttribute("monthlySummary", monthlySummary);
 	    model.addAttribute("todayReservationCount", adminDashboardService.getBranchTodayReservationCount(hotelId));
 	    model.addAttribute("todayCancelCount", adminDashboardService.getBranchTodayCancelCount(hotelId));
+	    
+	    // 추가
+	    model.addAttribute("qnaList", adminDashboardService.getBranchPendingQnaTopList(hotelId));
+	    model.addAttribute("reservationList", adminDashboardService.getBranchTodayOperationReservationList(hotelId));
 
 	    return "admin/branch/branch_dashboard";
 	}

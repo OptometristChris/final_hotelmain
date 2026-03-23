@@ -37,9 +37,120 @@
 
     /* ===== Layout ===== */
     .dash-wrap{
-      max-width: 1100px;
+      max-width: 1380px;
       margin: 0 auto;
       padding: 22px 16px 60px;
+    }
+
+    .dash-shell{
+      display:grid;
+      grid-template-columns:280px minmax(0, 1fr);
+      gap:20px;
+      align-items:start;
+    }
+
+    .dash-main{
+      min-width:0;
+    }
+
+    .sideNav{
+      position:sticky;
+      top:138px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .sideIntro{
+      padding-bottom:14px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .sideIntro b{
+      display:block;
+      font-size:17px;
+      font-weight:950;
+      letter-spacing:-.2px;
+    }
+
+    .sideIntro span{
+      display:block;
+      margin-top:6px;
+      font-size:12px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+
+    .sideSection{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .sideSection + .sideSection{
+      padding-top:14px;
+      border-top:1px dashed var(--line);
+    }
+
+    .sideTitle{
+      font-size:12px;
+      font-weight:950;
+      color:var(--muted);
+      letter-spacing:.02em;
+    }
+
+    .sideLink{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      width:100%;
+      padding:11px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-size:13px;
+      font-weight:900;
+      color:var(--text);
+      text-align:left;
+      cursor:pointer;
+    }
+
+    .sideLink:hover{
+      background:#f7f7f7;
+      transform:translateY(-1px);
+    }
+
+    .sideLink .meta{
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+      min-width:0;
+    }
+
+    .sideLink .meta small{
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+    }
+
+    .sideLink .arrow{
+      flex:0 0 auto;
+      color:#9a9a9a;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .sideLink.is-active{
+      border-color:#111;
+      background:#111;
+      color:#fff;
+      box-shadow:0 12px 28px rgba(17,17,17,.16);
+    }
+
+    .sideLink.is-active .meta small{
+      color:rgba(255,255,255,.72);
     }
 
     .topbar{
@@ -350,6 +461,8 @@
       .heroStats{grid-template-columns:1fr}
       .kpiBadges{justify-content:flex-start}
       .quickActions{grid-template-columns:1fr 1fr}
+      .dash-shell{grid-template-columns:1fr}
+      .sideNav{position:static; top:auto;}
     }
     @media (max-width: 520px){
       .topbar{flex-direction:column;align-items:flex-start}
@@ -397,6 +510,67 @@
 	">
 
   <div class="dash-wrap">
+  <div class="dash-shell">
+    <aside class="card sideNav">
+      <div class="sideIntro">
+        <b>운영 메뉴</b>
+        <span>브랜치 운영자가 자주 오가는 기능을 좌측에 모았습니다. 객실·숙박·다이닝·셔틀 동선을 한 번에 찾을 수 있게 정리했습니다.</span>
+      </div>
+
+      <div class="sideSection">
+        <div class="sideTitle">공통</div>
+        <a class="sideLink is-active" th:href="@{/admin/branch/dashboard}">
+          <span class="meta"><span>대시보드</span><small>지점 운영 현황</small></span>
+          <span class="arrow">●</span>
+        </a>
+        <a class="sideLink" th:href="@{/notice/list}">
+          <span class="meta"><span>공지 관리</span><small>공지 등록·조회</small></span>
+          <span class="arrow">↗</span>
+        </a>
+        <a class="sideLink" th:href="@{/promotion/list}">
+          <span class="meta"><span>프로모션 관리</span><small>프로모션·배너 운영</small></span>
+          <span class="arrow">↗</span>
+        </a>
+      </div>
+
+      <div class="sideSection">
+        <div class="sideTitle">객실 · 숙박</div>
+        <a class="sideLink" th:href="@{/admin/room/branch/list}">
+          <span class="meta"><span>객실 관리</span><small>객실 목록·상태·수정</small></span>
+          <span class="arrow">↗</span>
+        </a>
+        <a class="sideLink" th:href="@{/admin/reservation/manage}">
+          <span class="meta"><span>예약 관리</span><small>체크인·체크아웃·예약 운영</small></span>
+          <span class="arrow">↗</span>
+        </a>
+        <a class="sideLink" th:href="@{/admin/branch/reservations}">
+          <span class="meta"><span>오늘 운영 예약 현황</span><small>당일 기준 운영 목록</small></span>
+          <span class="arrow">↗</span>
+        </a>
+      </div>
+
+      <div class="sideSection">
+        <div class="sideTitle">다이닝</div>
+        <a class="sideLink" th:href="@{/admin/dining/dashboard}">
+          <span class="meta"><span>다이닝 예약 현황</span><small>예약 목록·상태 변경</small></span>
+          <span class="arrow">↗</span>
+        </a>
+        <a class="sideLink" th:href="@{/admin/dining/setting}">
+          <span class="meta"><span>다이닝 운영 설정</span><small>차단 시간·운영 세팅</small></span>
+          <span class="arrow">↗</span>
+        </a>
+      </div>
+
+      <div class="sideSection">
+        <div class="sideTitle">셔틀</div>
+        <button class="sideLink" type="button" onclick="alert('브랜치 관리자 셔틀 운영 화면은 아직 연결 전입니다.');">
+          <span class="meta"><span>셔틀 운영 관리</span><small>브랜치 전용 화면 연결 예정</small></span>
+          <span class="arrow">…</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="dash-main">
 
     <div class="topbar">
       <h1>지점관리자 대시보드</h1>
@@ -473,29 +647,27 @@
 			</div>
         </div>
 
-        <div class="quickActions">
-		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/hotel/list}'|"> 
-		    <div class="dot">🛏️</div>
-		    <div class="txt"><b>객실 관리</b></div>
-		  </button>
-		
-		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/reservation/manage}'|">
-		    <div class="dot">🛏️</div>
-		    <div class="txt"><b>예약 관리</b></div>
-		  </button>
-		
+		<div class="quickActions">
 		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/notice/list}'|"> 
 		    <div class="dot">📢</div>
 		    <div class="txt"><b>공지 등록</b></div>
 		  </button>
-		
+
 		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/promotion/list}'|">
 		    <div class="dot">🎁</div>
 		    <div class="txt"><b>프로모션 등록</b></div>
 		  </button>
-		</div>
-      </div>
-    </section>
+
+		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/branch/account/myInfo}'|">
+		    <div class="dot">👤</div>
+		    <div class="txt"><b>내 정보</b></div>
+		  </button>
+
+		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/branch/account/profileEdit}'|">
+		    <div class="dot">✏️</div>
+		    <div class="txt"><b>정보 수정</b></div>
+		  </button>
+		</div>
 
     <div class="row2">
 
@@ -689,6 +861,7 @@
 	</section>
 
   </div>
+</div>
 </div>
 </body>
 </html>

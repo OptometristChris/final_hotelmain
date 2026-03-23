@@ -118,7 +118,7 @@ eureka:
     instance-id: ${spring.application.name}:${server.port}
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://52.78.215.25:8761/eureka/
 
 iamport:
   api-key: 5112162085145453

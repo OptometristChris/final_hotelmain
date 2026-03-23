@@ -494,6 +494,194 @@
           AND r.reservation_status = 'CANCELLED'
           AND TRUNC(r.created_at) = TRUNC(SYSDATE)
     </select>
+    
+            <!-- =========================================================
+         BRANCH 대시보드 - 미답변 QnA 상위 3건
+         기준
+         - 해당 지점(fk_hotel_id)의 글만 조회
+         - 답변 미등록 + status='WAITING' 기준
+         - 가장 오래된 글(created_at ASC)이 위로 오도록 정렬
+         ========================================================= -->
+    <select id="selectBranchPendingQnaTopList"
+	        parameterType="Integer"
+	        resultType="com.spring.app.jh.ops.admin.common.domain.BranchDashboardQnaDTO">
+	
+	    SELECT qnaId, title, dateText, refText
+	    FROM (
+	        SELECT
+	            q.qna_id                              AS qnaId,
+	            q.title                               AS title,
+	            TO_CHAR(q.created_at, 'YYYY.MM.DD')   AS dateText,
+	            NVL(q.writer_name, '작성자 미상')      AS refText
+	        FROM questions q
+	        LEFT JOIN answers a
+	          ON q.qna_id = a.qna_id
+	        WHERE q.fk_hotel_id = #{hotelId}
+	          AND NVL(q.status, 'WAITING') = 'WAITING'
+	          AND a.answer_id IS NULL
+	        ORDER BY q.created_at ASC, q.qna_id ASC
+	    )
+	    WHERE ROWNUM &lt;= 3
+	</select>
+
+
+	<!-- =========================================================
+	     BRANCH 대시보드 - 오늘 운영 예약 현황
+	     표시 대상
+	     1) 오늘 체크인
+	     2) 오늘 체크아웃
+	     3) 현재 투숙중
+	     4) 오늘 확정된 예약(미래 체크인 포함)
+	     5) 오늘 취소된 예약
+	
+	     ※ 주의
+	     - 현재 스키마상 취소시각 컬럼(cancelled_at)이 없다면
+	       취소 건은 created_at 기준으로 임시 처리
+	     ========================================================= -->
+	<select id="selectBranchTodayOperationReservationList"
+	        parameterType="int"
+	        resultType="com.spring.app.jh.ops.admin.common.domain.BranchDashboardReservationDTO">
+	
+	    SELECT reservationNo
+	         , memberName
+	         , roomTypeName
+	         , checkinDate
+	         , checkoutDate
+	         , guestCount
+	         , totalPrice
+	         , statusCode
+	         , statusText
+	    FROM (
+	        SELECT inner1.*
+	             , ROWNUM AS rnum
+	        FROM (
+	            SELECT
+	                  'A' || LPAD(r.reservation_id, 6, '0')                AS reservationNo
+	                , NVL(m.name, '비회원')                                 AS memberName
+	                , NVL(rt.room_name, '객실명 미정')                      AS roomTypeName
+	                , TO_CHAR(r.checkin_date,  'YYYY.MM.DD')               AS checkinDate
+	                , TO_CHAR(r.checkout_date, 'YYYY.MM.DD')               AS checkoutDate
+	                , r.guest_count                                        AS guestCount
+	                , TO_CHAR(NVL(r.total_price, 0), 'FM999,999,999,999')  AS totalPrice
+	
+	                , CASE
+	                    WHEN TRUNC(r.checkin_date) = TRUNC(SYSDATE)
+	                         AND r.reservation_status IN ('CONFIRMED', 'CHECKED_IN')
+	                    THEN 'CHECKIN_TODAY'
+	
+	                    WHEN TRUNC(r.checkout_date) = TRUNC(SYSDATE)
+	                         AND r.reservation_status IN ('CHECKED_IN', 'CHECKED_OUT')
+	                    THEN 'CHECKOUT_TODAY'
+	
+	                    WHEN r.reservation_status = 'CHECKED_IN'
+	                         AND TRUNC(r.checkin_date) &lt; TRUNC(SYSDATE)
+	                         AND TRUNC(r.checkout_date) &gt; TRUNC(SYSDATE)
+	                    THEN 'STAYING'
+	
+	                    WHEN r.reservation_status = 'CANCELLED'
+	                    THEN 'CANCELLED'
+	
+	                    WHEN r.reservation_status = 'CONFIRMED'
+	                    THEN 'CONFIRMED'
+	
+	                    ELSE NVL(r.reservation_status, 'UNKNOWN')
+	                  END AS statusCode
+	
+	                , CASE
+	                    WHEN TRUNC(r.checkin_date) = TRUNC(SYSDATE)
+	                         AND r.reservation_status IN ('CONFIRMED', 'CHECKED_IN')
+	                    THEN '오늘 체크인'
+	
+	                    WHEN TRUNC(r.checkout_date) = TRUNC(SYSDATE)
+	                         AND r.reservation_status IN ('CHECKED_IN', 'CHECKED_OUT')
+	                    THEN '오늘 체크아웃'
+	
+	                    WHEN r.reservation_status = 'CHECKED_IN'
+	                         AND TRUNC(r.checkin_date) &lt; TRUNC(SYSDATE)
+	                         AND TRUNC(r.checkout_date) &gt; TRUNC(SYSDATE)
+	                    THEN '투숙중'
+	
+	                    WHEN r.reservation_status = 'CANCELLED'
+	                    THEN '취소'
+	
+	                    WHEN r.reservation_status = 'CONFIRMED'
+	                    THEN '예약확정'
+	
+	                    ELSE '상태확인'
+	                  END AS statusText
+	
+	                , CASE
+	                    WHEN TRUNC(r.checkin_date) = TRUNC(SYSDATE)
+	                         AND r.reservation_status IN ('CONFIRMED', 'CHECKED_IN')
+	                    THEN 1
+	
+	                    WHEN TRUNC(r.checkout_date) = TRUNC(SYSDATE)
+	                         AND r.reservation_status IN ('CHECKED_IN', 'CHECKED_OUT')
+	                    THEN 2
+	
+	                    WHEN r.reservation_status = 'CHECKED_IN'
+	                         AND TRUNC(r.checkin_date) &lt; TRUNC(SYSDATE)
+	                         AND TRUNC(r.checkout_date) &gt; TRUNC(SYSDATE)
+	                    THEN 3
+	
+	                    WHEN r.reservation_status = 'CONFIRMED'
+	                    THEN 4
+	
+	                    WHEN r.reservation_status = 'CANCELLED'
+	                    THEN 5
+	
+	                    ELSE 99
+	                  END AS sortNo
+	
+	                , r.checkin_date   AS sortCheckinDate
+	                , r.checkout_date  AS sortCheckoutDate
+	                , r.created_at     AS sortCreatedAt
+	                , r.reservation_id AS sortReservationId
+	
+	            FROM reservation r
+	                 JOIN room_type rt
+	                   ON r.room_type_id = rt.room_type_id
+	                 LEFT JOIN tbl_member_security m
+	                   ON r.member_no = m.member_no
+	            WHERE rt.fk_hotel_id = #{hotelId}
+	              AND (
+	                    (
+	                      TRUNC(r.checkin_date) = TRUNC(SYSDATE)
+	                      AND r.reservation_status IN ('CONFIRMED', 'CHECKED_IN')
+	                    )
+	                    OR
+	                    (
+	                      TRUNC(r.checkout_date) = TRUNC(SYSDATE)
+	                      AND r.reservation_status IN ('CHECKED_IN', 'CHECKED_OUT')
+	                    )
+	                    OR
+	                    (
+	                      r.reservation_status = 'CHECKED_IN'
+	                      AND TRUNC(r.checkin_date) &lt; TRUNC(SYSDATE)
+	                      AND TRUNC(r.checkout_date) &gt; TRUNC(SYSDATE)
+	                    )
+	                    OR
+	                    (
+	                      r.reservation_status = 'CONFIRMED'
+	                      AND TRUNC(r.created_at) = TRUNC(SYSDATE)
+	                    )
+	                    OR
+	                    (
+	                      r.reservation_status = 'CANCELLED'
+	                      AND TRUNC(r.created_at) = TRUNC(SYSDATE)
+	                    )
+	                  )
+	            ORDER BY sortNo ASC
+	                   , sortCheckinDate ASC
+	                   , sortCheckoutDate ASC
+	                   , sortCreatedAt DESC
+	                   , sortReservationId DESC
+	        ) inner1
+	        WHERE ROWNUM &lt;= 10
+	    )
+	    ORDER BY rnum
+	
+	</select>
 
 
 </mapper>
