@@ -108,7 +108,7 @@
 				<th:block th:if="${session.guestSession == null}" sec:authorize="hasRole('ADMIN_HQ')">
 				    <span class="user-welcome">
 				        <i class="fas fa-user-shield mr-1"></i>
-				        <span sec:authentication="principal.name"></span>님 환영합니다
+				        <span th:text="${session.sessionAdminDTO != null and session.sessionAdminDTO.name != null ? session.sessionAdminDTO.name : #authentication.name}"></span>님 환영합니다
 				    </span>
 				    <a th:href="@{/admin/hq/dashboard}">관리자 대시보드</a>
 				    <a href="javascript:void(0);" onclick="logoutAdmin();">로그아웃</a>
@@ -118,7 +118,7 @@
 				<th:block th:if="${session.guestSession == null}" sec:authorize="hasRole('ADMIN_BRANCH')">
 				    <span class="user-welcome">
 				        <i class="fas fa-user-shield mr-1"></i>
-				        <span sec:authentication="principal.name"></span>님 환영합니다
+				        <span th:text="${session.sessionAdminDTO != null and session.sessionAdminDTO.name != null ? session.sessionAdminDTO.name : #authentication.name}"></span>님 환영합니다
 				    </span>
 				    <a th:href="@{/admin/branch/dashboard}">관리자 대시보드</a>
 				    <a href="javascript:void(0);" onclick="logoutAdmin();">로그아웃</a>
@@ -130,7 +130,7 @@
                 <th:block th:if="${session.guestSession == null}" sec:authorize="isAuthenticated() and !hasAnyRole('ADMIN_HQ','ADMIN_BRANCH')">
                     <span class="user-welcome">
                         <i class="fas fa-user-circle mr-1"></i>
-                        <span sec:authentication="principal.name"></span>님 환영합니다
+                        <span th:text="${session.sessionMemberDTO != null and session.sessionMemberDTO.name != null ? session.sessionMemberDTO.name : #authentication.name}"></span>님 환영합니다
                     </span>
                     <a th:href="@{/security/member/mypage}">마이페이지</a>
                     <a href="javascript:void(0);" onclick="logoutMember();">로그아웃</a>
