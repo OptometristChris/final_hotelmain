@@ -21,6 +21,7 @@
     }
 
     *{box-sizing:border-box}
+
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",Arial,sans-serif;
@@ -36,120 +37,9 @@
     }
 
     .dash-wrap{
-      max-width:1380px;
+      max-width:1280px;
       margin:0 auto;
       padding:22px 16px 60px;
-    }
-
-    .dash-shell{
-      display:grid;
-      grid-template-columns:280px minmax(0, 1fr);
-      gap:20px;
-      align-items:start;
-    }
-
-    .dash-main{
-      min-width:0;
-    }
-
-    .sideNav{
-      position:sticky;
-      top:138px;
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-    }
-
-    .sideIntro{
-      padding-bottom:14px;
-      border-bottom:1px solid var(--line);
-    }
-
-    .sideIntro b{
-      display:block;
-      font-size:17px;
-      font-weight:950;
-      letter-spacing:-.2px;
-    }
-
-    .sideIntro span{
-      display:block;
-      margin-top:6px;
-      font-size:12px;
-      line-height:1.5;
-      color:var(--muted);
-    }
-
-    .sideSection{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .sideSection + .sideSection{
-      padding-top:14px;
-      border-top:1px dashed var(--line);
-    }
-
-    .sideTitle{
-      font-size:12px;
-      font-weight:950;
-      color:var(--muted);
-      letter-spacing:.02em;
-    }
-
-    .sideLink{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      width:100%;
-      padding:11px 12px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:#fff;
-      font-size:13px;
-      font-weight:900;
-      color:var(--text);
-      text-align:left;
-      cursor:pointer;
-    }
-
-    .sideLink:hover{
-      background:#f7f7f7;
-      transform:translateY(-1px);
-    }
-
-    .sideLink .meta{
-      display:flex;
-      flex-direction:column;
-      gap:3px;
-      min-width:0;
-    }
-
-    .sideLink .meta small{
-      font-size:11px;
-      font-weight:700;
-      color:var(--muted);
-    }
-
-    .sideLink .arrow{
-      flex:0 0 auto;
-      color:#9a9a9a;
-      font-size:12px;
-      font-weight:900;
-    }
-
-    .sideLink.is-active{
-      border-color:#111;
-      background:#111;
-      color:#fff;
-      box-shadow:0 12px 28px rgba(17,17,17,.16);
-    }
-
-    .sideLink.is-active .meta small{
-      color:rgba(255,255,255,.72);
     }
 
     .topbar{
@@ -230,6 +120,98 @@
 
     .userChip a:hover{background:#f6f6f6}
 
+    .dashLayout{
+      display:grid;
+      grid-template-columns:250px minmax(0, 1fr);
+      gap:18px;
+      align-items:start;
+    }
+
+    .sideNav{
+      position:sticky;
+      top:128px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+
+    .sideNav .navTitle{
+      font-size:14px;
+      font-weight:900;
+      margin:2px 4px 12px;
+      color:#111;
+    }
+
+    .navGroup{
+      border-top:1px solid #f0f0f0;
+      padding-top:12px;
+      margin-top:12px;
+    }
+
+    .navGroup:first-of-type{
+      border-top:none;
+      padding-top:0;
+      margin-top:0;
+    }
+
+    .navGroup h4{
+      margin:0 0 8px;
+      padding:0 4px;
+      font-size:12px;
+      font-weight:900;
+      color:#7a7a7a;
+      letter-spacing:-0.1px;
+    }
+
+    .navLink{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      color:#222;
+      font-size:13px;
+      font-weight:800;
+      transition:.15s ease;
+    }
+
+    .navLink:hover{
+      background:#f7f7f8;
+    }
+
+    .navLink.active{
+      background:#111;
+      color:#fff;
+    }
+
+    .navBadge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:24px;
+      height:24px;
+      padding:0 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#555;
+    }
+
+    .navLink.active .navBadge{
+      border-color:rgba(255,255,255,.2);
+      background:rgba(255,255,255,.12);
+      color:#fff;
+    }
+
+    .mainCol{
+      min-width:0;
+    }
+
     .card{
       background:#fff;
       border:1px solid var(--line);
@@ -267,46 +249,6 @@
     .cardHeader a:hover{
       background:#f6f6f6;
       color:var(--text);
-    }
-
-    .heroTop{
-      padding:14px 16px 12px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      border-bottom:1px solid var(--line);
-      background:#fff;
-    }
-
-    .filters{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .pill{
-      padding:8px 10px;
-      border-radius:999px;
-      background:#fff;
-      border:1px solid var(--line);
-      font-size:12px;
-      font-weight:900;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      color:var(--text);
-    }
-
-    .pill select{
-      border:none;
-      background:transparent;
-      font-weight:900;
-      outline:none;
-      color:var(--text);
-      font-size:12px;
-      cursor:pointer;
     }
 
     .heroBody{
@@ -457,39 +399,70 @@
     }
 
     .who .p{
-      width:34px;
-      height:34px;
+      min-width:56px;
+      height:30px;
+      padding:0 10px;
       border-radius:999px;
       border:1px solid var(--line);
-      background:#f6f6f6;
-      display:grid;
-      place-items:center;
-      color:var(--text);
-      font-weight:950;
-      font-size:12px;
+      background:#f7f7f8;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#444;
+      font-weight:900;
+      font-size:11px;
+      letter-spacing:-0.2px;
       flex:0 0 auto;
+    }
+
+    .who .p.metric{
+      background:#f5f7fb;
+      color:#335caa;
+      border-color:#dbe6ff;
+    }
+
+    .who .p.warn{
+      background:#fff6f2;
+      color:#c96a2a;
+      border-color:#ffd9c2;
+    }
+
+    .who .p.dark{
+      background:#f4f4f5;
+      color:#222;
+      border-color:#e6e6e8;
+    }
+
+    .who .p.qna{
+      background:#f7f7f8;
+      color:#444;
+      border-color:#e7e7e9;
     }
 
     .who .t{min-width:0}
 
     .who .t b{
       display:block;
-      font-size:13px;
+      font-size:14px;
+      line-height:1.25;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
       font-weight:900;
+      color:#111;
     }
 
     .who .t span{
       display:block;
       font-size:12px;
-      color:var(--muted);
-      margin-top:2px;
+      color:#7a7a7a;
+      margin-top:4px;
+      line-height:1.35;
     }
 
     .btnSmall{
-      padding:8px 10px;
+      min-width:54px;
+      padding:8px 12px;
       border-radius:12px;
       border:1px solid var(--line);
       background:#fff;
@@ -498,6 +471,7 @@
       cursor:pointer;
       font-size:12px;
       white-space:nowrap;
+      text-align:center;
     }
 
     .btnSmall.primary{
@@ -514,74 +488,20 @@
 
     .tableWrap{margin-top:14px}
 
-    table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      font-size:13px;
+    @media (max-width:1100px){
+      .dashLayout{
+        grid-template-columns:1fr;
+      }
+      .sideNav{
+        position:static;
+      }
     }
-
-    thead th{
-      text-align:left;
-      padding:12px 14px;
-      color:var(--muted);
-      background:#fafafa;
-      border-bottom:1px solid var(--line);
-      font-weight:950;
-      letter-spacing:-.2px;
-    }
-
-    tbody td{
-      padding:12px 14px;
-      border-bottom:1px solid var(--line);
-      vertical-align:middle;
-    }
-
-    tbody tr:hover td{background:#fcfcfc}
-
-    .status{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      font-weight:950;
-      font-size:12px;
-      border:1px solid var(--line);
-      background:#fff;
-      color:var(--text);
-    }
-
-    .status .sDot{
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:#111;
-    }
-
-    .status.hold{
-      background:rgba(255, 180, 90, .16);
-      border-color:rgba(255, 180, 90, .35);
-    }
-
-    .status.hold .sDot{background:rgba(255, 140, 60, .9)}
-
-    .status.paywait{
-      background:rgba(110, 160, 255, .16);
-      border-color:rgba(110, 160, 255, .35);
-    }
-
-    .status.paywait .sDot{background:rgba(90, 130, 255, .95)}
-
-    .status.done{background:rgba(17,17,17,.06)}
 
     @media (max-width:980px){
       .row2{grid-template-columns:1fr}
       .heroStats{grid-template-columns:1fr}
       .kpiBadges{justify-content:flex-start}
       .quickActions{grid-template-columns:1fr 1fr}
-      .dash-shell{grid-template-columns:1fr}
-      .sideNav{position:static; top:auto;}
     }
 
     @media (max-width:520px){
@@ -599,94 +519,32 @@
 <body>
 <div class="container"
      th:with="
-	    a=${session.sessionAdminDTO},
-	    adminType=${a != null and a.admin_type != null ? a.admin_type : 'HQ'},
-	    adminName=${a != null and a.name != null ? a.name : '총괄관리자 홍길동'},
-	
-	    occupancyRate=${kpi_occupancy != null ? kpi_occupancy : 0},
-	    monthlySales=${kpi_sales != null ? kpi_sales : 0},
-	    cancelRate=${kpi_cancelRate != null ? kpi_cancelRate : 0},
-	    revpar=${kpi_revpar != null ? kpi_revpar : 0},
-	
-	    paidCount=${monthlySummary != null and monthlySummary.paidCount != null ? monthlySummary.paidCount : 0},
-	    prevPaidCount=${monthlySummary != null and monthlySummary.prevPaidCount != null ? monthlySummary.prevPaidCount : 0},
-	    paidDiffCount=${monthlySummary != null and monthlySummary.paidDiffCount != null ? monthlySummary.paidDiffCount : 0},
-	    paidDiffRate=${monthlySummary != null and monthlySummary.paidDiffRate != null ? monthlySummary.paidDiffRate : '0'},
-	
-	    cancelCount=${monthlySummary != null and monthlySummary.cancelCount != null ? monthlySummary.cancelCount : 0},
-	    prevCancelCount=${monthlySummary != null and monthlySummary.prevCancelCount != null ? monthlySummary.prevCancelCount : 0},
-	    cancelDiffCount=${monthlySummary != null and monthlySummary.cancelDiffCount != null ? monthlySummary.cancelDiffCount : 0},
-	    cancelDiffRate=${monthlySummary != null and monthlySummary.cancelDiffRate != null ? monthlySummary.cancelDiffRate : '0'},
-	
-	    netCount=${monthlySummary != null and monthlySummary.netCount != null ? monthlySummary.netCount : 0},
-	
-	    qnaCount=${todoSummary != null and todoSummary.qna != null ? todoSummary.qna : 0},
-	    reviewCount=${todoSummary != null and todoSummary.review != null ? todoSummary.review : 0},
-	
-	    rev=${hqRevenueSummary != null ? hqRevenueSummary : null},
-	    totalRevenue=${rev != null and rev.totalRevenue != null ? rev.totalRevenue : 0},
-	    totalCount=${rev != null and rev.totalCount != null ? rev.totalCount : 0},
-	    summaryOccupancyRate=${rev != null and rev.occupancyRate != null ? rev.occupancyRate : 0}
-	">
+       a=${session.sessionAdminDTO},
+       adminType=${a != null and a.admin_type != null ? a.admin_type : 'HQ'},
+       adminName=${a != null and a.name != null ? a.name : '총괄관리자 홍길동'},
+
+       occupancyRate=${kpi_occupancy != null ? kpi_occupancy : 0},
+       monthlySales=${kpi_sales != null ? kpi_sales : 0},
+       cancelRate=${kpi_cancelRate != null ? kpi_cancelRate : 0},
+       revpar=${kpi_revpar != null ? kpi_revpar : 0},
+
+       paidCount=${monthlySummary != null and monthlySummary.paidCount != null ? monthlySummary.paidCount : 0},
+       prevPaidCount=${monthlySummary != null and monthlySummary.prevPaidCount != null ? monthlySummary.prevPaidCount : 0},
+       paidDiffRate=${monthlySummary != null and monthlySummary.paidDiffRate != null ? monthlySummary.paidDiffRate : '0'},
+
+       cancelCount=${monthlySummary != null and monthlySummary.cancelCount != null ? monthlySummary.cancelCount : 0},
+       prevCancelCount=${monthlySummary != null and monthlySummary.prevCancelCount != null ? monthlySummary.prevCancelCount : 0},
+       cancelDiffRate=${monthlySummary != null and monthlySummary.cancelDiffRate != null ? monthlySummary.cancelDiffRate : '0'},
+
+       netCount=${monthlySummary != null and monthlySummary.netCount != null ? monthlySummary.netCount : 0},
+
+       rev=${hqRevenueSummary != null ? hqRevenueSummary : null},
+       totalRevenue=${rev != null and rev.totalRevenue != null ? rev.totalRevenue : 0},
+       totalCount=${rev != null and rev.totalCount != null ? rev.totalCount : 0},
+       summaryOccupancyRate=${rev != null and rev.occupancyRate != null ? rev.occupancyRate : 0}
+     ">
 
   <div class="dash-wrap">
-  <div class="dash-shell">
-    <aside class="card sideNav">
-      <div class="sideIntro">
-        <b>운영 메뉴</b>
-        <span>총괄에서 자주 이동하는 화면을 카테고리별로 묶었습니다. 객실·다이닝·셔틀 관련 동선은 좌측에서 바로 이동할 수 있습니다.</span>
-      </div>
-
-      <div class="sideSection">
-        <div class="sideTitle">공통</div>
-        <a class="sideLink is-active" th:href="@{/admin/hq/dashboard}">
-          <span class="meta"><span>대시보드</span><small>총괄 운영 현황</small></span>
-          <span class="arrow">●</span>
-        </a>
-        <a class="sideLink" th:href="@{/admin/hotel/list}">
-          <span class="meta"><span>호텔 관리</span><small>호텔 기본 정보·운영 상태</small></span>
-          <span class="arrow">↗</span>
-        </a>
-        <a class="sideLink" th:href="@{/admin/hq/admins}">
-          <span class="meta"><span>지점관리자 관리</span><small>계정 발급·상태 변경</small></span>
-          <span class="arrow">↗</span>
-        </a>
-      </div>
-
-      <div class="sideSection">
-        <div class="sideTitle">객실 · 숙박</div>
-        <a class="sideLink" th:href="@{/admin/room/pending}">
-          <span class="meta"><span>객실 승인 관리</span><small>신규 객실 검수·승인</small></span>
-          <span class="arrow">↗</span>
-        </a>
-        <a class="sideLink" th:href="@{/admin/reservation/list}">
-          <span class="meta"><span>예약 관리</span><small>숙박 예약 전체 목록</small></span>
-          <span class="arrow">↗</span>
-        </a>
-      </div>
-
-      <div class="sideSection">
-        <div class="sideTitle">다이닝</div>
-        <a class="sideLink" th:href="@{/admin/dining/dashboard}">
-          <span class="meta"><span>다이닝 예약 현황</span><small>예약 목록·상태 변경</small></span>
-          <span class="arrow">↗</span>
-        </a>
-        <a class="sideLink" th:href="@{/admin/dining/setting}">
-          <span class="meta"><span>다이닝 운영 설정</span><small>차단 시간·세팅 관리</small></span>
-          <span class="arrow">↗</span>
-        </a>
-      </div>
-
-      <div class="sideSection">
-        <div class="sideTitle">셔틀</div>
-        <a class="sideLink" th:href="@{/admin/hq/shuttle}">
-          <span class="meta"><span>셔틀 운영 관리</span><small>노선·차단·정리 배치</small></span>
-          <span class="arrow">↗</span>
-        </a>
-      </div>
-    </aside>
-
-    <div class="dash-main">
 
     <div class="topbar">
       <h1>총괄관리자 대시보드</h1>
@@ -701,248 +559,241 @@
       </div>
     </div>
 
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px;">
-      <span class="chip" th:text="${adminType}">HQ</span>
-      <span class="chip muted">전체 호텔 통합 대시보드</span>
+    <div class="dashLayout">
+
+      <aside class="sideNav">
+        <div class="navTitle">운영 메뉴</div>
+
+        <div class="navGroup">
+          <h4>객실 · 숙박</h4>
+          <a class="navLink active" th:href="@{/admin/hq/dashboard}">
+            <span>대시보드</span>
+          </a>
+          <a class="navLink" th:href="@{/admin/hotel/list}">
+            <span>호텔 관리</span>
+          </a>
+          <a class="navLink" th:href="@{/admin/room/pending}">
+            <span>객실 승인 관리</span>
+          </a>
+          <a class="navLink" th:href="@{/admin/reservation/list}">
+            <span>예약 관리</span>
+          </a>
+          <a class="navLink" th:href="@{/admin/revenue}">
+            <span>수익 관리</span>
+          </a>
+        </div>
+
+        <div class="navGroup">
+          <h4>다이닝</h4>
+          <a class="navLink" th:href="@{/admin/dining/dashboard}">
+            <span>다이닝 예약 현황</span>
+          </a>
+          <a class="navLink" th:href="@{/admin/dining/setting}">
+            <span>다이닝 운영 관리</span>
+          </a>
+          <a class="navLink" th:href="@{/admin/dining/list}">
+            <span>다이닝 매장 관리</span>
+          </a>
+          <a class="navLink" th:href="@{/admin/dining/statistics}">
+            <span>다이닝 수익 관리</span>
+          </a>
+        </div>
+
+        <div class="navGroup">
+          <h4>셔틀</h4>
+          <a class="navLink" th:href="@{/admin/hq/shuttle}">
+            <span>셔틀 운영 관리</span>
+          </a>
+        </div>
+      </aside>
+
+      <main class="mainCol">
+
+        <section class="card hero">
+          <div class="heroBody">
+            <div class="heroStats">
+              <div class="occupancy">
+                <div class="big">
+                  <span th:text="|${occupancyRate}%|">0%</span>
+                  <span style="font-size:16px;font-weight:900;opacity:.92">객실 가동률</span>
+                </div>
+
+                <div class="miniKpis">
+                  <div class="k">
+                    <b th:text="${#numbers.formatInteger(monthlySales, 3, 'COMMA')}">0</b>
+                    <span>월간 매출(결제완료)</span>
+                  </div>
+                  <div class="k">
+                    <b th:text="|${cancelRate}%|">0%</b>
+                    <span>월간 취소율</span>
+                  </div>
+                  <div class="k">
+                    <b th:text="${#numbers.formatInteger(revpar, 3, 'COMMA')}">0</b>
+                    <span>RevPAR</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="kpiBadges">
+                <div class="pill">✅ 이번달 결제완료 <b style="margin-left:6px" th:text="${paidCount}">0</b></div>
+                <div class="pill">📉 이번달 취소 <b style="margin-left:6px" th:text="${cancelCount}">0</b></div>
+                <div class="pill">📊 이번달 순예약 <b style="margin-left:6px" th:text="${netCount}">0</b></div>
+                <div class="pill">📈 결제 전월대비 <b style="margin-left:6px" th:text="|${paidDiffRate}%|">0%</b></div>
+                <div class="pill">💰 총 매출액 <b style="margin-left:6px" th:text="${#numbers.formatInteger(totalRevenue, 3, 'COMMA')}">0</b></div>
+                <div class="pill">🗂️ 예약 건수 <b style="margin-left:6px" th:text="${totalCount}">0</b></div>
+              </div>
+            </div>
+
+            <div class="quickActions">
+              <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/hotel/list}'|">
+                <div class="dot">🏨</div>
+                <div class="txt"><b>호텔 관리</b></div>
+              </button>
+
+              <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/room/pending}'|">
+                <div class="dot">🛏️</div>
+                <div class="txt"><b>객실 승인 관리</b></div>
+              </button>
+
+              <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/reservation/list}'|">
+                <div class="dot">📋</div>
+                <div class="txt"><b>예약 관리</b></div>
+              </button>
+
+              <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/revenue}'|">
+                <div class="dot">💰</div>
+                <div class="txt"><b>수익 관리</b></div>
+              </button>
+
+              <button class="qaBtn" type="button" th:onclick="|location.href='@{/notice/list}'|">
+                <div class="dot">📢</div>
+                <div class="txt"><b>공지 등록</b></div>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <div class="row2">
+
+          <section class="card">
+            <div class="cardHeader">
+              <h3>이번달 예약 현황 요약</h3>
+              <a th:href="@{/admin/hq/dashboard}">새로고침</a>
+            </div>
+
+            <div class="list">
+              <div class="item">
+                <div class="who">
+                  <div class="p metric">매출</div>
+                  <div class="t">
+                    <b>결제완료 예약</b>
+                    <span th:text="|전월 ${prevPaidCount}건 대비 ${paidDiffRate}%|">전월 대비 0%</span>
+                  </div>
+                </div>
+                <span class="btnSmall" th:text="${paidCount} + '건'">0건</span>
+              </div>
+
+              <div class="item">
+                <div class="who">
+                  <div class="p warn">취소</div>
+                  <div class="t">
+                    <b>취소 예약</b>
+                    <span th:text="|전월 ${prevCancelCount}건 대비 ${cancelDiffRate}%|">전월 대비 0%</span>
+                  </div>
+                </div>
+                <span class="btnSmall" th:text="${cancelCount} + '건'">0건</span>
+              </div>
+
+              <div class="item">
+                <div class="who">
+                  <div class="p dark">순예약</div>
+                  <div class="t">
+                    <b>순예약</b>
+                    <span>결제완료 - 취소</span>
+                  </div>
+                </div>
+                <span class="btnSmall primary" th:text="${netCount} + '건'">0건</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="cardHeader">
+              <h3>수익관리 요약</h3>
+              <a th:href="@{/admin/revenue}">전체보기</a>
+            </div>
+
+            <div class="list">
+              <div class="item">
+                <div class="who">
+                  <div class="p metric">매출</div>
+                  <div class="t">
+                    <b>총 매출액</b>
+                    <span>모든 호텔 총합 기준</span>
+                  </div>
+                </div>
+                <span class="btnSmall" th:text="|₩ ${#numbers.formatInteger(totalRevenue, 3, 'COMMA')}|">₩ 0</span>
+              </div>
+
+              <div class="item">
+                <div class="who">
+                  <div class="p qna">예약</div>
+                  <div class="t">
+                    <b>예약 건수</b>
+                    <span>이번 달 전체 예약 기준</span>
+                  </div>
+                </div>
+                <span class="btnSmall" th:text="${totalCount} + '건'">0건</span>
+              </div>
+
+              <div class="item">
+                <div class="who">
+                  <div class="p dark">점유율</div>
+                  <div class="t">
+                    <b>평균 객실 점유율</b>
+                    <span>모든 호텔 평균 점유율</span>
+                  </div>
+                </div>
+                <span class="btnSmall primary" th:text="${summaryOccupancyRate} + '%'">0%</span>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <section class="card tableWrap">
+          <div class="cardHeader">
+            <h3>운영 바로가기</h3>
+          </div>
+
+          <div class="list">
+            <div class="item">
+              <div class="who">
+                <div class="p qna">계정</div>
+                <div class="t">
+                  <b>지점관리자 관리</b>
+                  <span>지점 관리자 계정 발급 및 목록 관리</span>
+                </div>
+              </div>
+              <button class="btnSmall primary" type="button" th:onclick="|location.href='@{/admin/hq/admins}'|">이동</button>
+            </div>
+
+            <div class="item">
+              <div class="who">
+                <div class="p qna">셔틀</div>
+                <div class="t">
+                  <b>셔틀 운영 관리</b>
+                  <span>호텔별 셔틀 노선 관리, 운행 차단, 기간 연장, 과거 데이터 정리</span>
+                </div>
+              </div>
+              <button class="btnSmall primary" type="button" th:onclick="|location.href='@{/admin/hq/shuttle}'|">이동</button>
+            </div>
+          </div>
+        </section>
+
+      </main>
     </div>
-
-    <section class="card hero">
-      <div class="heroTop">
-        <div class="filters">
-          <div class="pill">
-            🏨 범위
-            <select>
-              <option selected>전체 호텔</option>
-              <option>호텔 시엘</option>
-              <option>르시엘</option>
-            </select>
-          </div>
-          <div class="pill">
-            📅 기간
-            <select>
-              <option selected>최근 1개월</option>
-              <option>최근 6개월</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="pill">📌 HQ 통합 기준</div>
-      </div>
-
-      <div class="heroBody">
-        <div class="heroStats">
-          <div class="occupancy">
-            <div class="big">
-              <span th:text="|${occupancyRate}%|">0%</span>
-              <span style="font-size:16px;font-weight:900;opacity:.92">객실 가동률</span>
-            </div>
-
-            <div class="miniKpis">
-              <div class="k">
-                <b th:text="${#numbers.formatInteger(monthlySales, 3, 'COMMA')}">0</b>
-                <span>월간 매출(결제완료)</span>
-              </div>
-              <div class="k">
-                <b th:text="|${cancelRate}%|">0%</b>
-                <span>월간 취소율</span>
-              </div>
-              <div class="k">
-                <b th:text="${#numbers.formatInteger(revpar, 3, 'COMMA')}">0</b>
-                <span>RevPAR</span>
-              </div>
-            </div>
-          </div>
-
-          	<div class="kpiBadges">
-			  <div class="pill">✅ 이번달 결제완료 <b style="margin-left:6px" th:text="${paidCount}">0</b></div>
-			  <div class="pill">📉 이번달 취소 <b style="margin-left:6px" th:text="${cancelCount}">0</b></div>
-			  <div class="pill">📊 이번달 순예약 <b style="margin-left:6px" th:text="${netCount}">0</b></div>
-			  <div class="pill">📈 결제 전월대비 <b style="margin-left:6px" th:text="|${paidDiffRate}%|">0%</b></div>
-			  <div class="pill">💬 미답변 QnA <b style="margin-left:6px" th:text="${qnaCount}">0</b></div>
-			  <div class="pill">📝 검수대기 <b style="margin-left:6px" th:text="${reviewCount}">0</b></div>
-			  <div class="pill">💰 총 매출액 <b style="margin-left:6px" th:text="${#numbers.formatInteger(totalRevenue, 3, 'COMMA')}">0</b></div>
-			  <div class="pill">🗂️ 예약 건수 <b style="margin-left:6px" th:text="${totalCount}">0</b></div>
-			</div>
-        </div>
-
-        <div class="quickActions">
-		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/hotel/list}'|">
-		    <div class="dot">🏨</div>
-		    <div class="txt"><b>호텔 관리</b></div>
-		  </button>
-
-		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/hq/admins}'|">
-		    <div class="dot">👤</div>
-		    <div class="txt"><b>지점관리자 관리</b></div>
-		  </button>
-		  
-		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/revenue}'|">
-			<div class="dot">💰</div>
-			<div class="txt"><b>수익 관리</b></div>
-		  </button>
-
-		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/notice/list}'|">
-		    <div class="dot">📢</div>
-		    <div class="txt"><b>공지 등록</b></div>
-		  </button>
-
-		  <button class="qaBtn" type="button" th:onclick="|location.href='@{/promotion/list}'|">
-		    <div class="dot">🎁</div>
-		    <div class="txt"><b>프로모션 등록</b></div>
-		  </button>
-		</div>
-
-    <div class="row2">
-    
-    <section class="card" style="margin-top:18px;">
-	  <div class="cardHeader">
-	    <h3>수익관리 요약</h3>
-	    <a th:href="@{/admin/revenue}">전체보기</a>
-	  </div>
-	
-	  <div class="list">
-	    <div class="item">
-	      <div class="who">
-	        <div class="p">매</div>
-	        <div class="t">
-	          <b>총 매출액</b>
-	          <span>이번 달 전체 호텔 기준</span>
-	        </div>
-	      </div>
-	      <span class="btnSmall" th:text="${#numbers.formatInteger(totalRevenue, 3, 'COMMA')}">0</span>
-	    </div>
-	
-	    <div class="item">
-	      <div class="who">
-	        <div class="p">건</div>
-	        <div class="t">
-	          <b>예약 건수</b>
-	          <span>이번 달 전체 예약 건수</span>
-	        </div>
-	      </div>
-	      <span class="btnSmall" th:text="${totalCount} + '건'">0건</span>
-	    </div>
-	
-	    <div class="item">
-	      <div class="who">
-	        <div class="p">율</div>
-	        <div class="t">
-	          <b>점유율</b>
-	          <span>수익 요약 기준 점유율</span>
-	        </div>
-	      </div>
-	      <span class="btnSmall primary" th:text="|${summaryOccupancyRate}%|">0%</span>
-	    </div>
-	  </div>
-	</section>
-
-	<section class="card">
-	  <div class="cardHeader">
-	    <h3>이번달 예약 현황 요약</h3>
-	    <a th:href="@{/admin/hq/dashboard}">새로고침</a>
-	  </div>
-	
-	  <div class="list">
-	    <div class="item">
-	      <div class="who">
-	        <div class="p">결</div>
-	        <div class="t">
-	          <b>결제완료 예약</b>
-	          <span th:text="|전월 ${prevPaidCount}건 대비 ${paidDiffRate}%|">전월 대비 0%</span>
-	        </div>
-	      </div>
-	      <span class="btnSmall" th:text="${paidCount} + '건'">0건</span>
-	    </div>
-	
-	    <div class="item">
-	      <div class="who">
-	        <div class="p">취</div>
-	        <div class="t">
-	          <b>취소 예약</b>
-	          <span th:text="|전월 ${prevCancelCount}건 대비 ${cancelDiffRate}%|">전월 대비 0%</span>
-	        </div>
-	      </div>
-	      <span class="btnSmall" th:text="${cancelCount} + '건'">0건</span>
-	    </div>
-	
-	    <div class="item">
-	      <div class="who">
-	        <div class="p">순</div>
-	        <div class="t">
-	          <b>순예약</b>
-	          <span>결제완료 - 취소</span>
-	        </div>
-	      </div>
-	      <span class="btnSmall primary" th:text="${netCount} + '건'">0건</span>
-	    </div>
-	  </div>
-	</section>
-
-      <section class="card">
-        <div class="cardHeader">
-          <h3>미처리 업무</h3>
-          <a th:href="@{/admin/hq/dashboard}">전체보기</a>
-        </div>
-
-        <div class="list">
-          <div class="item">
-            <div class="who">
-              <div class="p">Q</div>
-              <div class="t">
-                <b>미답변 QnA</b>
-                <span>답변 대기 문의</span>
-              </div>
-            </div>
-            <span class="btnSmall" th:text="${qnaCount} + '건'">0건</span>
-          </div>
-
-          <div class="item">
-            <div class="who">
-              <div class="p">검</div>
-              <div class="t">
-                <b>검수대기</b>
-                <span>제휴/운영 검토 필요</span>
-              </div>
-            </div>
-            <span class="btnSmall" th:text="${reviewCount} + '건'">0건</span>
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-    <section class="card tableWrap">
-      <div class="cardHeader" style="display:flex; align-items:center; justify-content:space-between;">
-        <h3 style="margin:0;">운영 바로가기</h3>
-      </div>
-
-      <div class="list">
-        <div class="item">
-          <div class="who">
-            <div class="p">관</div>
-            <div class="t">
-              <b>지점관리자 관리</b>
-              <span>지점 관리자 계정 발급 및 목록 관리</span>
-            </div>
-          </div>
-          <button class="btnSmall primary" type="button" th:onclick="|location.href='@{/admin/hq/admins}'|">이동</button>
-        </div>
-
-        <div class="item">
-          <div class="who">
-            <div class="p">셔</div>
-            <div class="t">
-              <b>셔틀 운영 관리</b>
-              <span>호텔별 셔틀 노선 관리, 운행 차단, 기간 연장, 과거 데이터 정리</span>
-            </div>
-          </div>
-          <button class="btnSmall primary" type="button" th:onclick="|location.href='@{/admin/hq/shuttle}'|">이동</button>
-        </div>
-      </div>
-    </section>
-
   </div>
-</div>
 </div>
 </body>
 </html>
