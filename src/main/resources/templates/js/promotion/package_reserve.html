@@ -81,8 +81,15 @@
 
             <div class="section" style="margin-bottom: 60px;">
                 <h3 class="section-title"><span>2</span> 적용 가능 객실 선택</h3>
-                <div class="room-selection-list">
-				    <th:block th:each="room : ${roomList}">
+                <div class="room-selection-list"> 
+                
+                	<div th:if="${#lists.isEmpty(roomList)}" 
+			             style="text-align: center; padding: 50px 0; color: #999; border: 1px dashed #ddd; border-radius: 8px;">
+			            <i class="bi bi-exclamation-circle" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+			            예약 가능한 객실이 없습니다.
+			        </div>
+                
+				    <th:block th:unless="${#lists.isEmpty(roomList)}" th:each="room : ${roomList}">
 				        <label class="room-card" th:for="'room_' + ${room.ROOM_TYPE_ID}">
 				            <input type="radio" name="room_type_id" th:id="'room_' + ${room.ROOM_TYPE_ID}" 
 				                   th:value="${room.ROOM_TYPE_ID}" th:data-price="${room.BASE_PRICE}"
@@ -135,29 +142,80 @@
     </div>
 </th:block>
 
-<th:block th:fragment="script">
-    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
-    <script th:inline="javascript">
-        const dRate = [[${promo.discount_rate}]] || 0;   
-        const dAmount = [[${promo.discount_amount}]] || 0;
-        let calendarData = [];
+<script th:inline="javascript">
+    const dRate = /*[[${promo.discount_rate}]]*/ 0;   
+    const dAmount = /*[[${promo.discount_amount}]]*/ 0;
+    let calendarData = [];
 
-        async function recalculatePrice() {
-            const checkInVal = document.getElementById('checkIn').value;
-            const checkOutVal = document.getElementById('checkOut').value;
-            const selectedRadio = document.querySelector('input[name="room_type_id"]:checked');
+    // 페이지 로드 시 실행되는 초기화 로직
+    document.addEventListener("DOMContentLoaded", function() {
+        const checkInInput = document.getElementById('checkIn');
+        const checkOutInput = document.getElementById('checkOut');
 
-            if (!checkInVal || !checkOutVal || !selectedRadio) return;
+        // 1. 오늘 날짜 구하기 (KST 기준 YYYY-MM-DD)
+        const today = new Date().toISOString().split('T')[0];
+        
+        // 2. 서버에서 넘겨준 프로모션 시작일
+        const promoStart = /*[[${promo.start_date}]]*/ '';
 
-            const roomId = selectedRadio.value;
-            try {
-                const response = await fetch(`/room/calendar?room_id=${roomId}`);
-                calendarData = await response.json();
-                updateFinalDisplay(checkInVal, checkOutVal);
-            } catch (error) {
-                console.error("가격 정보를 가져오는데 실패했습니다.", error);
+        // 3. '오늘'과 '프로모션 시작일' 중 더 늦은 날짜를 최종 시작일로 설정
+        // 오늘이 프로모션 시작 전이면 프로모션 시작일부터 선택 가능, 이미 시작했으면 오늘부터 선택 가능
+        const finalMinDate = (today > promoStart) ? today : promoStart;
+
+        // 4. input 태그의 min 속성 업데이트
+        checkInInput.min = finalMinDate;
+        checkOutInput.min = finalMinDate;
+        
+        console.log("선택 가능한 최소 날짜:", finalMinDate);
+    });
+
+    // 체크인 날짜 변경 시 체크아웃 최소 날짜를 동적으로 변경하는 함수
+    function handleCheckInChange() {
+        const checkInVal = document.getElementById('checkIn').value;
+        const checkOutInput = document.getElementById('checkOut');
+
+        if (checkInVal) {
+            // 체크아웃은 최소 체크인 다음날이어야 함
+            const nextDay = new Date(checkInVal);
+            nextDay.setDate(nextDay.getDate() + 1);
+            const minCheckOut = nextDay.toISOString().split('T')[0];
+            
+            checkOutInput.min = minCheckOut;
+
+            // 만약 현재 선택된 체크아웃이 변경된 최소 날짜보다 빠르면 초기화
+            if (checkOutInput.value && checkOutInput.value <= checkInVal) {
+                checkOutInput.value = minCheckOut;
             }
         }
+        recalculatePrice();
+    }
+
+    async function recalculatePrice() {
+        const checkInVal = document.getElementById('checkIn').value;
+        const checkOutVal = document.getElementById('checkOut').value;
+        const selectedRadio = document.querySelector('input[name="room_type_id"]:checked');
+
+        // 둘 중 하나라도 입력 안되면 계산 중단
+        if (!checkInVal || !checkOutVal) return;
+        
+        // 체크아웃이 체크인보다 빠르면 알림 후 중단
+        if (checkInVal >= checkOutVal) {
+            alert("체크아웃 날짜는 체크인 이후여야 합니다.");
+            document.getElementById('checkOut').value = "";
+            return;
+        }
+
+        if (!selectedRadio) return;
+
+        const roomId = selectedRadio.value;
+        try {
+            const response = await fetch(`/final_hotel/room/calendar?room_id=${roomId}`);
+            calendarData = await response.json();
+            updateFinalDisplay(checkInVal, checkOutVal);
+        } catch (error) {
+            console.error("가격 정보를 가져오는데 실패했습니다.", error);
+        }
+    }
 
         function updateFinalDisplay(checkIn, checkOut) {
             const inDate = new Date(checkIn);
@@ -213,21 +271,21 @@
 
             const selectedRadio = document.querySelector('input[name="room_type_id"]:checked');
 
-            IMP.init("imp76388561");
+            IMP.init("imp76388561"); // 실제 연동된 가맹점 식별코드를 입력하세요
             IMP.request_pay({
                 pg: "html5_inicis",
                 pay_method: "card",
                 merchant_uid: "hotel_" + new Date().getTime(),
-                name: "프로모션: " + [[${promo.title}]],
-                amount: 100,
-                buyer_name: [[${memberName}]],
-                buyer_tel: [[${memberMobile}]]
+                name: "프로모션: " + /*[[${promo.title}]]*/ "프로모션 상품",
+                amount: 100, // 테스트 결제금액
+                buyer_name: /*[[${memberName}]]*/ "구매자명",
+                buyer_tel: /*[[${memberMobile}]]*/ "010-0000-0000"
             }, function (rsp) {
                 if (rsp.success) {
                     const token = document.querySelector("meta[name='_csrf']").content;
                     const header = document.querySelector("meta[name='_csrf_header']").content;
                     
-                    fetch("/payment/verify", {
+                    fetch("/final_hotel/payment/verify", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -236,12 +294,12 @@
                         body: JSON.stringify({
                             imp_uid: rsp.imp_uid,
                             merchant_uid: rsp.merchant_uid,
-                            member_no: [[${memberNo}]],
+                            member_no: /*[[${memberNo}]]*/ 0,
                             room_type_id: selectedRadio.value,
                             check_in: document.getElementById('checkIn').value,
                             check_out: document.getElementById('checkOut').value,
                             guest_count: document.getElementById("guestCount").value,
-                            total_price: String(finalPrice),
+                            total_price: finalPrice,
                             hotel_name: "CIEL HOTEL",
                             room_name: selectedRadio.dataset.name
                         })
@@ -259,7 +317,7 @@
                         }
 
                         alert("예약이 완료되었습니다.");
-                        location.href = "/reservation/complete?code=" + encodeURIComponent(text);
+                        location.href = "/final_hotel/reservation/complete?code=" + encodeURIComponent(text);
                     })
                     .catch(err => {
                         console.error("==== /payment/verify fetch 오류 ====", err);

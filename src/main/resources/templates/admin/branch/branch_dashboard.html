@@ -19,135 +19,27 @@
       --radius-lg:14px;
       --shadow: 0 14px 36px rgba(0,0,0,.06);
     }
+
     *{box-sizing:border-box}
+
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
       color:var(--text);
       background:var(--bg);
     }
+
     a{color:inherit;text-decoration:none}
     button{font-family:inherit}
 
     .container{
-      padding-top: 120px;
+      padding-top:120px;
     }
 
     .dash-wrap{
-      max-width: 1380px;
-      margin: 0 auto;
-      padding: 22px 16px 60px;
-    }
-
-    .dash-shell{
-      display:grid;
-      grid-template-columns:280px minmax(0, 1fr);
-      gap:20px;
-      align-items:start;
-    }
-
-    .dash-main{
-      min-width:0;
-    }
-
-    .sideNav{
-      position:sticky;
-      top:138px;
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-    }
-
-    .sideIntro{
-      padding-bottom:14px;
-      border-bottom:1px solid var(--line);
-    }
-
-    .sideIntro b{
-      display:block;
-      font-size:17px;
-      font-weight:950;
-      letter-spacing:-.2px;
-    }
-
-    .sideIntro span{
-      display:block;
-      margin-top:6px;
-      font-size:12px;
-      line-height:1.5;
-      color:var(--muted);
-    }
-
-    .sideSection{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .sideSection + .sideSection{
-      padding-top:14px;
-      border-top:1px dashed var(--line);
-    }
-
-    .sideTitle{
-      font-size:12px;
-      font-weight:950;
-      color:var(--muted);
-      letter-spacing:.02em;
-    }
-
-    .sideLink{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      width:100%;
-      padding:11px 12px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:#fff;
-      font-size:13px;
-      font-weight:900;
-      color:var(--text);
-      text-align:left;
-      cursor:pointer;
-    }
-
-    .sideLink:hover{
-      background:#f7f7f7;
-      transform:translateY(-1px);
-    }
-
-    .sideLink .meta{
-      display:flex;
-      flex-direction:column;
-      gap:3px;
-      min-width:0;
-    }
-
-    .sideLink .meta small{
-      font-size:11px;
-      font-weight:700;
-      color:var(--muted);
-    }
-
-    .sideLink .arrow{
-      flex:0 0 auto;
-      color:#9a9a9a;
-      font-size:12px;
-      font-weight:900;
-    }
-
-    .sideLink.is-active{
-      border-color:#111;
-      background:#111;
-      color:#fff;
-      box-shadow:0 12px 28px rgba(17,17,17,.16);
-    }
-
-    .sideLink.is-active .meta small{
-      color:rgba(255,255,255,.72);
+      max-width:1100px;
+      margin:0 auto;
+      padding:22px 16px 60px;
     }
 
     .topbar{
@@ -155,42 +47,23 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin: 0 0 16px;
+      margin:0 0 16px;
     }
 
     .topbar h1{
       margin:0;
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: -0.02em;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background:#fff;
-      font-size: 12px;
-      font-weight: 900;
-      color: var(--text);
-      line-height: 1;
-    }
-
-    .chip.muted{
-      color: var(--muted);
-      font-weight: 800;
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:-0.02em;
     }
 
     .userChip{
       display:flex;
       align-items:center;
       gap:10px;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
       background:#fff;
     }
 
@@ -226,15 +99,13 @@
       color:var(--text);
     }
 
-    .userChip a:hover{
-      background:#f6f6f6;
-    }
+    .userChip a:hover{ background:#f6f6f6; }
 
     .card{
       background:#fff;
       border:1px solid var(--line);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow);
       overflow:hidden;
     }
 
@@ -250,7 +121,7 @@
     .cardHeader h3{
       margin:0;
       font-size:15px;
-      font-weight: 900;
+      font-weight:900;
       letter-spacing:-.2px;
     }
 
@@ -269,48 +140,8 @@
       color:var(--text);
     }
 
-    .heroTop{
-      padding:14px 16px 12px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      border-bottom:1px solid var(--line);
-      background:#fff;
-    }
-
-    .filters{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .pill{
-      padding:8px 10px;
-      border-radius:999px;
-      background:#fff;
-      border:1px solid var(--line);
-      font-size:12px;
-      font-weight:900;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      color:var(--text);
-    }
-
-    .pill select{
-      border:none;
-      background:transparent;
-      font-weight:900;
-      outline:none;
-      color:var(--text);
-      font-size:12px;
-      cursor:pointer;
-    }
-
     .heroBody{
-      padding:14px 16px 16px;
+      padding:18px 16px 16px;
       background:
         radial-gradient(1000px 240px at 10% 0%, rgba(0,0,0,.04), transparent 60%),
         linear-gradient(135deg, rgba(17,17,17,.92), rgba(17,17,17,.78));
@@ -319,7 +150,7 @@
 
     .heroStats{
       display:grid;
-      grid-template-columns: 240px 1fr;
+      grid-template-columns:240px 1fr;
       gap:14px;
       align-items:center;
     }
@@ -384,16 +215,29 @@
       color:#fff;
     }
 
+    .pill{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      font-size:12px;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:var(--text);
+      background:#fff;
+    }
+
     .quickActions{
       margin-top:14px;
       background:rgba(255,255,255,.10);
       border:1px solid rgba(255,255,255,.18);
-      border-radius: 16px;
+      border-radius:16px;
       padding:12px;
       display:grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns:repeat(5, 1fr);
       gap:10px;
-      backdrop-filter: blur(6px);
+      backdrop-filter:blur(6px);
     }
 
     .qaBtn{
@@ -409,9 +253,7 @@
       text-align:left;
     }
 
-    .qaBtn:hover{
-      background:rgba(0,0,0,.18);
-    }
+    .qaBtn:hover{ background:rgba(0,0,0,.18); }
 
     .qaBtn .dot{
       width:40px;
@@ -432,7 +274,7 @@
     .row2{
       margin-top:14px;
       display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns:1fr 1fr;
       gap:14px;
     }
 
@@ -449,9 +291,7 @@
       border-bottom:1px dashed rgba(0,0,0,.12);
     }
 
-    .item:last-child{
-      border-bottom:none;
-    }
+    .item:last-child{border-bottom:none}
 
     .who{
       display:flex;
@@ -461,49 +301,79 @@
     }
 
     .who .p{
-      width:34px;
-      height:34px;
+      min-width:56px;
+      height:30px;
+      padding:0 10px;
       border-radius:999px;
       border:1px solid var(--line);
-      background:#f6f6f6;
-      display:grid;
-      place-items:center;
-      color:var(--text);
-      font-weight:950;
-      font-size:12px;
+      background:#f7f7f8;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#444;
+      font-weight:900;
+      font-size:11px;
+      letter-spacing:-0.2px;
       flex:0 0 auto;
     }
 
-    .who .t{
-      min-width:0;
+    .who .p.metric{
+      background:#f5f7fb;
+      color:#335caa;
+      border-color:#dbe6ff;
     }
+
+    .who .p.warn{
+      background:#fff6f2;
+      color:#c96a2a;
+      border-color:#ffd9c2;
+    }
+
+    .who .p.dark{
+      background:#f4f4f5;
+      color:#222;
+      border-color:#e6e6e8;
+    }
+
+    .who .p.qna{
+      background:#f7f7f8;
+      color:#444;
+      border-color:#e7e7e9;
+    }
+
+    .who .t{min-width:0}
 
     .who .t b{
       display:block;
-      font-size:13px;
+      font-size:14px;
+      line-height:1.25;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
       font-weight:900;
+      color:#111;
     }
 
     .who .t span{
       display:block;
       font-size:12px;
-      color:var(--muted);
-      margin-top:2px;
+      color:#7a7a7a;
+      margin-top:4px;
+      line-height:1.35;
     }
 
     .btnSmall{
-      padding:8px 10px;
+      min-width:54px;
+      padding:8px 12px;
       border-radius:12px;
       border:1px solid var(--line);
       background:#fff;
-      color:var(--text);
+      color:#111;
       font-weight:900;
       cursor:pointer;
       font-size:12px;
       white-space:nowrap;
+      text-align:center;
     }
 
     .btnSmall.primary{
@@ -512,18 +382,13 @@
       color:#fff;
     }
 
-    .btnSmall:hover{
-      background:#f6f6f6;
-    }
-
+    .btnSmall:hover{ background:#f6f6f6; }
     .btnSmall.primary:hover{
       filter:brightness(.98);
       background:#111;
     }
 
-    .tableWrap{
-      margin-top:14px;
-    }
+    .tableWrap{margin-top:14px}
 
     table{
       width:100%;
@@ -548,9 +413,7 @@
       vertical-align:middle;
     }
 
-    tbody tr:hover td{
-      background:#fcfcfc;
-    }
+    tbody tr:hover td{ background:#fcfcfc; }
 
     .status{
       display:inline-flex;
@@ -573,37 +436,35 @@
     }
 
     .status.hold{
-      background: rgba(255, 180, 90, .16);
-      border-color: rgba(255, 180, 90, .35);
+      background:rgba(255, 180, 90, .16);
+      border-color:rgba(255, 180, 90, .35);
     }
 
     .status.hold .sDot{
-      background: rgba(255, 140, 60, .9);
+      background:rgba(255, 140, 60, .9);
     }
 
     .status.paywait{
-      background: rgba(110, 160, 255, .16);
-      border-color: rgba(110, 160, 255, .35);
+      background:rgba(110, 160, 255, .16);
+      border-color:rgba(110, 160, 255, .35);
     }
 
     .status.paywait .sDot{
-      background: rgba(90, 130, 255, .95);
+      background:rgba(90, 130, 255, .95);
     }
 
     .status.done{
-      background: rgba(17,17,17,.06);
+      background:rgba(17,17,17,.06);
     }
 
-    @media (max-width: 980px){
+    @media (max-width:980px){
       .row2{grid-template-columns:1fr}
       .heroStats{grid-template-columns:1fr}
       .kpiBadges{justify-content:flex-start}
       .quickActions{grid-template-columns:1fr 1fr}
-      .dash-shell{grid-template-columns:1fr}
-      .sideNav{position:static; top:auto;}
     }
 
-    @media (max-width: 520px){
+    @media (max-width:520px){
       .topbar{flex-direction:column;align-items:flex-start}
       .userChip{width:100%;justify-content:space-between}
     }
@@ -619,389 +480,266 @@
 <div class="container"
      th:with="
        a=${session.sessionAdminDTO},
-       adminType=${a != null and a.admin_type != null ? a.admin_type : 'BRANCH'},
-       adminName=${a != null and a.name != null ? a.name : '지점관리자 홍길동'},
-       hotelId=${a != null and a.fk_hotel_id != null ? a.fk_hotel_id : 1},
+       adminType=(${a} != null and ${a.admin_type} != null ? ${a.admin_type} : 'BRANCH'),
+       adminName=(${a} != null and ${a.name} != null ? ${a.name} : '지점관리자 홍길동'),
+       hotelId=(${a} != null and ${a.fk_hotel_id} != null ? ${a.fk_hotel_id} : 1),
 
-       hotelNameSafe=${hotelName != null ? hotelName : '호텔 시엘(잠실)'},
-       periodLabelSafe=${periodLabel != null ? periodLabel : '오늘'},
-       alertCountSafe=${alertCount != null ? alertCount : 0},
+       hotelName=(${hotelName} != null ? ${hotelName} : '호텔 시엘(잠실)'),
 
-       occupancyRate=${kpi_occupancy != null ? kpi_occupancy : 0},
-       kpiBeforeSafe=${kpiBefore != null ? kpiBefore : 0},
-       kpiHoldSafe=${kpiHold != null ? kpiHold : 0},
-       kpiDoneSafe=${kpiDone != null ? kpiDone : 0},
+       occupancyRate=(${kpi_occupancy} != null ? ${kpi_occupancy} : 0),
+       kpiBefore=(${kpiBefore} != null ? ${kpiBefore} : 0),
+       kpiHold=(${kpiHold} != null ? ${kpiHold} : 0),
+       kpiDone=(${kpiDone} != null ? ${kpiDone} : 0),
 
-       todayReservationCountSafe=${todayReservationCount != null ? todayReservationCount : 0},
-       todayCancelCountSafe=${todayCancelCount != null ? todayCancelCount : 0},
+       todayReservationCount=(${todayReservationCount} != null ? ${todayReservationCount} : 0),
+       todayCancelCount=(${todayCancelCount} != null ? ${todayCancelCount} : 0),
 
-       paidCount=${monthlySummary != null and monthlySummary.paidCount != null ? monthlySummary.paidCount : 0},
-       prevPaidCount=${monthlySummary != null and monthlySummary.prevPaidCount != null ? monthlySummary.prevPaidCount : 0},
-       paidDiffCount=${monthlySummary != null and monthlySummary.paidDiffCount != null ? monthlySummary.paidDiffCount : 0},
-       paidDiffRate=${monthlySummary != null and monthlySummary.paidDiffRate != null ? monthlySummary.paidDiffRate : '0'},
+       paidCount=(${monthlySummary} != null and ${monthlySummary.paidCount} != null ? ${monthlySummary.paidCount} : 0),
+       prevPaidCount=(${monthlySummary} != null and ${monthlySummary.prevPaidCount} != null ? ${monthlySummary.prevPaidCount} : 0),
+       paidDiffCount=(${monthlySummary} != null and ${monthlySummary.paidDiffCount} != null ? ${monthlySummary.paidDiffCount} : 0),
+       paidDiffRate=(${monthlySummary} != null and ${monthlySummary.paidDiffRate} != null ? ${monthlySummary.paidDiffRate} : '0'),
 
-       cancelCount=${monthlySummary != null and monthlySummary.cancelCount != null ? monthlySummary.cancelCount : 0},
-       prevCancelCount=${monthlySummary != null and monthlySummary.prevCancelCount != null ? monthlySummary.prevCancelCount : 0},
-       cancelDiffCount=${monthlySummary != null and monthlySummary.cancelDiffCount != null ? monthlySummary.cancelDiffCount : 0},
-       cancelDiffRate=${monthlySummary != null and monthlySummary.cancelDiffRate != null ? monthlySummary.cancelDiffRate : '0'},
+       cancelCount=(${monthlySummary} != null and ${monthlySummary.cancelCount} != null ? ${monthlySummary.cancelCount} : 0),
+       prevCancelCount=(${monthlySummary} != null and ${monthlySummary.prevCancelCount} != null ? ${monthlySummary.prevCancelCount} : 0),
+       cancelDiffCount=(${monthlySummary} != null and ${monthlySummary.cancelDiffCount} != null ? ${monthlySummary.cancelDiffCount} : 0),
+       cancelDiffRate=(${monthlySummary} != null and ${monthlySummary.cancelDiffRate} != null ? ${monthlySummary.cancelDiffRate} : '0'),
 
-       netCount=${monthlySummary != null and monthlySummary.netCount != null ? monthlySummary.netCount : 0}
+       netCount=(${monthlySummary} != null and ${monthlySummary.netCount} != null ? ${monthlySummary.netCount} : 0)
      ">
 
   <div class="dash-wrap">
-    <div class="dash-shell">
 
-      <aside class="card sideNav">
-        <div class="sideIntro">
-          <b>운영 메뉴</b>
-          <span>브랜치 운영자가 자주 오가는 기능을 좌측에 모았습니다. 객실·숙박·다이닝·셔틀 동선을 한 번에 찾을 수 있게 정리했습니다.</span>
+    <div class="topbar">
+      <h1 th:text="|${hotelName} 관리자 대시보드|">호텔 시엘(잠실) 관리자 대시보드</h1>
+
+      <div class="userChip">
+        <div class="u" th:text="${#strings.substring(adminName,0,1)}">M</div>
+        <div class="meta">
+          <b th:text="|${adminName}님 안녕하세요!|">홍길동님 안녕하세요!</b>
+          <span th:text="|${hotelName} · ${adminType}|">호텔 시엘 · BRANCH</span>
         </div>
-
-        <div class="sideSection">
-          <div class="sideTitle">공통</div>
-          <a class="sideLink is-active" th:href="@{/admin/branch/dashboard}">
-            <span class="meta"><span>대시보드</span><small>지점 운영 현황</small></span>
-            <span class="arrow">●</span>
-          </a>
-          <a class="sideLink" th:href="@{/notice/list}">
-            <span class="meta"><span>공지 관리</span><small>공지 등록·조회</small></span>
-            <span class="arrow">↗</span>
-          </a>
-          <a class="sideLink" th:href="@{/promotion/list}">
-            <span class="meta"><span>프로모션 관리</span><small>프로모션·배너 운영</small></span>
-            <span class="arrow">↗</span>
-          </a>
-        </div>
-
-        <div class="sideSection">
-          <div class="sideTitle">객실 · 숙박</div>
-          <a class="sideLink" th:href="@{/admin/room/branch/list}">
-            <span class="meta"><span>객실 관리</span><small>객실 목록·상태·수정</small></span>
-            <span class="arrow">↗</span>
-          </a>
-          <a class="sideLink" th:href="@{/admin/reservation/manage}">
-            <span class="meta"><span>예약 관리</span><small>체크인·체크아웃·예약 운영</small></span>
-            <span class="arrow">↗</span>
-          </a>
-          <a class="sideLink" th:href="@{/admin/branch/reservations}">
-            <span class="meta"><span>오늘 운영 예약 현황</span><small>당일 기준 운영 목록</small></span>
-            <span class="arrow">↗</span>
-          </a>
-        </div>
-
-        <div class="sideSection">
-          <div class="sideTitle">다이닝</div>
-          <a class="sideLink" th:href="@{/admin/dining/dashboard}">
-            <span class="meta"><span>다이닝 예약 현황</span><small>예약 목록·상태 변경</small></span>
-            <span class="arrow">↗</span>
-          </a>
-          <a class="sideLink" th:href="@{/admin/dining/setting}">
-            <span class="meta"><span>다이닝 운영 설정</span><small>차단 시간·운영 세팅</small></span>
-            <span class="arrow">↗</span>
-          </a>
-        </div>
-
-        <div class="sideSection">
-          <div class="sideTitle">셔틀</div>
-          <button class="sideLink" type="button" onclick="alert('브랜치 관리자 셔틀 운영 화면은 아직 연결 전입니다.');">
-            <span class="meta"><span>셔틀 운영 관리</span><small>브랜치 전용 화면 연결 예정</small></span>
-            <span class="arrow">…</span>
-          </button>
-        </div>
-      </aside>
-
-      <div class="dash-main">
-
-        <div class="topbar">
-          <h1>지점관리자 대시보드</h1>
-
-          <div class="userChip">
-            <div class="u" th:text="${#strings.substring(adminName,0,1)}">M</div>
-            <div class="meta">
-              <b th:text="|${adminName}님 안녕하세요!|">홍길동님 안녕하세요!</b>
-              <span th:text="|${hotelNameSafe} · ${adminType}|">호텔 시엘(잠실) · BRANCH</span>
-            </div>
-            <a th:href="@{/admin/branch/account/myInfo}">내 정보</a>
-            <a th:href="@{/admin/branch/account/profileEdit}">정보 수정</a>
-            <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">로그아웃</a>
-          </div>
-        </div>
-
-        <form id="logout-form" th:action="@{/security/logout}" method="post" style="display:none;"></form>
-
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin: 0 0 14px;">
-          <span class="chip" th:text="${adminType}">BRANCH</span>
-          <span class="chip muted" th:text="|호텔ID: ${hotelId}|">호텔ID: 1</span>
-        </div>
-
-        <section class="card hero">
-          <div class="heroTop">
-            <div class="filters">
-              <div class="pill">
-                🏨 지점
-                <select>
-                  <option th:text="${hotelNameSafe}">호텔 시엘(잠실)</option>
-                  <option th:if="${hotelOptions != null}" th:each="h : ${hotelOptions}" th:text="${h}">르시엘(잠실)</option>
-                  <option th:unless="${hotelOptions != null}">르시엘(잠실)</option>
-                </select>
-              </div>
-              <div class="pill">
-                📅 기간
-                <select>
-                  <option th:selected="${periodLabelSafe == '오늘'}">오늘</option>
-                  <option th:selected="${periodLabelSafe == '이번 주'}">이번 주</option>
-                  <option th:selected="${periodLabelSafe == '이번 달'}">이번 달</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="pill">🔔 알림 <b style="margin-left:6px" th:text="${alertCountSafe}">0</b></div>
-          </div>
-
-          <div class="heroBody">
-            <div class="heroStats">
-              <div class="occupancy">
-                <div class="big">
-                  <span th:text="|${occupancyRate}%|">0%</span>
-                  <span style="font-size:16px;font-weight:900;opacity:.92">객실 가동률</span>
-                </div>
-
-                <div class="miniKpis">
-                  <div class="k"><b th:text="${kpiBeforeSafe}">0</b><span>예약전</span></div>
-                  <div class="k"><b th:text="${kpiHoldSafe}">0</b><span>예약중(홀드)</span></div>
-                  <div class="k"><b th:text="${kpiDoneSafe}">0</b><span>예약완료</span></div>
-                </div>
-              </div>
-
-              <div class="kpiBadges">
-                <div class="pill">💰 월간매출 <b style="margin-left:6px" th:text="${kpi_sales != null ? #numbers.formatInteger(kpi_sales, 3, 'COMMA') : '0'}">0</b></div>
-                <div class="pill">📉 월간 취소율 <b style="margin-left:6px" th:text="|${kpi_cancelRate != null ? kpi_cancelRate : 0}%|">0%</b></div>
-                <div class="pill">📊 RevPAR <b style="margin-left:6px" th:text="${kpi_revpar != null ? #numbers.formatInteger(kpi_revpar, 3, 'COMMA') : '0'}">0</b></div>
-
-                <div class="pill">📅 오늘 예약 <b style="margin-left:6px" th:text="${todayReservationCountSafe}">0</b></div>
-                <div class="pill">📉 오늘 취소 <b style="margin-left:6px" th:text="${todayCancelCountSafe}">0</b></div>
-                <div class="pill">✅ 이번달 결제완료 <b style="margin-left:6px" th:text="${paidCount}">0</b></div>
-                <div class="pill">❌ 이번달 취소 <b style="margin-left:6px" th:text="${cancelCount}">0</b></div>
-                <div class="pill">📊 이번달 순예약 <b style="margin-left:6px" th:text="${netCount}">0</b></div>
-                <div class="pill">📈 결제 전월대비 <b style="margin-left:6px" th:text="|${paidDiffRate}%|">0%</b></div>
-              </div>
-            </div>
-
-            <div class="quickActions">
-              <button class="qaBtn" type="button" th:onclick="|location.href='@{/notice/list}'|">
-                <div class="dot">📢</div>
-                <div class="txt"><b>공지 등록</b></div>
-              </button>
-
-              <button class="qaBtn" type="button" th:onclick="|location.href='@{/promotion/list}'|">
-                <div class="dot">🎁</div>
-                <div class="txt"><b>프로모션 등록</b></div>
-              </button>
-
-              <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/branch/account/myInfo}'|">
-                <div class="dot">👤</div>
-                <div class="txt"><b>내 정보</b></div>
-              </button>
-
-              <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/branch/account/profileEdit}'|">
-                <div class="dot">✏️</div>
-                <div class="txt"><b>정보 수정</b></div>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <div class="row2">
-
-          <section class="card">
-            <div class="cardHeader">
-              <h3>이번달 예약 현황 요약</h3>
-              <a th:href="@{/admin/branch/dashboard}">새로고침</a>
-            </div>
-
-            <div class="list">
-              <div class="item">
-                <div class="who">
-                  <div class="p">결</div>
-                  <div class="t">
-                    <b>이번달 결제완료</b>
-                    <span th:text="|전월 ${prevPaidCount}건 대비 ${paidDiffRate}%|">전월 대비 0%</span>
-                  </div>
-                </div>
-                <span class="btnSmall" th:text="${paidCount} + '건'">0건</span>
-              </div>
-
-              <div class="item">
-                <div class="who">
-                  <div class="p">취</div>
-                  <div class="t">
-                    <b>이번달 취소예약</b>
-                    <span th:text="|전월 ${prevCancelCount}건 대비 ${cancelDiffRate}%|">전월 대비 0%</span>
-                  </div>
-                </div>
-                <span class="btnSmall" th:text="${cancelCount} + '건'">0건</span>
-              </div>
-
-              <div class="item">
-                <div class="who">
-                  <div class="p">순</div>
-                  <div class="t">
-                    <b>이번달 순예약</b>
-                    <span>결제완료 - 취소</span>
-                  </div>
-                </div>
-                <span class="btnSmall primary" th:text="${netCount} + '건'">0건</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="card">
-            <div class="cardHeader">
-              <h3>미답변 Q&amp;A</h3>
-              <a th:href="@{/admin/branch/board/qna}">전체보기</a>
-            </div>
-
-            <div class="list" th:if="${qnaList != null and !#lists.isEmpty(qnaList)}">
-              <div class="item" th:each="q : ${qnaList}">
-                <div class="who">
-                  <div class="p">Q</div>
-                  <div class="t">
-                    <b th:text="${q.title}">체크인 시간 변경 문의</b>
-                    <span th:text="|${q.dateText} · ${q.refText}|">2026.02.11 · 예약 A10246</span>
-                  </div>
-                </div>
-                <button class="btnSmall" type="button" onclick="alert('관리자 QnA 답변 기능은 아직 연결 전입니다.');">
-                  준비중
-                </button>
-              </div>
-            </div>
-
-            <div class="list" th:unless="${qnaList != null and !#lists.isEmpty(qnaList)}">
-              <div class="item">
-                <div class="who">
-                  <div class="p">Q</div>
-                  <div class="t"><b>체크인 시간 변경 문의</b><span>2026.02.11 · 예약 A10246</span></div>
-                </div>
-                <button class="btnSmall" type="button" onclick="alert('관리자 QnA 답변 기능은 아직 연결 전입니다.');">준비중</button>
-              </div>
-              <div class="item">
-                <div class="who">
-                  <div class="p">Q</div>
-                  <div class="t"><b>조식 포함 패키지 안내 요청</b><span>2026.02.11 · 패키지 문의</span></div>
-                </div>
-                <button class="btnSmall" type="button" onclick="alert('관리자 QnA 답변 기능은 아직 연결 전입니다.');">준비중</button>
-              </div>
-              <div class="item">
-                <div class="who">
-                  <div class="p">Q</div>
-                  <div class="t"><b>셔틀 예약 조건(결제완료) 확인</b><span>2026.02.10 · 셔틀/결제</span></div>
-                </div>
-                <button class="btnSmall" type="button" onclick="alert('관리자 QnA 답변 기능은 아직 연결 전입니다.');">준비중</button>
-              </div>
-            </div>
-          </section>
-
-        </div>
-
-        <section class="card tableWrap">
-          <div class="cardHeader" style="display:flex; align-items:center; justify-content:space-between;">
-            <h3 style="margin:0;">오늘 운영 예약 현황</h3>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <a th:href="@{/admin/branch/reservations}">전체보기</a>
-              <a th:href="@{/admin/branch/reservations(filter='todayOps')}">필터</a>
-            </div>
-          </div>
-
-          <div th:if="${reservationList != null and !#lists.isEmpty(reservationList)}" style="padding:0 0 6px">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:110px">예약번호</th>
-                  <th style="width:110px">회원</th>
-                  <th style="width:150px">객실</th>
-                  <th style="width:120px">체크인</th>
-                  <th style="width:120px">체크아웃</th>
-                  <th style="width:90px">인원</th>
-                  <th style="width:140px">금액</th>
-                  <th style="width:150px">상태</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr th:each="r : ${reservationList}">
-                  <td th:text="${r.reservationNo}">A10246</td>
-                  <td th:text="${r.memberName}">김민수</td>
-                  <td th:text="${r.roomTypeName}">Deluxe Twin</td>
-                  <td th:text="${r.checkinDate}">2026.03.15</td>
-                  <td th:text="${r.checkoutDate}">2026.03.16</td>
-                  <td th:text="${r.guestCount}">2</td>
-                  <td th:text="|₩ ${r.totalPrice}|">₩ 650,000</td>
-                  <td>
-                    <span th:switch="${r.statusCode}">
-                      <span th:case="'CHECKIN_TODAY'" class="status done"><span class="sDot"></span>오늘 체크인</span>
-                      <span th:case="'CHECKOUT_TODAY'" class="status"><span class="sDot"></span>오늘 체크아웃</span>
-                      <span th:case="'STAYING'" class="status"><span class="sDot"></span>투숙중</span>
-                      <span th:case="'CONFIRMED'" class="status done"><span class="sDot"></span>예약확정</span>
-                      <span th:case="'CANCELLED'" class="status hold"><span class="sDot"></span>취소</span>
-                      <span th:case="*" class="status"><span class="sDot"></span><span th:text="${r.statusText}">상태</span></span>
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div th:unless="${reservationList != null and !#lists.isEmpty(reservationList)}" style="padding:0 0 6px">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:110px">예약번호</th>
-                  <th style="width:110px">회원</th>
-                  <th style="width:150px">객실</th>
-                  <th style="width:120px">체크인</th>
-                  <th style="width:120px">체크아웃</th>
-                  <th style="width:90px">인원</th>
-                  <th style="width:140px">금액</th>
-                  <th style="width:150px">상태</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>A10246</td>
-                  <td>김민수</td>
-                  <td>Deluxe Twin</td>
-                  <td>2026.03.15</td>
-                  <td>2026.03.16</td>
-                  <td>2</td>
-                  <td>₩ 650,000</td>
-                  <td><span class="status done"><span class="sDot"></span>오늘 체크인</span></td>
-                </tr>
-                <tr>
-                  <td>A10671</td>
-                  <td>김소영</td>
-                  <td>Deluxe Double</td>
-                  <td>2026.03.14</td>
-                  <td>2026.03.15</td>
-                  <td>2</td>
-                  <td>₩ 370,000</td>
-                  <td><span class="status"><span class="sDot"></span>오늘 체크아웃</span></td>
-                </tr>
-                <tr>
-                  <td>A10523</td>
-                  <td>장혜민</td>
-                  <td>Junior Suite</td>
-                  <td>2026.03.14</td>
-                  <td>2026.03.17</td>
-                  <td>3</td>
-                  <td>₩ 920,000</td>
-                  <td><span class="status"><span class="sDot"></span>투숙중</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
+        <a th:href="@{/admin/branch/account/myInfo}">내 정보</a>
+        <a th:href="@{/admin/branch/account/profileEdit}">정보 수정</a>
+        <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">로그아웃</a>
       </div>
     </div>
+
+    <form id="logout-form" th:action="@{/security/logout}" method="post" style="display:none;"></form>
+
+    <section class="card hero">
+      <div class="heroBody">
+        <div class="heroStats">
+          <div class="occupancy">
+            <div class="big">
+              <span th:text="|${occupancyRate}%|">0%</span>
+              <span style="font-size:16px;font-weight:900;opacity:.92">객실 가동률</span>
+            </div>
+
+            <div class="miniKpis">
+              <div class="k"><b th:text="${kpiBefore}">0</b><span>예약전</span></div>
+              <div class="k"><b th:text="${kpiHold}">0</b><span>예약중(홀드)</span></div>
+              <div class="k"><b th:text="${kpiDone}">0</b><span>예약완료</span></div>
+            </div>
+          </div>
+
+          <div class="kpiBadges">
+            <div class="pill">💰 월간매출 <b style="margin-left:6px" th:text="${kpi_sales != null ? #numbers.formatInteger(kpi_sales, 3, 'COMMA') : '0'}">0</b></div>
+            <div class="pill">📉 월간 취소율 <b style="margin-left:6px" th:text="|${kpi_cancelRate != null ? kpi_cancelRate : 0}%|">0%</b></div>
+            <div class="pill">📊 RevPAR <b style="margin-left:6px" th:text="${kpi_revpar != null ? #numbers.formatInteger(kpi_revpar, 3, 'COMMA') : '0'}">0</b></div>
+
+            <div class="pill">📅 오늘 예약 <b style="margin-left:6px" th:text="${todayReservationCount}">0</b></div>
+            <div class="pill">📉 오늘 취소 <b style="margin-left:6px" th:text="${todayCancelCount}">0</b></div>
+            <div class="pill">✅ 이번달 결제완료 <b style="margin-left:6px" th:text="${paidCount}">0</b></div>
+            <div class="pill">❌ 이번달 취소 <b style="margin-left:6px" th:text="${cancelCount}">0</b></div>
+            <div class="pill">📊 이번달 순예약 <b style="margin-left:6px" th:text="${netCount}">0</b></div>
+            <div class="pill">📈 결제 전월대비 <b style="margin-left:6px" th:text="|${paidDiffRate}%|">0%</b></div>
+          </div>
+        </div>
+
+        <div class="quickActions">
+          <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/room/branch/list}'|">
+            <div class="dot">🛏️</div>
+            <div class="txt"><b>객실 관리</b></div>
+          </button>
+
+          <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/reservation/manage}'|">
+            <div class="dot">🛋️</div>
+            <div class="txt"><b>예약 관리</b></div>
+          </button>
+          
+          <button class="qaBtn" type="button" th:onclick="|location.href='@{/admin/dining/main}'|">
+            <div class="dot">🍽️</div>
+            <div class="txt"><b>다이닝 관리</b></div>
+          </button>
+
+          <button class="qaBtn" type="button" th:onclick="|location.href='@{/notice/list}'|">
+            <div class="dot">📢</div>
+            <div class="txt"><b>공지 등록</b></div>
+          </button>
+
+          <button class="qaBtn" type="button" th:onclick="|location.href='@{/promotion/list}'|">
+            <div class="dot">🎁</div>
+            <div class="txt"><b>프로모션 등록</b></div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <div class="row2">
+
+      <section class="card">
+        <div class="cardHeader">
+          <h3>이번달 예약 현황 요약</h3>
+          <a th:href="@{/admin/branch/dashboard}">새로고침</a>
+        </div>
+
+        <div class="list">
+          <div class="item">
+            <div class="who">
+              <div class="p metric">매출</div>
+              <div class="t">
+                <b>이번달 결제완료</b>
+                <span th:text="|전월 ${prevPaidCount}건 대비 ${paidDiffRate}%|">전월 대비 0%</span>
+              </div>
+            </div>
+            <span class="btnSmall" th:text="${paidCount} + '건'">0건</span>
+          </div>
+
+          <div class="item">
+            <div class="who">
+              <div class="p warn">취소</div>
+              <div class="t">
+                <b>이번달 취소예약</b>
+                <span th:text="|전월 ${prevCancelCount}건 대비 ${cancelDiffRate}%|">전월 대비 0%</span>
+              </div>
+            </div>
+            <span class="btnSmall" th:text="${cancelCount} + '건'">0건</span>
+          </div>
+
+          <div class="item">
+            <div class="who">
+              <div class="p dark">순예약</div>
+              <div class="t">
+                <b>이번달 순예약</b>
+                <span>결제완료 - 취소</span>
+              </div>
+            </div>
+            <span class="btnSmall primary" th:text="${netCount} + '건'">0건</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cardHeader">
+          <h3>미답변 Q&amp;A</h3>
+          <a th:href="@{/cs/list}">전체보기</a>
+        </div>
+
+        <div class="list" th:if="${qnaList != null and !#lists.isEmpty(qnaList)}">
+          <div class="item" th:each="q : ${qnaList}">
+            <div class="who">
+              <div class="p qna">Q&amp;A</div>
+              <div class="t">
+                <b th:text="${q.title}">체크인 시간 변경 문의</b>
+                <span th:text="|${q.dateText} · ${q.refText}|">2026.02.11 · 작성자 홍길동</span>
+              </div>
+            </div>
+            <button class="btnSmall"
+                    type="button"
+                    th:onclick="|location.href='@{/cs/qnaDetail(qnaId=${q.qnaId})}'|">
+              답변하기
+            </button>
+          </div>
+        </div>
+
+        <div class="list" th:unless="${qnaList != null and !#lists.isEmpty(qnaList)}">
+          <div class="item">
+            <div class="who">
+              <div class="p qna">Q&amp;A</div>
+              <div class="t">
+                <b>미답변 문의가 없습니다.</b>
+                <span>새 문의가 들어오면 이 영역에 표시됩니다.</span>
+              </div>
+            </div>
+            <button class="btnSmall" type="button" disabled>없음</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <section class="card tableWrap">
+      <div class="cardHeader" style="display:flex; align-items:center; justify-content:space-between;">
+        <h3 style="margin:0;">오늘 운영 예약 현황</h3>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <a th:href="@{/admin/reservation/manage}">전체보기</a>
+          <a th:href="@{/admin/reservation/manage}">필터</a>
+        </div>
+      </div>
+
+      <div th:if="${reservationList != null and !#lists.isEmpty(reservationList)}" style="padding:0 0 6px">
+        <table>
+          <thead>
+          <tr>
+            <th style="width:110px">예약번호</th>
+            <th style="width:110px">회원</th>
+            <th style="width:150px">객실</th>
+            <th style="width:120px">체크인</th>
+            <th style="width:120px">체크아웃</th>
+            <th style="width:90px">인원</th>
+            <th style="width:140px">금액</th>
+            <th style="width:150px">상태</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="r : ${reservationList}">
+            <td th:text="${r.reservationNo}">A10246</td>
+            <td th:text="${r.memberName}">김민수</td>
+            <td th:text="${r.roomTypeName}">Deluxe Twin</td>
+            <td th:text="${r.checkinDate}">2026.03.15</td>
+            <td th:text="${r.checkoutDate}">2026.03.16</td>
+            <td th:text="${r.guestCount}">2</td>
+            <td th:text="|₩ ${r.totalPrice}|">₩ 650,000</td>
+            <td>
+              <span th:switch="${r.statusCode}">
+                <span th:case="'CHECKIN_TODAY'" class="status done"><span class="sDot"></span>오늘 체크인</span>
+                <span th:case="'CHECKOUT_TODAY'" class="status"><span class="sDot"></span>오늘 체크아웃</span>
+                <span th:case="'STAYING'" class="status"><span class="sDot"></span>투숙중</span>
+                <span th:case="'CONFIRMED'" class="status done"><span class="sDot"></span>예약확정</span>
+                <span th:case="'CANCELLED'" class="status hold"><span class="sDot"></span>취소</span>
+                <span th:case="*" class="status"><span class="sDot"></span><span th:text="${r.statusText}">상태</span></span>
+              </span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div th:unless="${reservationList != null and !#lists.isEmpty(reservationList)}" style="padding:0 0 6px">
+        <table>
+          <thead>
+          <tr>
+            <th style="width:110px">예약번호</th>
+            <th style="width:110px">회원</th>
+            <th style="width:150px">객실</th>
+            <th style="width:120px">체크인</th>
+            <th style="width:120px">체크아웃</th>
+            <th style="width:90px">인원</th>
+            <th style="width:140px">금액</th>
+            <th style="width:150px">상태</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td colspan="8" style="text-align:center; color:#6f6f6f; padding:26px 14px;">
+              오늘 운영 예약 현황 데이터가 없습니다.
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   </div>
 </div>
 </body>
