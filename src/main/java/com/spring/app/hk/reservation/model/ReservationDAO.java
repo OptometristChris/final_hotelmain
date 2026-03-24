@@ -37,6 +37,9 @@ public interface ReservationDAO {
 
 	// 암호화 조회 후 없으면 회원 생성
 	void insertSocialMember(String emailFromOauth);
+	
+	// 예약코드 통일
+	String selectReservationCodeById(Long reservationId);
 
 
 }

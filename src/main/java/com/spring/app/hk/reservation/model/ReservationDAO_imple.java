@@ -78,7 +78,12 @@ public class ReservationDAO_imple implements ReservationDAO {
 	@Override
 	public void insertSocialMember(String emailFromOauth) {
 		sqlsession.insert("reservation.insertSocialMember", emailFromOauth);
-		
 	}	
+	
+	// 예약코드 통일
+	@Override
+	public String selectReservationCodeById(Long reservationId) {
+	    return sqlsession.selectOne("reservation.selectReservationCodeById", reservationId);
+	}
 
 }
