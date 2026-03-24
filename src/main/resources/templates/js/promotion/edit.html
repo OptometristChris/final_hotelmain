@@ -55,7 +55,9 @@
         <div class="form-section">
             <div class="hotel-badge">
                 <i class="bi bi-geo-alt-fill mr-1"></i>
-                <span th:text="${promo.fk_hotel_id == 1 ? 'CIEL HOTEL' : 'LE CIEL'}">지점명</span>
+                <th:block th:each="h : ${hotelList}" th:if="${#strings.equals(promo.fk_hotel_id, h.HOTEL_ID)}">
+		            <span th:text="${h.HOTEL_NAME}">지점명</span>
+		        </th:block>
             </div>
 
             <form id="editForm" th:action="@{/promotion/update}" method="post" enctype="multipart/form-data">
@@ -177,9 +179,10 @@
                     <input type="file" name="attach" id="attach" class="form-control-file" accept="image/*" onchange="previewImage(this)">
                     <div class="img-preview" id="previewBox">
                         <img th:if="${promo.image_url != null}"
-                             th:src="${@imagePathUtil.promo(promo.image_url)}"
-                             th:attr="data-alt-src=${@imagePathUtil.promoAlt(promo.image_url)}, data-default-src=@{/images/js/spring_promo.jpg}"
-                             onerror="handleImageFallback(this)"
+                             th:with="raw=${promo.image_url != null ? promo.image_url : ''},
+                                      normalized=${#strings.startsWith(raw, '/final_hotel') ? #strings.substring(raw, 12) : (#strings.startsWith(raw, 'final_hotel/') ? #strings.substring(raw, 11) : raw)},
+                                      promoImgSrc=${normalized == '' ? '/images/js/spring_promo.jpg' : (#strings.startsWith(normalized, 'http') or #strings.startsWith(normalized, '/') ? normalized : (#strings.startsWith(normalized, 'file_images/') or #strings.startsWith(normalized, 'images/') ? '/' + normalized : '/file_images/js/' + normalized))}"
+                             th:src="${promoImgSrc}"
                              alt="기존 이미지">
                         <span th:unless="${promo.image_url != null}">등록된 이미지가 없습니다.</span>
                     </div>

@@ -108,5 +108,10 @@ public class PromotionServiceimple implements PromotionService {
         return proDao.getAvailableRoomsForPromotion(promo);
     }
     
+    @Override
+    public List<Map<String, String>> getHotelList() {
+        return proDao.getHotelList();
+    }
+    
     
 }

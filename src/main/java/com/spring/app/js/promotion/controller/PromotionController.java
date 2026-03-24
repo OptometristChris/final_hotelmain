@@ -2,6 +2,7 @@ package com.spring.app.js.promotion.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.spring.app.jh.security.domain.AdminDTO;
+import com.spring.app.jh.security.domain.CustomAdminDetails;
 import com.spring.app.js.promotion.domain.PromotionDTO;
 import com.spring.app.js.promotion.service.PromotionService;
 
@@ -38,20 +42,49 @@ public class PromotionController {
     @GetMapping("/list")
     public ModelAndView promotionList(@RequestParam(value="hotelId", defaultValue="1") int hotelId, ModelAndView mav) {
         
-        // 권한 확인
+        // 1. 로그인 정보 및 권한 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = auth.getAuthorities().stream()
-                             .anyMatch(a -> a.getAuthority().equals("ADMIN_BRANCH") || 
-                                            a.getAuthority().equals("ROLE_ADMIN_BRANCH"));
+        boolean canWrite = false; 
 
+        if (auth != null && auth.getPrincipal() instanceof CustomAdminDetails) {
+            CustomAdminDetails adminDetails = (CustomAdminDetails) auth.getPrincipal();
+            AdminDTO adminDto = adminDetails.getAdminDto(); // @Getter 덕분에 호출 가능
+
+            if (adminDto != null) {
+                // 권한 추출
+                Collection<? extends GrantedAuthority> authorities = adminDetails.getAuthorities();
+                boolean isHq = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN_HQ"));
+                boolean isBranchAdmin = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN_BRANCH") || a.getAuthority().equals("ADMIN_BRANCH"));
+
+                // 비교 로직: 총괄 관리자이거나, 해당 지점의 관리자일 때만 true
+                if (isHq) {
+                    canWrite = true;
+                } else if (isBranchAdmin) {
+                    // AdminDTO에 fk_hotel_id 필드가 있다고 가정합니다.
+                    // 만약 타입이 String이라면 adminDto.getFk_hotel_id().equals(String.valueOf(hotelId)) 로 수정
+                    if (adminDto.getFk_hotel_id() == hotelId) {
+                        canWrite = true;
+                    }
+                }
+            }
+        }
+
+        // 2. 기존 서비스 호출 및 데이터 담기
+        List<Map<String, String>> hotelList = promotionService.getHotelList();
+        
         Map<String, Object> paraMap = new HashMap<>();
         paraMap.put("hotelId", hotelId);
-        paraMap.put("isAdmin", isAdmin); // 쿼리로 전달
+        paraMap.put("isAdmin", canWrite); // 기존 쿼리에서 쓰던 값 유지
 
         List<PromotionDTO> promoList = promotionService.getPromotionList(paraMap);
         
+        mav.addObject("hotelList", hotelList);
         mav.addObject("promoList", promoList);
         mav.addObject("hotelId", hotelId);
+        
+        // ★ 뷰에서 버튼 노출 여부를 결정할 핵심 변수
+        mav.addObject("canWrite", canWrite); 
+        
         mav.setViewName("js/promotion/list");
         return mav;
     }
@@ -67,10 +100,21 @@ public class PromotionController {
             return mav;
         }
 
+     // --- [추가] 로그인한 관리자의 정보 및 지점 ID 추출 ---
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Integer loginHotelId = null;
+        
+        if (auth != null && auth.getPrincipal() instanceof CustomAdminDetails) {
+            CustomAdminDetails adminDetails = (CustomAdminDetails) auth.getPrincipal();
+            AdminDTO adminDto = adminDetails.getAdminDto();
+            if (adminDto != null) {
+                loginHotelId = adminDto.getFk_hotel_id(); // 관리자의 소속 지점 ID
+            }
+        }
+        mav.addObject("loginHotelId", loginHotelId); // 뷰에서 비교용으로 사용
+        
         // ★ 비활성 프로모션 접근 제어 로직 추가 ★
         if (promo.getIs_active() == 0) {
-            // 현재 로그인한 사용자의 권한 확인
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             boolean isAdmin = auth.getAuthorities().stream()
                                  .anyMatch(a -> a.getAuthority().equals("ADMIN_BRANCH") || 
                                                 a.getAuthority().equals("ROLE_ADMIN_BRANCH"));
@@ -94,6 +138,10 @@ public class PromotionController {
      */
     @GetMapping("/write")
     public ModelAndView promotionWrite(@RequestParam("hotelId") String hotelId, ModelAndView mav) {
+    	
+    	List<Map<String, String>> hotelList = promotionService.getHotelList();
+        
+        mav.addObject("hotelList", hotelList);
         mav.addObject("hotelId", hotelId);
         mav.setViewName("js/promotion/write"); 
         return mav;
@@ -200,7 +248,9 @@ public class PromotionController {
         if (promotion == null) {
             return "redirect:/promotion/list";
         }
+        List<Map<String, String>> hotelList = promotionService.getHotelList();
         
+        model.addAttribute("hotelList", hotelList);
         model.addAttribute("promo", promotion);
         return "js/promotion/edit"; 
     }

@@ -59,7 +59,7 @@ public class IndexController {
         }
 
         String daterange = request.getParameter("daterange");
-        String bedType = request.getParameter("bedType");
+        String capacity = request.getParameter("capacity");
 
         String checkIn = "";
         String checkOut = "";
@@ -73,7 +73,7 @@ public class IndexController {
         paraMap.put("hotelId", hotelId);
         paraMap.put("checkIn", checkIn);
         paraMap.put("checkOut", checkOut);
-        paraMap.put("bedType", bedType);
+        paraMap.put("capacity", capacity);
 
         List<Map<String, String>> hotelList = service.getHotelList();
         model.addAttribute("hotelList", hotelList);

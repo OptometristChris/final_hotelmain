@@ -85,8 +85,8 @@
         FROM ROOM_TYPE RT
         WHERE RT.fk_hotel_id = TO_NUMBER(#{hotelId})
           AND RT.is_active = 'Y'
-          <if test="bedType != null and bedType != ''">
-              AND RT.bed_type = #{bedType}
+          <if test="capacity != null and capacity != ''">
+              AND RT.max_capacity >= TO_NUMBER(#{capacity})
           </if>
           AND RT.room_type_id IN (
               SELECT RS.room_type_id

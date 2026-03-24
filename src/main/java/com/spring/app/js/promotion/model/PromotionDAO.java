@@ -42,4 +42,6 @@ public interface PromotionDAO {
 	// 프로모션 조건(타겟)에 맞는 객실 리스트만 조회
 	List<Map<String, Object>> getAvailableRoomsForPromotion(PromotionDTO promo);
 
+	List<Map<String, String>> getHotelList();
+
 }

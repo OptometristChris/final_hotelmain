@@ -297,26 +297,6 @@
             게스트는 현재 기존 세션 방식 유지이므로
             /guest/logout 으로 이동하여 guestSession 을 제거한다.
          */
-
-        function handleImageFallback(img) {
-            const altSrc = img.dataset.altSrc;
-            const defaultSrc = img.dataset.defaultSrc;
-
-            if (!img.dataset.altTried && altSrc && img.src.indexOf(altSrc) === -1) {
-                img.dataset.altTried = "1";
-                img.src = altSrc;
-                return;
-            }
-
-            if (!img.dataset.defaultTried && defaultSrc && img.src.indexOf(defaultSrc) === -1) {
-                img.dataset.defaultTried = "1";
-                img.src = defaultSrc;
-                return;
-            }
-
-            img.onerror = null;
-        }
-
         function logoutGuest() {
             location.href = contextPath + "guest/logout";
         }

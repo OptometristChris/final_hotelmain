@@ -784,9 +784,11 @@ function switchReserveTab(type) {
             <div class="thumb">
               <img class="promoImg"
                    th:if="${promo.image_url != null and promo.image_url != ''}"
-                   th:src="${@imagePathUtil.promo(promo.image_url)}"
-                   th:attr="data-alt-src=${@imagePathUtil.promoAlt(promo.image_url)}, data-default-src=@{/images/js/spring_promo.jpg}"
-                   onerror="handleImageFallback(this)"
+                   th:with="raw=${promo.image_url != null ? promo.image_url : ''},
+                            normalized=${#strings.startsWith(raw, '/final_hotel') ? #strings.substring(raw, 12) : (#strings.startsWith(raw, 'final_hotel/') ? #strings.substring(raw, 11) : raw)},
+                            promoImgSrc=${normalized == '' ? '/images/js/spring_promo.jpg' : (#strings.startsWith(normalized, 'http') or #strings.startsWith(normalized, '/') ? normalized : (#strings.startsWith(normalized, 'file_images/') or #strings.startsWith(normalized, 'images/') ? '/' + normalized : '/file_images/js/' + normalized))}"
+                   th:src="${promoImgSrc}"
+                   onerror="this.src='/images/js/spring_promo.jpg'"
                    alt="프로모션 이미지">
               <span th:if="${promo.image_url == null or promo.image_url == ''}">프로모션</span>
             </div>

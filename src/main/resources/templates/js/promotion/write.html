@@ -65,7 +65,9 @@
         <div class="form-section">
             <div class="hotel-badge">
                 <i class="bi bi-geo-alt-fill mr-1"></i>
-                <span th:text="${hotelId == '1' ? 'CIEL HOTEL' : 'LE CIEL'}">지점명</span>
+			    <th:block th:each="h : ${hotelList}" th:if="${#strings.equals(hotelId, h.HOTEL_ID)}">
+			        <span th:text="${h.HOTEL_NAME}">지점명</span>
+			    </th:block>
             </div>
 
             <form id="promoForm" th:action="@{/promotion/writeEnd}" method="post" enctype="multipart/form-data">
