@@ -112,7 +112,7 @@ public class MemberAuthenticationSuccessHandler extends SavedRequestAwareAuthent
 		sessionMemberDTO.setMemberNo(memberDto.getMemberNo());
 
 		HttpSession session = request.getSession();
-		session.removeAttribute("Session_GuestDTO");
+		session.removeAttribute("guestSession");
 		session.setAttribute("sessionMemberDTO", sessionMemberDTO);
 
 		String clientip = request.getRemoteAddr();

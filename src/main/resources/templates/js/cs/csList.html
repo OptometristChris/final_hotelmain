@@ -141,7 +141,7 @@
                     </form>
                 </div>
 
-                <div th:if="${#authorization.expression('isAuthenticated()') or session.Session_GuestDTO != null}">
+                <div th:if="${#authorization.expression('isAuthenticated()') or session.guestSession != null}">
                     <a th:href="@{/cs/qnaWrite(hotelId=${hotelId})}" class="btn btn-write">문의하기</a>
                 </div>
             </div>
