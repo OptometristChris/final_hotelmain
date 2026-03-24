@@ -171,8 +171,8 @@
 		        <div class="slide-item">
 		            <img th:with="fileName=${banner.image_url}"
 		                 th:src="${#strings.contains(fileName, '/file_images/') 
-		                          ? '/final_hotel' + fileName 
-		                          : '/final_hotel/file_images/hotel/' + fileName}" 
+		                          ? + fileName 
+		                          : '/file_images/hotel/' + fileName}" 
 		                 th:alt="${banner.title}">
 		        </div>
 		        <div class="room-info-overlay position-absolute" style="bottom: 15%; left: 5%; z-index: 10;">
