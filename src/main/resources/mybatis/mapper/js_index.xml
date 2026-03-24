@@ -58,13 +58,14 @@
             B.image_url,
             B.benefits,
             M.price,
-            M.end_date,
+            TO_CHAR(M.end_date, 'YYYY-MM-DD') AS end_date,
             M.discount_rate
         FROM PROMOTION_BANNER B
         LEFT JOIN PROMOTION_MASTER M ON B.fk_promotion_id = M.promotion_id
         WHERE B.active_yn = 'Y'
           AND B.banner_type = 'CARD'
-          AND (M.is_active = 1 OR M.is_active IS NULL)
+          AND M.is_active = 1
+          AND SYSDATE BETWEEN M.start_date AND M.end_date
         ORDER BY DBMS_RANDOM.VALUE
     </select>
 

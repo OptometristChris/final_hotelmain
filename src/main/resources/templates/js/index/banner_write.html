@@ -113,17 +113,20 @@
 		
 		                if (list && list.length > 0) {
 		                    list.forEach(function(img) {
-		                        let fileName = img.IMAGE_URL || img.image_url;
-		                        let finalSrc = fileName.includes('/file_images/') ? fileName : '/file_images/hotel/' + fileName;
-		                        
-		                        // 기존에 선택된 이미지라면 active 클래스 자동 부여
-		                        let activeClass = (fileName === currentSelected) ? "active" : "";
-		                        
-		                        html += `
-		                            <div class="img-item ${activeClass}" onclick="selectImage('${fileName}', this)">
-		                                <img src="${finalSrc}" alt="Hotel Gallery">
-		                            </div>`;
-		                    });
+                        let fileName = img.IMAGE_URL || img.image_url;
+                        let normalizedFileName = (fileName || '').replace('/final_hotel', '');
+                        let finalSrc = normalizedFileName.includes('/file_images/') || normalizedFileName.includes('/images/')
+                                     ? normalizedFileName
+                                     : '/file_images/hotel/' + normalizedFileName;
+                        
+                        // 기존에 선택된 이미지라면 active 클래스 자동 부여
+                        let activeClass = (normalizedFileName === currentSelected || fileName === currentSelected) ? "active" : "";
+                        
+                        html += `
+                            <div class="img-item ${activeClass}" onclick="selectImage('${normalizedFileName}', this)">
+                                <img src="${finalSrc}" alt="Hotel Gallery">
+                            </div>`;
+                    });
 		                } else {
 		                    html = '<p style="grid-column: 1/-1; text-align: center; color: #999; padding: 80px 0;">해당 지점에 등록된 이미지가 없습니다.</p>';
 		                }

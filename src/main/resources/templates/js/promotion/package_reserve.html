@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ko" 
+<html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{js/layout/layout_main :: layout(~{::title}, ~{::link}, ~{::style}, ~{::script}, ~{::content})}">
 <head>
     <title>패키지 예약 | CIEL HOTEL</title>
-    
+
     <th:block th:fragment="link">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     </th:block>
@@ -24,9 +24,9 @@
             .room-card { border: 1px solid #eee; padding: 25px; cursor: pointer; display: flex; align-items: center; gap: 20px; transition: 0.3s; border-radius: 4px; position: relative; margin-bottom: 0; }
             .room-card:hover { border-color: #d4af37; background: #fdfbf5; }
             .room-card.active { border-color: #d4af37; background: #fdfbf5; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1); }
-            
+
             .room-card input[type="radio"] { width: 20px; height: 20px; accent-color: #1a1a1a; }
-            
+
             .date-selection-box { display: flex; gap: 30px; background: #f9f9f9; padding: 40px; border: 1px solid #eee; align-items: center; justify-content: center; }
             .date-input-group { display: flex; flex-direction: column; gap: 10px; flex: 1; }
             .date-input-group label { font-weight: 700; color: #666; font-size: 0.9rem; }
@@ -39,6 +39,15 @@
 
             .btn-submit { width: 100%; padding: 22px; background: #1a1a1a; color: #fff; border: none; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 40px; }
             .btn-submit:hover { background: #d4af37; }
+
+            .empty-room-box {
+                text-align: center;
+                padding: 50px 0;
+                color: #999;
+                border: 1px dashed #ddd;
+                border-radius: 8px;
+                background: #fcfcfc;
+            }
         </style>
     </th:block>
 </head>
@@ -52,10 +61,10 @@
         </div>
 
         <form id="packageReserveForm">
-            
+
             <input type="hidden" name="promotion_id" th:value="${promo.promotion_id}">
             <input type="hidden" name="discount_amount" id="inputDiscPrice" value="0">
-            <input type="hidden" name="applied_price" id="inputFinalPrice"> 
+            <input type="hidden" name="applied_price" id="inputFinalPrice" value="0">
             <input type="hidden" name="fk_hotel_id" th:value="${promo.fk_hotel_id}">
             <input type="hidden" name="guest_count" id="guestCount" value="1">
 
@@ -64,51 +73,66 @@
                 <div class="date-selection-box">
                     <div class="date-input-group">
                         <label>CHECK-IN</label>
-                        <input type="date" name="check_in" id="checkIn" 
-                               th:min="${promo.start_date}" th:max="${promo.end_date}" 
-                               onchange="recalculatePrice()" required>
+                        <input type="date"
+                               name="check_in"
+                               id="checkIn"
+                               th:min="${promo.start_date}"
+                               th:max="${promo.end_date}"
+                               onchange="handleCheckInChange()"
+                               required>
                     </div>
                     <div style="font-size: 1.5rem; color: #ccc; margin-top: 25px;">~</div>
                     <div class="date-input-group">
                         <label>CHECK-OUT</label>
-                        <input type="date" name="check_out" id="checkOut" 
-                               th:min="${promo.start_date}" th:max="${promo.end_date}" 
-                               onchange="recalculatePrice()" required>
+                        <input type="date"
+                               name="check_out"
+                               id="checkOut"
+                               th:min="${promo.start_date}"
+                               th:max="${promo.end_date}"
+                               onchange="recalculatePrice()"
+                               required>
                     </div>
                 </div>
-                <small class="text-muted mt-2 d-block">* 본 프로모션은 <span th:text="${promo.start_date}"></span> ~ <span th:text="${promo.end_date}"></span> 기간 내 투숙 시에만 적용됩니다.</small>
+                <small class="text-muted mt-2 d-block">
+                    * 본 프로모션은 <span th:text="${promo.start_date}"></span> ~ <span th:text="${promo.end_date}"></span> 기간 내 투숙 시에만 적용됩니다.
+                </small>
             </div>
 
             <div class="section" style="margin-bottom: 60px;">
                 <h3 class="section-title"><span>2</span> 적용 가능 객실 선택</h3>
-                <div class="room-selection-list"> 
-                
-                	<div th:if="${#lists.isEmpty(roomList)}" 
-			             style="text-align: center; padding: 50px 0; color: #999; border: 1px dashed #ddd; border-radius: 8px;">
-			            <i class="bi bi-exclamation-circle" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
-			            예약 가능한 객실이 없습니다.
-			        </div>
-                
-				    <th:block th:unless="${#lists.isEmpty(roomList)}" th:each="room : ${roomList}">
-				        <label class="room-card" th:for="'room_' + ${room.ROOM_TYPE_ID}">
-				            <input type="radio" name="room_type_id" th:id="'room_' + ${room.ROOM_TYPE_ID}" 
-				                   th:value="${room.ROOM_TYPE_ID}" th:data-price="${room.BASE_PRICE}"
+                <div class="room-selection-list">
+
+                    <div th:if="${#lists.isEmpty(roomList)}" class="empty-room-box">
+                        <i class="bi bi-exclamation-circle" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                        예약 가능한 객실이 없습니다.
+                    </div>
+
+                    <th:block th:unless="${#lists.isEmpty(roomList)}" th:each="room : ${roomList}">
+                        <label class="room-card" th:for="'room_' + ${room.ROOM_TYPE_ID}">
+                            <input type="radio"
+                                   name="room_type_id"
+                                   th:id="'room_' + ${room.ROOM_TYPE_ID}"
+                                   th:value="${room.ROOM_TYPE_ID}"
+                                   th:data-price="${room.BASE_PRICE}"
                                    th:data-name="${room.ROOM_NAME}"
-				                   onchange="updatePrice(this)" required>
-				            <div class="room-info">
-				                <strong style="font-size: 1.1rem;" th:text="${room.ROOM_NAME}">객실명</strong>
-				                <div style="color: #888; font-size: 0.85rem; margin-top: 5px;">
-				                    <i class="bi bi-door-open mr-1"></i> <span th:text="${room.ROOM_GRADE}"></span> / 
-				                    <i class="bi bi-hypnotize mr-1"></i> <span th:text="${room.BED_TYPE}"></span>
-				                </div>
-				            </div>
-				            <div style="margin-left: auto; text-align: right;">
-				                <span style="font-weight: 700; color: #1a1a1a; font-size: 1.2rem;" 
-				                      th:text="|${#numbers.formatInteger(room.BASE_PRICE, 0, 'COMMA')}원 / 1박|"></span>
-				            </div>
-				        </label>
-				    </th:block>
-				</div>
+                                   onchange="updatePrice(this)"
+                                   required>
+
+                            <div class="room-info">
+                                <strong style="font-size: 1.1rem;" th:text="${room.ROOM_NAME}">객실명</strong>
+                                <div style="color: #888; font-size: 0.85rem; margin-top: 5px;">
+                                    <i class="bi bi-door-open mr-1"></i> <span th:text="${room.ROOM_GRADE}"></span> /
+                                    <i class="bi bi-hypnotize mr-1"></i> <span th:text="${room.BED_TYPE}"></span>
+                                </div>
+                            </div>
+
+                            <div style="margin-left: auto; text-align: right;">
+                                <span style="font-weight: 700; color: #1a1a1a; font-size: 1.2rem;"
+                                      th:text="|${#numbers.formatInteger(room.BASE_PRICE, 0, 'COMMA')}원 / 1박|"></span>
+                            </div>
+                        </label>
+                    </th:block>
+                </div>
             </div>
 
             <div class="section">
@@ -120,11 +144,11 @@
                         </strong>
                         <div style="color: #666; line-height: 1.6;" th:utext="${#strings.replace(promo.benefits, '\n', '<br/>')}"></div>
                     </div>
-                    
+
                     <div class="total-price-area">
                         <div id="calcDetail" style="display:none; margin-bottom: 15px; font-size: 1.1rem; color: #666;">
-                            <span id="txtNights" style="font-weight:bold; color:#1a1a1a;">0</span>박 총 요금 
-                            <span id="txtBase" style="text-decoration: line-through; color:#999;">0</span>원 
+                            <span id="txtNights" style="font-weight:bold; color:#1a1a1a;">0</span>박 총 요금
+                            <span id="txtBase" style="text-decoration: line-through; color:#999;">0</span>원
                             <i class="bi bi-arrow-right mx-2"></i>
                             프로모션 할인 <span id="txtDisc" style="color:#e74c3c; font-weight:bold;">0</span>원
                         </div>
@@ -142,80 +166,65 @@
     </div>
 </th:block>
 
-<script th:inline="javascript">
-    const dRate = /*[[${promo.discount_rate}]]*/ 0;   
-    const dAmount = /*[[${promo.discount_amount}]]*/ 0;
-    let calendarData = [];
+<th:block th:fragment="script">
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+    <script th:inline="javascript">
+        const dRate = [[${promo.discount_rate}]] || 0;
+        const dAmount = [[${promo.discount_amount}]] || 0;
+        let calendarData = [];
 
-    // 페이지 로드 시 실행되는 초기화 로직
-    document.addEventListener("DOMContentLoaded", function() {
-        const checkInInput = document.getElementById('checkIn');
-        const checkOutInput = document.getElementById('checkOut');
+        function handleCheckInChange() {
+            const checkInInput = document.getElementById('checkIn');
+            const checkOutInput = document.getElementById('checkOut');
 
-        // 1. 오늘 날짜 구하기 (KST 기준 YYYY-MM-DD)
-        const today = new Date().toISOString().split('T')[0];
-        
-        // 2. 서버에서 넘겨준 프로모션 시작일
-        const promoStart = /*[[${promo.start_date}]]*/ '';
+            const checkInVal = checkInInput.value;
+            if (checkInVal) {
+                const nextDay = new Date(checkInVal);
+                nextDay.setDate(nextDay.getDate() + 1);
+                const minCheckOut = nextDay.toISOString().split('T')[0];
 
-        // 3. '오늘'과 '프로모션 시작일' 중 더 늦은 날짜를 최종 시작일로 설정
-        // 오늘이 프로모션 시작 전이면 프로모션 시작일부터 선택 가능, 이미 시작했으면 오늘부터 선택 가능
-        const finalMinDate = (today > promoStart) ? today : promoStart;
+                checkOutInput.min = minCheckOut;
 
-        // 4. input 태그의 min 속성 업데이트
-        checkInInput.min = finalMinDate;
-        checkOutInput.min = finalMinDate;
-        
-        console.log("선택 가능한 최소 날짜:", finalMinDate);
-    });
+                if (checkOutInput.value && checkOutInput.value <= checkInVal) {
+                    checkOutInput.value = minCheckOut;
+                }
+            }
 
-    // 체크인 날짜 변경 시 체크아웃 최소 날짜를 동적으로 변경하는 함수
-    function handleCheckInChange() {
-        const checkInVal = document.getElementById('checkIn').value;
-        const checkOutInput = document.getElementById('checkOut');
+            recalculatePrice();
+        }
 
-        if (checkInVal) {
-            // 체크아웃은 최소 체크인 다음날이어야 함
-            const nextDay = new Date(checkInVal);
-            nextDay.setDate(nextDay.getDate() + 1);
-            const minCheckOut = nextDay.toISOString().split('T')[0];
-            
-            checkOutInput.min = minCheckOut;
+        async function recalculatePrice() {
+            const checkInVal = document.getElementById('checkIn').value;
+            const checkOutVal = document.getElementById('checkOut').value;
+            const selectedRadio = document.querySelector('input[name="room_type_id"]:checked');
 
-            // 만약 현재 선택된 체크아웃이 변경된 최소 날짜보다 빠르면 초기화
-            if (checkOutInput.value && checkOutInput.value <= checkInVal) {
-                checkOutInput.value = minCheckOut;
+            if (!checkInVal || !checkOutVal) return;
+
+            if (checkInVal >= checkOutVal) {
+                alert("체크아웃 날짜는 체크인 이후여야 합니다.");
+                document.getElementById('checkOut').value = "";
+                document.getElementById('calcDetail').style.display = 'none';
+                return;
+            }
+
+            if (!selectedRadio) return;
+
+            const roomId = selectedRadio.value;
+
+            try {
+                const response = await fetch(`/room/calendar?room_id=${roomId}`);
+
+                if (!response.ok) {
+                    throw new Error(`달력 가격 조회 실패: ${response.status}`);
+                }
+
+                calendarData = await response.json();
+                updateFinalDisplay(checkInVal, checkOutVal);
+            } catch (error) {
+                console.error("가격 정보를 가져오는데 실패했습니다.", error);
+                document.getElementById('calcDetail').style.display = 'none';
             }
         }
-        recalculatePrice();
-    }
-
-    async function recalculatePrice() {
-        const checkInVal = document.getElementById('checkIn').value;
-        const checkOutVal = document.getElementById('checkOut').value;
-        const selectedRadio = document.querySelector('input[name="room_type_id"]:checked');
-
-        // 둘 중 하나라도 입력 안되면 계산 중단
-        if (!checkInVal || !checkOutVal) return;
-        
-        // 체크아웃이 체크인보다 빠르면 알림 후 중단
-        if (checkInVal >= checkOutVal) {
-            alert("체크아웃 날짜는 체크인 이후여야 합니다.");
-            document.getElementById('checkOut').value = "";
-            return;
-        }
-
-        if (!selectedRadio) return;
-
-        const roomId = selectedRadio.value;
-        try {
-            const response = await fetch(`/final_hotel/room/calendar?room_id=${roomId}`);
-            calendarData = await response.json();
-            updateFinalDisplay(checkInVal, checkOutVal);
-        } catch (error) {
-            console.error("가격 정보를 가져오는데 실패했습니다.", error);
-        }
-    }
 
         function updateFinalDisplay(checkIn, checkOut) {
             const inDate = new Date(checkIn);
@@ -240,17 +249,17 @@
 
             if (foundDays < nights) {
                 const radio = document.querySelector('input[name="room_type_id"]:checked');
-                totalBase = parseInt(radio.dataset.price) * nights;
+                totalBase = parseInt(radio.dataset.price, 10) * nights;
             }
 
-            let disc = (dRate > 0) ? Math.floor(totalBase * (dRate / 100)) : dAmount;
+            const disc = (dRate > 0) ? Math.floor(totalBase * (dRate / 100)) : dAmount;
             const final = totalBase - disc;
 
             document.getElementById('calcDetail').style.display = 'block';
             document.getElementById('txtNights').innerText = nights;
-            document.getElementById('txtBase').innerText = totalBase.toLocaleString(); 
-            document.getElementById('txtDisc').innerText = disc.toLocaleString();      
-            document.getElementById('txtFinal').innerText = final.toLocaleString();    
+            document.getElementById('txtBase').innerText = totalBase.toLocaleString();
+            document.getElementById('txtDisc').innerText = disc.toLocaleString();
+            document.getElementById('txtFinal').innerText = final.toLocaleString();
 
             document.getElementById('inputFinalPrice').value = final;
             document.getElementById('inputDiscPrice').value = disc;
@@ -264,28 +273,33 @@
 
         function requestPay() {
             const finalPrice = document.getElementById('inputFinalPrice').value;
-            if(!finalPrice || finalPrice == 0) {
+
+            if (!finalPrice || Number(finalPrice) === 0) {
                 alert("예약 정보를 선택해 주세요.");
                 return;
             }
 
             const selectedRadio = document.querySelector('input[name="room_type_id"]:checked');
+            if (!selectedRadio) {
+                alert("객실을 선택해 주세요.");
+                return;
+            }
 
-            IMP.init("imp76388561"); // 실제 연동된 가맹점 식별코드를 입력하세요
+            IMP.init("imp76388561");
             IMP.request_pay({
                 pg: "html5_inicis",
                 pay_method: "card",
                 merchant_uid: "hotel_" + new Date().getTime(),
-                name: "프로모션: " + /*[[${promo.title}]]*/ "프로모션 상품",
-                amount: 100, // 테스트 결제금액
-                buyer_name: /*[[${memberName}]]*/ "구매자명",
-                buyer_tel: /*[[${memberMobile}]]*/ "010-0000-0000"
+                name: "프로모션: " + [[${promo.title}]],
+                amount: 100,
+                buyer_name: [[${memberName}]],
+                buyer_tel: [[${memberMobile}]]
             }, function (rsp) {
                 if (rsp.success) {
                     const token = document.querySelector("meta[name='_csrf']").content;
                     const header = document.querySelector("meta[name='_csrf_header']").content;
-                    
-                    fetch("/final_hotel/payment/verify", {
+
+                    fetch("/payment/verify", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -294,18 +308,17 @@
                         body: JSON.stringify({
                             imp_uid: rsp.imp_uid,
                             merchant_uid: rsp.merchant_uid,
-                            member_no: /*[[${memberNo}]]*/ 0,
+                            member_no: [[${memberNo}]],
                             room_type_id: selectedRadio.value,
                             check_in: document.getElementById('checkIn').value,
                             check_out: document.getElementById('checkOut').value,
                             guest_count: document.getElementById("guestCount").value,
-                            total_price: finalPrice,
+                            total_price: String(finalPrice),
                             hotel_name: "CIEL HOTEL",
                             room_name: selectedRadio.dataset.name
                         })
                     })
                     .then(async res => {
-
                         const text = await res.text();
 
                         console.log("==== /payment/verify status ====", res.status);
@@ -317,7 +330,7 @@
                         }
 
                         alert("예약이 완료되었습니다.");
-                        location.href = "/final_hotel/reservation/complete?code=" + encodeURIComponent(text);
+                        location.href = "/reservation/complete?code=" + encodeURIComponent(text);
                     })
                     .catch(err => {
                         console.error("==== /payment/verify fetch 오류 ====", err);
@@ -328,6 +341,37 @@
                 }
             });
         }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const checkInInput = document.getElementById('checkIn');
+            const checkOutInput = document.getElementById('checkOut');
+
+            if (checkInInput) {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                const todayStr = `${yyyy}-${mm}-${dd}`;
+
+                if (!checkInInput.value) {
+                    checkInInput.value = todayStr;
+                }
+
+                handleCheckInChange();
+            }
+
+            if (checkOutInput && !checkOutInput.value && checkInInput.value) {
+                const nextDay = new Date(checkInInput.value);
+                nextDay.setDate(nextDay.getDate() + 1);
+                checkOutInput.value = nextDay.toISOString().split('T')[0];
+            }
+
+            const firstRoom = document.querySelector('input[name="room_type_id"]');
+            if (firstRoom) {
+                firstRoom.checked = true;
+                updatePrice(firstRoom);
+            }
+        });
     </script>
 </th:block>
 

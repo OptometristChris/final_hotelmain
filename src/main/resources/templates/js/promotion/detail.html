@@ -99,7 +99,10 @@
     
         <div class="main-summary">
             <div class="summary-img">
-                <img th:src="@{'/images/js/' + ${promo.image_url}}" th:alt="${promo.title}">
+                <img th:src="${@imagePathUtil.promo(promo.image_url)}"
+                     th:attr="data-alt-src=${@imagePathUtil.promoAlt(promo.image_url)}, data-default-src=@{/images/js/spring_promo.jpg}"
+                     onerror="handleImageFallback(this)"
+                     th:alt="${promo.title}">
             </div>
             <div class="summary-text">
                 <div class="tag-group">

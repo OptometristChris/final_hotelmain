@@ -520,11 +520,11 @@
         </div>
         <a th:href="@{/admin/branch/account/myInfo}">내 정보</a>
         <a th:href="@{/admin/branch/account/profileEdit}">정보 수정</a>
-        <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">로그아웃</a>
+        <a href="javascript:void(0);" onclick="logoutAdmin();">로그아웃</a>
       </div>
     </div>
 
-    <form id="logout-form" th:action="@{/security/logout}" method="post" style="display:none;"></form>
+    
 
     <section class="card hero">
       <div class="heroBody">

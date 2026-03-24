@@ -166,9 +166,10 @@
         <div class="main-slider">
             <div class="slide-item-wrapper" th:each="banner : ${mainBannerList}">
                 <div class="slide-item">
-                    <img th:with="fileName=${banner.image_url}"
-                         th:src="${#strings.contains(fileName, '/file_images/') ? fileName : '/file_images/hotel/' + fileName}"
-                         th:alt="${banner.title}">
+                    <img th:src="${@imagePathUtil.hotel(banner.image_url)}"
+                         th:attr="data-default-src=@{/file_images/hotel/ciel_main.jpg}"
+                         th:alt="${banner.title}"
+                         onerror="handleImageFallback(this)">
                 </div>
                 <div class="room-info-overlay position-absolute" style="bottom: 25%; left: 5%; z-index: 10;">
                     <h6 class="text-white font-weight-bold mb-2" style="opacity:0.9; font-size: 1.5rem; letter-spacing: 2px;" th:text="${banner.title}">HOTEL NAME</h6>
@@ -241,11 +242,11 @@
 	                 th:onclick="|location.href='@{/room/detail(room_id=${room.room_type_id})}'|">
 	                
 	                <div class="room-img-container" style="aspect-ratio: 16 / 9; width: 100%; overflow: hidden; background: #f0f0f0;">
-	                    <img th:with="roomImgSrc=${#strings.startsWith(room.image_url, 'http') or #strings.startsWith(room.image_url, '/')} ? room.image_url : '/file_images/room/' + room.image_url"
-                         th:src="${roomImgSrc}"
+	                    <img th:src="${@imagePathUtil.room(room.image_url)}"
                          class="w-100 h-100"
                          style="object-fit: cover; transition: transform 0.5s ease;"
-                         onerror="this.src='/images/js/room1.jpg'">
+                         th:attr="data-default-src=@{/images/js/room1.jpg}"
+                         onerror="handleImageFallback(this)">
 	                </div>
 	                
 	                <div class="room-info-overlay position-absolute w-100 p-4" 
@@ -291,9 +292,10 @@
                 <div class="p-4 promo-img-wrapper" style="background-color: #a69689; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                     <div th:if="${promoCardList[0].discount_rate > 0}" class="discount-badge" th:text="${#numbers.formatDecimal(promoCardList[0].discount_rate, 0, 0) + '% OFF'}"></div>
                     <div style="width: 85%; height: 70%; overflow: hidden; background: #fff; border-radius: 3px;">
-                        <img th:with="promoImgSrc=${#strings.startsWith(promoCardList[0].image_url, 'http') or #strings.startsWith(promoCardList[0].image_url, '/')} ? promoCardList[0].image_url : '/file_images/js/' + promoCardList[0].image_url"
-                             th:src="${promoImgSrc}" 
-     						class="w-100 h-100" style="object-fit: cover;" onerror="this.src='/images/js/spring_promo.jpg'">
+                        <img th:src="${@imagePathUtil.promo(promoCardList[0].image_url)}"
+                             th:attr="data-alt-src=${@imagePathUtil.promoAlt(promoCardList[0].image_url)}, data-default-src=@{/images/js/spring_promo.jpg}" 
+                             class="w-100 h-100" style="object-fit: cover;"
+                             onerror="handleImageFallback(this)">
                     </div>
                     <div class="text-center text-white mt-4">
                         <p class="font-weight-bold mb-1" style="font-size: 1.3rem;" th:text="${promoCardList[0].title}">프로모션 제목</p>
@@ -305,15 +307,17 @@
             <div class="col-md-4 px-md-4">
                 <div class="mb-5" th:if="${promoCardList.size() > 1}" th:onclick="|location.href='@{/promotion/detail/{id}(id=${promoCardList[1].promotion_id})}'|">
                     <div class="promo-img-wrapper" style="height: 260px;">
-                        <img th:with="promoImgSrc=${#strings.startsWith(promoCardList[1].image_url, 'http') or #strings.startsWith(promoCardList[1].image_url, '/')} ? promoCardList[1].image_url : '/file_images/js/' + promoCardList[1].image_url"
-                             th:src="${promoImgSrc}" onerror="this.src='/images/js/spring_promo.jpg'">
+                        <img th:src="${@imagePathUtil.promo(promoCardList[1].image_url)}"
+                             th:attr="data-alt-src=${@imagePathUtil.promoAlt(promoCardList[1].image_url)}, data-default-src=@{/images/js/spring_promo.jpg}" 
+                             onerror="handleImageFallback(this)">
                     </div>
                     <span class="d-block font-weight-bold mt-3 text-dark" th:text="${promoCardList[1].title}">제목</span>
                 </div>
                 <div class="mb-4" th:if="${promoCardList.size() > 2}" th:onclick="|location.href='@{/promotion/detail/{id}(id=${promoCardList[2].promotion_id})}'|">
                     <div class="promo-img-wrapper" style="height: 380px;">
-                        <img th:with="promoImgSrc=${#strings.startsWith(promoCardList[2].image_url, 'http') or #strings.startsWith(promoCardList[2].image_url, '/')} ? promoCardList[2].image_url : '/file_images/js/' + promoCardList[2].image_url"
-                             th:src="${promoImgSrc}" onerror="this.src='/images/js/spring_promo.jpg'">
+                        <img th:src="${@imagePathUtil.promo(promoCardList[2].image_url)}"
+                             th:attr="data-alt-src=${@imagePathUtil.promoAlt(promoCardList[2].image_url)}, data-default-src=@{/images/js/spring_promo.jpg}" 
+                             onerror="handleImageFallback(this)">
                     </div>
                     <span class="d-block font-weight-bold mt-3 text-dark" th:text="${promoCardList[2].title}">제목</span>
                 </div>
@@ -322,15 +326,17 @@
             <div class="col-md-4">
                 <div class="mb-5" th:if="${promoCardList.size() > 3}" th:onclick="|location.href='@{/promotion/detail/{id}(id=${promoCardList[3].promotion_id})}'|">
                     <div class="promo-img-wrapper" style="height: 340px;">
-                        <img th:with="promoImgSrc=${#strings.startsWith(promoCardList[3].image_url, 'http') or #strings.startsWith(promoCardList[3].image_url, '/')} ? promoCardList[3].image_url : '/file_images/js/' + promoCardList[3].image_url"
-                             th:src="${promoImgSrc}" onerror="this.src='/images/js/spring_promo.jpg'">
+                        <img th:src="${@imagePathUtil.promo(promoCardList[3].image_url)}"
+                             th:attr="data-alt-src=${@imagePathUtil.promoAlt(promoCardList[3].image_url)}, data-default-src=@{/images/js/spring_promo.jpg}" 
+                             onerror="handleImageFallback(this)">
                     </div>
                     <span class="d-block font-weight-bold mt-3 text-dark" th:text="${promoCardList[3].title}">제목</span>
                 </div>
                 <div class="mb-4" th:if="${promoCardList.size() > 4}" th:onclick="|location.href='@{/promotion/detail/{id}(id=${promoCardList[4].promotion_id})}'|">
                     <div class="promo-img-wrapper" style="height: 220px;">
-                        <img th:with="promoImgSrc=${#strings.startsWith(promoCardList[4].image_url, 'http') or #strings.startsWith(promoCardList[4].image_url, '/')} ? promoCardList[4].image_url : '/file_images/js/' + promoCardList[4].image_url"
-                             th:src="${promoImgSrc}" onerror="this.src='/images/js/spring_promo.jpg'">
+                        <img th:src="${@imagePathUtil.promo(promoCardList[4].image_url)}"
+                             th:attr="data-alt-src=${@imagePathUtil.promoAlt(promoCardList[4].image_url)}, data-default-src=@{/images/js/spring_promo.jpg}" 
+                             onerror="handleImageFallback(this)">
                     </div>
                     <span class="d-block font-weight-bold mt-3 text-dark" th:text="${promoCardList[4].title}">제목</span>
                 </div>

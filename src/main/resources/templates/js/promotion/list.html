@@ -105,7 +105,10 @@
                         <span th:text="${#numbers.formatDecimal(promo.discount_rate, 0, 0)}">0</span>% OFF
                     </div>
                     
-                    <img th:src="@{'/images/js/' + ${promo.image_url}}" alt="프로모션">
+                    <img th:src="${@imagePathUtil.promo(promo.image_url)}"
+                         th:attr="data-alt-src=${@imagePathUtil.promoAlt(promo.image_url)}, data-default-src=@{/images/js/spring_promo.jpg}"
+                         onerror="handleImageFallback(this)"
+                         alt="프로모션">
                 </div>
                 
                 <div class="promo-info">
