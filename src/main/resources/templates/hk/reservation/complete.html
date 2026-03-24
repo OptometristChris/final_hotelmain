@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>예약 완료</title>
@@ -96,69 +96,58 @@
 <body>
 
 <div class="container">
-	
-    <h2> 예약이 완료되었습니다</h2>
+
+    <h2>예약이 완료되었습니다</h2>
 
     <div class="reservation-code">
         예약 번호 :
-        <span th:text="${reservation['RESERVATION_CODE']}"></span>
-    </div>
-
-<!--     <div class="info-row">
-        <div class="label">숙소명</div>
-        <div class="value" th:text="${reservation['HOTEL_NAME']}"></div>
+        <span th:text="${reservation != null ? reservation['RESERVATION_CODE'] : ''}"></span>
     </div>
 
     <div class="info-row">
-        <div class="label">객실명</div>
-        <div class="value" th:text="${reservation['ROOM_NAME']}"></div>
+        <div class="label">예약자</div>
+        <div class="value" th:text="${reservation != null ? reservation['NAME'] : '-'}"></div>
     </div>
- -->
- 
- 	<div class="info-row">
-	    <div class="label">예약자</div>
-	    <div class="value"
-	         th:text="${reservation['NAME']}"></div>
-	</div>
-	
+
     <div class="info-row">
         <div class="label">체크인</div>
         <div class="value"
-             th:text="${#dates.format(reservation['CHECKIN_DATE'], 'yyyy-MM-dd')}">
+             th:text="${reservation != null and reservation['CHECKIN_DATE'] != null ? #dates.format(reservation['CHECKIN_DATE'], 'yyyy-MM-dd') : '-'}">
         </div>
     </div>
 
     <div class="info-row">
         <div class="label">체크아웃</div>
         <div class="value"
-             th:text="${#dates.format(reservation['CHECKOUT_DATE'], 'yyyy-MM-dd')}">
+             th:text="${reservation != null and reservation['CHECKOUT_DATE'] != null ? #dates.format(reservation['CHECKOUT_DATE'], 'yyyy-MM-dd') : '-'}">
         </div>
     </div>
 
     <div class="info-row">
         <div class="label">인원</div>
-        <div class="value" th:text="${reservation['GUEST_COUNT']} + '명'"></div>
+        <div class="value"
+             th:text="${reservation != null and reservation['GUEST_COUNT'] != null ? reservation['GUEST_COUNT'] + '명' : '-'}"></div>
     </div>
 
     <div class="info-row">
         <div class="label">총 결제 금액</div>
         <div class="price"
-             th:text="${#numbers.formatInteger(reservation['TOTAL_PRICE'], 3, 'COMMA')} + '원'">
+             th:text="${reservation != null and reservation['TOTAL_PRICE'] != null ? #numbers.formatInteger(reservation['TOTAL_PRICE'], 3, 'COMMA') + '원' : '-'}">
         </div>
     </div>
 
-	<!-- 수정필요함 -->
     <div class="btn-group">
-    	<a th:href="@{/shuttle/reserve(reservationId=${reservation['RESERVATION_ID']})}"
-		   class="btn btn-primary">
-		    셔틀 예약하기
-		</a>
-    
+        <a th:if="${reservation != null and reservation['RESERVATION_ID'] != null}"
+           th:href="@{/shuttle/reserve(reservationId=${reservation['RESERVATION_ID']})}"
+           class="btn btn-primary">
+            셔틀 예약하기
+        </a>
+
         <a sec:authorize="isAuthenticated()"
-		   th:href="@{/security/member/mypage}"
-		   class="btn btn-primary">
-		    마이페이지 이동
-		</a>
+           th:href="@{/security/member/mypage}"
+           class="btn btn-primary">
+            마이페이지 이동
+        </a>
 
         <a th:href="@{/}" class="btn btn-outline">
             메인으로 이동

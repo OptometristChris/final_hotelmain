@@ -2,10 +2,12 @@ package com.spring.app.hk.reservation.controller;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +18,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.app.common.AES256;
 import com.spring.app.hk.reservation.service.ReservationService;
+import com.spring.app.jh.security.auth.domain.JwtPrincipalDTO;
 import com.spring.app.jh.security.domain.CustomUserDetails;
 import com.spring.app.jh.security.domain.Session_GuestDTO;
+import com.spring.app.jh.security.domain.Session_MemberDTO;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -27,294 +31,292 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReservationController {
 
-	private final ReservationService reservationService;
-	private final AES256 aes256; // 추가
+    private final ReservationService reservationService;
+    private final AES256 aes256;
 
-	// 예약 정보 입력 페이지 (객실 정보 조회, 숙박일 계산, 총 객실 기본요금 계산)
-	@GetMapping("/form")
-	public String reservationForm(@RequestParam("room_type_id") int room_type_id,
-			@RequestParam("check_in") String check_in,
-			@RequestParam("check_out") String check_out,
-			@RequestParam("room_price") int room_price,
-			@RequestParam(value = "currency", required = false) String currency,
-			@RequestParam(value = "tax", required = false) Boolean tax,
-			Authentication auth,
-			HttpSession session,
-			Model model) {
+    @GetMapping("/form")
+    public String reservationForm(@RequestParam("room_type_id") int room_type_id,
+                                  @RequestParam("check_in") String check_in,
+                                  @RequestParam("check_out") String check_out,
+                                  @RequestParam("room_price") int room_price,
+                                  @RequestParam(value = "currency", required = false) String currency,
+                                  @RequestParam(value = "tax", required = false) Boolean tax,
+                                  Authentication auth,
+                                  HttpSession session,
+                                  Model model) {
 
-		// 객실 기본 정보 조회 (DAO → ROOM + HOTEL JOIN)
-		Map<String, Object> roomInfo = reservationService.getRoomInfo(room_type_id);
+        Map<String, Object> roomInfo = reservationService.getRoomInfo(room_type_id);
 
-		// ===============================
-		// 로그인 사용자 정보 가져오기
-		// 회원 로그인 / 비회원 로그인 모두 처리
-		// ===============================
-		String name = null;
-		String mobile = null;
-		String email = null;
-		Integer memberNo = null;
+        Map<String, Object> loginInfo = resolveReservationLoginInfo(auth, session);
 
-		// 1️⃣ 회원 로그인 (Spring Security)
-		if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
+        String name = (String) loginInfo.get("name");
+        String mobile = (String) loginInfo.get("mobile");
+        String email = (String) loginInfo.get("email");
+        Integer memberNo = (Integer) loginInfo.get("memberNo");
 
-			CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        if (memberNo == null) {
+            model.addAttribute("message", "로그인 또는 비회원 로그인이 필요합니다.");
+            model.addAttribute("loc", "/security/login");
+            return "msg";
+        }
 
-			name = userDetails.getMemberDto().getName();
-			mobile = userDetails.getMemberDto().getMobile();
-			email = userDetails.getMemberDto().getEmail();
-			memberNo = userDetails.getMemberDto().getMemberNo();
-		}
-		
-		// ⭐ 소셜 로그인 추가 (네이버 / 카카오)
-		else if (auth != null && auth.getPrincipal() instanceof org.springframework.security.oauth2.core.user.OAuth2User oauthUser) {
+        LocalDate inDate = LocalDate.parse(check_in.trim());
+        LocalDate outDate = LocalDate.parse(check_out.trim());
+        long nights = ChronoUnit.DAYS.between(inDate, outDate);
 
-		    System.out.println("oauth 전체 = " + oauthUser.getAttributes());
+        int basePrice = ((Number) roomInfo.get("BASE_PRICE")).intValue();
+        int maxCapacity = ((Number) roomInfo.get("MAX_CAPACITY")).intValue();
+        int totalRoomPrice = basePrice * (int) nights;
 
-		    String emailFromOauth = null;
+        model.addAttribute("memberName", name);
+        model.addAttribute("memberMobile", mobile);
+        model.addAttribute("memberEmail", email);
+        model.addAttribute("memberNo", memberNo);
 
-		    // 네이버
-		    Map<String, Object> response = (Map<String, Object>) oauthUser.getAttributes().get("response");
-		    if (response != null) {
-		        emailFromOauth = (String) response.get("email");
-		    }
+        model.addAttribute("room_type_id", room_type_id);
+        model.addAttribute("check_in", check_in);
+        model.addAttribute("check_out", check_out);
+        model.addAttribute("nights", nights);
 
-		    // 카카오
-		    if (emailFromOauth == null) {
-		        Map<String, Object> kakaoAccount = (Map<String, Object>) oauthUser.getAttributes().get("kakao_account");
+        model.addAttribute("hotel_name", roomInfo.get("HOTEL_NAME"));
+        model.addAttribute("room_name", roomInfo.get("ROOM_NAME"));
+        model.addAttribute("max_capacity", maxCapacity);
+        model.addAttribute("base_price", totalRoomPrice);
 
-		        if (kakaoAccount != null) {
-		            emailFromOauth = (String) kakaoAccount.get("email");
-		        }
-		    }
+        model.addAttribute("room_price", room_price);
+        model.addAttribute("currency", currency);
+        model.addAttribute("tax", tax);
 
-		    if (emailFromOauth != null) {
+        return "hk/reservation/form";
+    }
 
-		        emailFromOauth = emailFromOauth.trim();
-		        
-		        try {
-		            emailFromOauth = aes256.encrypt(emailFromOauth); // 추가
-		        } catch (Exception e) {
-		            e.printStackTrace();
-		        }
-		        Map<String, Object> member = reservationService.findMemberByEmail(emailFromOauth);
+    @PostMapping("/save")
+    public String saveReservation(@RequestParam Map<String, String> map,
+                                  HttpSession session,
+                                  Model model) {
 
-		        if (member != null) {
-		            name = (String) member.get("NAME");
-		            mobile = (String) member.get("MOBILE");
-		            email = (String) member.get("EMAIL");
-		            memberNo = ((Number) member.get("MEMBER_NO")).intValue();
-		        }
-		    }
-		}
+        System.out.println("결제 성공 UID: " + map.get("payment_imp_uid"));
+        System.out.println("최종 결제 금액: " + map.get("applied_price"));
+        System.out.println("프로모션 ID: " + map.get("promotion_id"));
 
-		// 2️⃣ 비회원 로그인 (세션 guestSession)
-		if (name == null) {
+        String reservationCode = reservationService.saveReservation(map, session);
 
-			Session_GuestDTO guest = (Session_GuestDTO) session.getAttribute("guestSession");
+        return "redirect:/reservation/complete?code=" + reservationCode;
+    }
 
-			if (guest != null) {
-				name = guest.getGuestName();
-				mobile = guest.getGuestPhone();
-				memberNo = guest.getMemberNo();
-			}
-		}
-		
-		// 추가
-		if(memberNo == null){
+    @GetMapping("/complete")
+    public String reservationComplete(@RequestParam("code") String code, Model model) {
 
-		    model.addAttribute("message","로그인 또는 비회원 로그인이 필요합니다.");
-		    model.addAttribute("loc","/security/login");
+        System.out.println("넘어온 code = " + code);
 
-		    return "msg";
-		}
+        Map<String, Object> reservation = reservationService.getReservationByCode(code);
 
-		// 숙박일 계산
-		LocalDate inDate = LocalDate.parse(check_in.trim());
-		LocalDate outDate = LocalDate.parse(check_out.trim());
-		long nights = ChronoUnit.DAYS.between(inDate, outDate);
+        System.out.println("조회 결과 = " + reservation);
 
-		// 기본 객실 요금 계산 (1박 요금 * 숙박일)
-		int basePrice = ((Number) roomInfo.get("BASE_PRICE")).intValue();
-		int maxCapacity = ((Number) roomInfo.get("MAX_CAPACITY")).intValue();
-		int totalRoomPrice = basePrice * (int) nights;
+        if (reservation == null) {
+            model.addAttribute("message", "예약 정보를 찾을 수 없습니다.");
+            model.addAttribute("loc", "/index");
+            return "msg";
+        }
 
-		// ===============================
-		// 모델 데이터 전달
-		// ===============================
-		model.addAttribute("memberName", name);
-		model.addAttribute("memberMobile", mobile);
-		model.addAttribute("memberEmail", email);
-		model.addAttribute("memberNo", memberNo);
+        model.addAttribute("reservation", reservation);
 
-		model.addAttribute("room_type_id", room_type_id);
-		model.addAttribute("check_in", check_in);
-		model.addAttribute("check_out", check_out);
-		model.addAttribute("nights", nights);
+        return "hk/reservation/complete";
+    }
 
-		model.addAttribute("hotel_name", roomInfo.get("HOTEL_NAME"));
-		model.addAttribute("room_name", roomInfo.get("ROOM_NAME"));
-		model.addAttribute("max_capacity", maxCapacity);
-		model.addAttribute("base_price", totalRoomPrice);
+    @GetMapping("/mypage")
+    public String myReservationList(Authentication auth, HttpSession session, Model model) {
 
-		model.addAttribute("room_price", room_price); // 추가 (가격 합)
-		model.addAttribute("currency", currency); // 추가 (환율, 세금)
-		model.addAttribute("tax", tax);
+        Integer memberNo = resolveMemberNoForMemberOnly(auth, session);
 
-		return "hk/reservation/form";
-	}
+        if (memberNo == null) {
+            return "redirect:/security/login";
+        }
 
-	// 예약 저장용
-	@PostMapping("/save")
-	public String saveReservation(@RequestParam Map<String, String> map,
-								  HttpSession session,
-								  Model model) {
+        List<Map<String, Object>> reservationList = reservationService.selectMyReservationList(memberNo);
+        model.addAttribute("reservationList", reservationList);
 
-		// 1. 넘어온 결제 정보 확인 (디버깅용)
-		System.out.println("결제 성공 UID: " + map.get("payment_imp_uid"));
-		System.out.println("최종 결제 금액: " + map.get("applied_price"));
-		System.out.println("프로모션 ID: " + map.get("promotion_id"));
+        return "hk/reservation/reservationList";
+    }
 
-		// 2. 서비스 단에서 예약 정보 저장
-		String reservationCode = reservationService.saveReservation(map, session);
+    @PostMapping("/cancel")
+    @ResponseBody
+    public String cancelReservation(@RequestParam("reservation_id") Long reservationId) {
 
-		// 3. 성공 시 완료 페이지로 이동
-		return "redirect:/reservation/complete?code=" + reservationCode;
-	}
+        int n = reservationService.cancelReservation(reservationId);
 
-	// 예약 완료 페이지
-	@GetMapping("/complete")
-	public String reservationComplete(@RequestParam("code") String code, Model model) {
+        if (n == 1) {
+            return "success";
+        }
 
-		System.out.println("넘어온 code = " + code);
+        return "deadline";
+    }
 
-		Map<String, Object> reservation = reservationService.getReservationByCode(code);
+    @GetMapping("/guest")
+    public String guestReservationSearchPage() {
+        return "hk/reservation/guestSearch";
+    }
 
-		System.out.println("조회 결과 = " + reservation);
+    @PostMapping("/guest")
+    public String guestReservationSearch(@RequestParam("name") String name,
+                                         @RequestParam("phone") String phone,
+                                         Model model) {
 
-		model.addAttribute("reservation", reservation);
+        List<Map<String, Object>> reservationList = reservationService.findGuestReservation(name, phone);
+        model.addAttribute("reservationList", reservationList);
 
-		return "hk/reservation/complete";
-	}
+        return "hk/reservation/guestReservationList";
+    }
 
-	// =======================================================
-	// 마이페이지 : 로그인 회원의 예약 목록 조회
-	// =======================================================
-	@GetMapping("/mypage")
-	public String myReservationList(Authentication auth, Model model) {
+    @PostMapping("/guestCancel")
+    @ResponseBody
+    public String cancelGuestReservation(@RequestParam("reservation_code") String reservationCode) {
 
-	    Integer memberNo = null;
+        System.out.println("받은 예약코드 = " + reservationCode);
 
-	    // 1️⃣ 일반 로그인
-	    if (auth.getPrincipal() instanceof CustomUserDetails userDetails) {
-	        memberNo = userDetails.getMemberDto().getMemberNo();
-	    }
+        int n = reservationService.cancelGuestReservation(reservationCode);
 
-	    // 2️⃣ 소셜 로그인
-	    else if (auth.getPrincipal() instanceof org.springframework.security.oauth2.core.user.OAuth2User oauthUser) {
+        System.out.println("update 결과 = " + n);
 
-	        String email = null;
+        if (n == 1) {
+            return "success";
+        }
 
-	        Map<String, Object> response = (Map<String, Object>) oauthUser.getAttributes().get("response");
-	        if (response != null) {
-	            email = (String) response.get("email");
-	        }
+        return "deadline";
+    }
 
-	        if (email == null) {
-	            Map<String, Object> kakao = (Map<String, Object>) oauthUser.getAttributes().get("kakao_account");
-	            if (kakao != null) {
-	                email = (String) kakao.get("email");
-	            }
-	        }
+    private Integer resolveMemberNoForMemberOnly(Authentication auth, HttpSession session) {
 
-	        if (email != null) {
-	            try {
-	                email = aes256.encrypt(email.trim());
-	            } catch (Exception e) {
-	                e.printStackTrace();
-	            }
+        Object sessionMemberObj = session.getAttribute("sessionMemberDTO");
+        if (sessionMemberObj instanceof Session_MemberDTO sessionMemberDTO
+                && sessionMemberDTO.getMemberNo() != null) {
+            return sessionMemberDTO.getMemberNo();
+        }
 
-	            Map<String, Object> member = reservationService.findMemberByEmail(email);
+        if (auth == null) {
+            return null;
+        }
 
-	            if (member != null) {
-	                memberNo = ((Number) member.get("MEMBER_NO")).intValue();
-	            }
-	        }
-	    }
+        Object principal = auth.getPrincipal();
 
-	    // ❗ 로그인 안된 경우
-	    if (memberNo == null) {
-	        return "redirect:/security/login";
-	    }
+        if (principal instanceof CustomUserDetails userDetails) {
+            return userDetails.getMemberDto().getMemberNo();
+        }
 
-	    List<Map<String, Object>> reservationList =
-	            reservationService.selectMyReservationList(memberNo);
+        if (principal instanceof JwtPrincipalDTO jwtPrincipal) {
+            if ("MEMBER".equalsIgnoreCase(jwtPrincipal.getPrincipalType())
+                    && jwtPrincipal.getPrincipalNo() != null) {
+                return jwtPrincipal.getPrincipalNo().intValue();
+            }
+            return null;
+        }
 
-	    model.addAttribute("reservationList", reservationList);
+        if (principal instanceof OAuth2User oauthUser) {
+            String emailFromOauth = extractOauthEmail(oauthUser);
 
-	    return "hk/reservation/reservationList";
-	}
+            if (emailFromOauth != null) {
+                try {
+                    String encryptedEmail = aes256.encrypt(emailFromOauth.trim());
+                    Map<String, Object> member = reservationService.findMemberByEmail(encryptedEmail);
 
-	// ======================================
-	// 예약 취소
-	// ======================================
-	@PostMapping("/cancel")
-	@ResponseBody
-	public String cancelReservation(@RequestParam("reservation_id") Long reservationId){
+                    if (member != null) {
+                        return ((Number) member.get("MEMBER_NO")).intValue();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
-	    int n = reservationService.cancelReservation(reservationId);
+        return null;
+    }
 
-	    if(n == 1){
-	        return "success";
-	    }
+    private Map<String, Object> resolveReservationLoginInfo(Authentication auth, HttpSession session) {
 
-	    return "deadline";
-	}
-	
-	
-	// ======================================
-	// 비회원 예약 조회 페이지
-	// ======================================
-	@GetMapping("/guest")
-	public String guestReservationSearchPage(){
-	    return "hk/reservation/guestSearch";
-	}
+        Map<String, Object> loginInfo = new HashMap<>();
 
+        String name = null;
+        String mobile = null;
+        String email = null;
+        Integer memberNo = null;
 
-	// ======================================
-	// 비회원 예약 조회 처리
-	// ======================================
-	@PostMapping("/guest")
-	public String guestReservationSearch(
-	        @RequestParam("name") String name,
-	        @RequestParam("phone") String phone,
-	        Model model){
+        Object sessionMemberObj = session.getAttribute("sessionMemberDTO");
+        if (sessionMemberObj instanceof Session_MemberDTO sessionMemberDTO) {
+            name = sessionMemberDTO.getName();
+            memberNo = sessionMemberDTO.getMemberNo();
+        }
 
-	    List<Map<String,Object>> reservationList =
-	            reservationService.findGuestReservation(name, phone);
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails userDetails) {
+            name = userDetails.getMemberDto().getName();
+            mobile = userDetails.getMemberDto().getMobile();
+            email = userDetails.getMemberDto().getEmail();
+            memberNo = userDetails.getMemberDto().getMemberNo();
+        }
+        else if (auth != null && auth.getPrincipal() instanceof JwtPrincipalDTO jwtPrincipal) {
+            if ("MEMBER".equalsIgnoreCase(jwtPrincipal.getPrincipalType())
+                    && jwtPrincipal.getPrincipalNo() != null) {
+                memberNo = jwtPrincipal.getPrincipalNo().intValue();
+                if (jwtPrincipal.getName() != null) {
+                    name = jwtPrincipal.getName();
+                }
+            }
+        }
+        else if (auth != null && auth.getPrincipal() instanceof OAuth2User oauthUser) {
 
-	    model.addAttribute("reservationList", reservationList);
+            String emailFromOauth = extractOauthEmail(oauthUser);
 
-	    return "hk/reservation/guestReservationList";
-	}
-	
-	// ======================================
-	// 비회원 예약 취소
-	// ======================================
-	@PostMapping("/guestCancel")
-	@ResponseBody
-	public String cancelGuestReservation(@RequestParam("reservation_code") String reservationCode){
+            if (emailFromOauth != null) {
+                try {
+                    String encryptedEmail = aes256.encrypt(emailFromOauth.trim());
+                    Map<String, Object> member = reservationService.findMemberByEmail(encryptedEmail);
 
-		  System.out.println("받은 예약코드 = " + reservationCode);
-		
-	    int n = reservationService.cancelGuestReservation(reservationCode);
+                    if (member != null) {
+                        name = (String) member.get("NAME");
+                        mobile = (String) member.get("MOBILE");
+                        email = (String) member.get("EMAIL");
+                        memberNo = ((Number) member.get("MEMBER_NO")).intValue();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
-	    System.out.println("update 결과 = " + n);
-	    
-	    if(n == 1){
-	        return "success";
-	    }
+        if (memberNo == null) {
+            Object guestObj = session.getAttribute("guestSession");
 
-	    return "deadline";
-	}
-	
+            if (guestObj instanceof Session_GuestDTO guest) {
+                name = guest.getGuestName();
+                mobile = guest.getGuestPhone();
+                memberNo = guest.getMemberNo();
+            }
+        }
+
+        loginInfo.put("name", name);
+        loginInfo.put("mobile", mobile);
+        loginInfo.put("email", email);
+        loginInfo.put("memberNo", memberNo);
+
+        return loginInfo;
+    }
+
+    @SuppressWarnings("unchecked")
+    private String extractOauthEmail(OAuth2User oauthUser) {
+
+        String emailFromOauth = null;
+
+        Map<String, Object> response = (Map<String, Object>) oauthUser.getAttributes().get("response");
+        if (response != null) {
+            emailFromOauth = (String) response.get("email");
+        }
+
+        if (emailFromOauth == null) {
+            Map<String, Object> kakaoAccount = (Map<String, Object>) oauthUser.getAttributes().get("kakao_account");
+            if (kakaoAccount != null) {
+                emailFromOauth = (String) kakaoAccount.get("email");
+            }
+        }
+
+        return emailFromOauth;
+    }
 }

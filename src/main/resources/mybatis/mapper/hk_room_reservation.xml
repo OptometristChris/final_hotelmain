@@ -59,7 +59,7 @@
 	</insert>
 	
 	<!-- reservation 테이블에 insert -->
-    <insert id="insertReservation" parameterType="map">
+	<insert id="insertReservation" parameterType="map">
 	    <selectKey keyProperty="reservation_id"
 	               resultType="long"
 	               order="BEFORE">
@@ -86,8 +86,8 @@
 	    )
 	    VALUES (
 	        #{reservation_id},
-	        'R' || TO_CHAR(SYSDATE,'YYYYMMDD') || '-' ||
-	        LPAD(#{reservation_id},4,'0'),
+	        'R' || TO_CHAR(SYSTIMESTAMP AT TIME ZONE 'Asia/Seoul', 'YYYYMMDD') || '-' ||
+	        LPAD(#{reservation_id}, 4, '0'),
 	        #{member_no},
 	        #{room_type_id},
 	        #{payment_id},
@@ -103,7 +103,7 @@
 	        , #{promotion_id}
 	        </if>
 	    )
-	  </insert>
+	</insert>
 	
 	  <!-- 예약 완료 페이지 + 셔틀 이동 -->
 	  <select id="findByReservationCode" parameterType="string" resultType="map">
