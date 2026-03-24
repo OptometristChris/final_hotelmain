@@ -63,7 +63,8 @@
 	    <selectKey keyProperty="reservation_id"
 	               resultType="long"
 	               order="BEFORE">
-	        SELECT SEQ_RESERVATION.NEXTVAL FROM DUAL
+	        SELECT SEQ_RESERVATION.NEXTVAL
+	        FROM DUAL
 	    </selectKey>
 	
 	    INSERT INTO RESERVATION (
@@ -81,12 +82,12 @@
 	        cancel_deadline,
 	        refund_amount
 	        <if test="promotion_id != null and promotion_id != ''">
-	        , fk_promotion_id
+	            , fk_promotion_id
 	        </if>
 	    )
 	    VALUES (
 	        #{reservation_id},
-	        'R' || TO_CHAR(SYSTIMESTAMP AT TIME ZONE 'Asia/Seoul', 'YYYYMMDD') || '-' || LPAD(#{reservation_id},4,'0')
+	        'R' || TO_CHAR(SYSTIMESTAMP AT TIME ZONE 'Asia/Seoul', 'YYYYMMDD') || '-' || LPAD(#{reservation_id}, 4, '0'),
 	        #{member_no},
 	        #{room_type_id},
 	        #{payment_id},
@@ -99,7 +100,7 @@
 	        #{cancel_deadline},
 	        #{refund_amount}
 	        <if test="promotion_id != null and promotion_id != ''">
-	        , #{promotion_id}
+	            , #{promotion_id}
 	        </if>
 	    )
 	</insert>
