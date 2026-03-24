@@ -46,7 +46,7 @@
       .locationHero{padding-top:150px}
   }
 </style>
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=c2014221291f1b63602c92cea5292906&autoload=false"></script>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2014221291f1b63602c92cea5292906"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
   document.addEventListener('DOMContentLoaded', function(){
@@ -56,34 +56,28 @@
           return;
       }
 
-      if (!(window.kakao && window.kakao.maps)) {
-          return;
-      }
+      hotelList.forEach(function(hotel, idx){
+          if (hotel.latitude == null || hotel.longitude == null) return;
 
-      kakao.maps.load(function(){
-          hotelList.forEach(function(hotel, idx){
-              if (hotel.latitude == null || hotel.longitude == null) return;
+          const mapEl = document.getElementById('hotelMap_' + idx);
+          if (!mapEl) return;
 
-              const mapEl = document.getElementById('hotelMap_' + idx);
-              if (!mapEl) return;
+          const position = new kakao.maps.LatLng(hotel.latitude, hotel.longitude);
 
-              const position = new kakao.maps.LatLng(hotel.latitude, hotel.longitude);
-
-              const map = new kakao.maps.Map(mapEl, {
-                  center: position,
-                  level: 4
-              });
-
-              const marker = new kakao.maps.Marker({
-                  position: position
-              });
-              marker.setMap(map);
-
-              const info = new kakao.maps.InfoWindow({
-                  content: `<div style="padding:8px 12px;font-size:13px;font-weight:600;">${hotel.hotelName}</div>`
-              });
-              info.open(map, marker);
+          const map = new kakao.maps.Map(mapEl, {
+              center: position,
+              level: 4
           });
+
+          const marker = new kakao.maps.Marker({
+              position: position
+          });
+          marker.setMap(map);
+
+          const info = new kakao.maps.InfoWindow({
+              content: `<div style="padding:8px 12px;font-size:13px;font-weight:600;">${hotel.hotelName}</div>`
+          });
+          info.open(map, marker);
       });
   });
 /*]]>*/
@@ -95,7 +89,6 @@
     <div class="locationWrap">
       <div class="eyebrow">HOTEL LOCATION</div>
       <h1>호텔 위치 안내</h1>
-      <p>등록된 호텔의 주소와 대표 위치를 한 번에 확인할 수 있도록 구성한 페이지입니다. 본문에서는 승인된 호텔만 노출되고, 각 호텔마다 지도와 기본 정보를 함께 보여줍니다.</p>
     </div>
   </div>
 
@@ -110,15 +103,8 @@
         <div class="hotelGrid">
           <div class="photoBox">
             <img th:if="${hotel.mainImageUrl != null and hotel.mainImageUrl != ''}"
-                 th:with="hotelImgSrc=${#strings.startsWith(hotel.mainImageUrl, 'http') ? hotel.mainImageUrl :
-                                        (#strings.startsWith(hotel.mainImageUrl, '/file_images/') ? hotel.mainImageUrl :
-                                         (#strings.startsWith(hotel.mainImageUrl, 'file_images/') ? '/' + hotel.mainImageUrl :
-                                          (#strings.startsWith(hotel.mainImageUrl, '/hotel/') ? '/file_images' + hotel.mainImageUrl :
-                                           (#strings.startsWith(hotel.mainImageUrl, 'hotel/') ? '/file_images/' + hotel.mainImageUrl :
-                                            (#strings.startsWith(hotel.mainImageUrl, '/') ? hotel.mainImageUrl : '/file_images/hotel/' + hotel.mainImageUrl)))))}"
-                 th:src="${hotelImgSrc}"
-                 th:alt="${hotel.hotelName}"
-                 onerror="this.onerror=null; this.src='/images/js/cielHotel.png';">
+			     th:src="@{${hotel.mainImageUrl}}"
+			     th:alt="${hotel.hotelName}">
             <div th:if="${hotel.mainImageUrl == null or hotel.mainImageUrl == ''}" class="photoFallback">
               대표 이미지 없음
             </div>
@@ -127,7 +113,6 @@
           <div class="infoBox">
             <div class="hotelTop">
               <div class="hotelName" th:text="${hotel.hotelName}">CIEL HOTEL</div>
-              <div class="hotelBadge" th:text="|HOTEL #${hotel.hotelId}|">HOTEL #1</div>
             </div>
 
             <div class="hotelDesc" th:text="${hotel.hotelDesc != null and hotel.hotelDesc != '' ? hotel.hotelDesc : '호텔 소개 문구가 아직 등록되지 않았습니다.'}">
@@ -141,8 +126,6 @@
               <div class="metaLabel">연락처</div>
               <div class="metaValue" th:text="${hotel.contact != null and hotel.contact != '' ? hotel.contact : '-'}">02-0000-0000</div>
 
-              <div class="metaLabel">좌표</div>
-              <div class="metaValue" th:text="|${hotel.latitude}, ${hotel.longitude}|">37.5665, 126.9780</div>
             </div>
 
             <div class="mapBox" th:id="|hotelMap_${stat.index}|"></div>
