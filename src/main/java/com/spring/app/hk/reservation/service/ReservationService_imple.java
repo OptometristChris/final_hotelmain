@@ -56,257 +56,270 @@ public class ReservationService_imple implements ReservationService {
 
  	
     // 결제 성공 후 db 저장하기
-	@Override
-	public String saveReservation(Map<String, String> map, HttpSession session) {
+    @Override
+    public String saveReservation(Map<String, String> map, HttpSession session) {
 
-	    System.out.println("========== ReservationService.saveReservation() 시작 ==========");
-	    System.out.println("▶ 전달받은 map : " + map);
+        System.out.println("========== ReservationService.saveReservation() 시작 ==========");
+        System.out.println("▶ 전달받은 map : " + map);
 
-	    Map<String, Object> paraMap = new HashMap<>(map);
+        Map<String, Object> paraMap = new HashMap<>(map);
 
-	    Integer memberNo = null;
-	    String email = null;
-	    String name = null;
-	    String phone = null;
+        Integer memberNo = null;
+        String email = null;
+        String name = null;
 
-	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    System.out.println("▶ authentication : " + authentication);
+        // 1️. Spring Security 로그인 회원
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("▶ authentication : " + authentication);
 
-	    Object sessionMemberObj = session.getAttribute("sessionMemberDTO");
-	    if (sessionMemberObj instanceof com.spring.app.jh.security.domain.Session_MemberDTO sessionMemberDTO) {
-	        memberNo = sessionMemberDTO.getMemberNo();
-	        name = sessionMemberDTO.getName();
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
 
-	        System.out.println("▶ [세션 회원] memberNo : " + memberNo);
-	        System.out.println("▶ [세션 회원] name     : " + name);
-	    }
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-	    if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+            memberNo = userDetails.getMemberDto().getMemberNo();
+            email = userDetails.getMemberDto().getEmail();
+            name = userDetails.getMemberDto().getName();
 
-	        memberNo = userDetails.getMemberDto().getMemberNo();
-	        email = userDetails.getMemberDto().getEmail();
-	        name = userDetails.getMemberDto().getName();
+            System.out.println("▶ [회원 로그인] memberNo : " + memberNo);
+            System.out.println("▶ [회원 로그인] email    : " + email);
+            System.out.println("▶ [회원 로그인] name     : " + name);
+        }
+        
+     // ⭐ 소셜 로그인 처리 추가
+        else if (authentication != null && authentication.getPrincipal() instanceof OAuth2User oauthUser) {
 
-	        String encryptedPhone = userDetails.getMemberDto().getMobile();
-	        if (encryptedPhone != null) {
-	            try {
-	                phone = aes256.decrypt(encryptedPhone);
-	            } catch (Exception e) {
-	                e.printStackTrace();
-	            }
-	        }
+            System.out.println("OAuth 로그인 감지");
 
-	        System.out.println("▶ [회원 로그인] memberNo : " + memberNo);
-	        System.out.println("▶ [회원 로그인] email    : " + email);
-	        System.out.println("▶ [회원 로그인] name     : " + name);
-	    }
-	    else if (authentication != null
-	            && authentication.getPrincipal() instanceof com.spring.app.jh.security.auth.domain.JwtPrincipalDTO jwtPrincipal) {
+            String emailFromOauth = null;
 
-	        if ("MEMBER".equalsIgnoreCase(jwtPrincipal.getPrincipalType())
-	                && jwtPrincipal.getPrincipalNo() != null) {
+            // 네이버
+            Map<String, Object> response = (Map<String, Object>) oauthUser.getAttributes().get("response");
+            if (response != null) {
+                emailFromOauth = (String) response.get("email");
+            }
 
-	            memberNo = jwtPrincipal.getPrincipalNo().intValue();
+            // 카카오
+            if (emailFromOauth == null) {
+                Map<String, Object> kakaoAccount = (Map<String, Object>) oauthUser.getAttributes().get("kakao_account");
+                if (kakaoAccount != null) {
+                    emailFromOauth = (String) kakaoAccount.get("email");
+                }
+            }
 
-	            if (jwtPrincipal.getName() != null) {
-	                name = jwtPrincipal.getName();
-	            }
+            
+            if (emailFromOauth != null) {
 
-	            System.out.println("▶ [JWT 회원] memberNo : " + memberNo);
-	            System.out.println("▶ [JWT 회원] name     : " + name);
-	        }
-	    }
-	    else if (authentication != null && authentication.getPrincipal() instanceof OAuth2User oauthUser) {
+                emailFromOauth = emailFromOauth.trim();
 
-	        System.out.println("OAuth 로그인 감지");
+                Map<String, Object> member = null;
 
-	        String emailFromOauth = extractOauthEmail(oauthUser);
+                try {
+                    // 1️⃣ 암호화해서 조회 시도
+                    String encryptedEmail = aes256.encrypt(emailFromOauth);
+                    member = reservationDAO.findMemberByEmail(encryptedEmail);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-	        if (emailFromOauth != null) {
+                // 2️⃣ 그래도 없으면 → 그냥 생성
+                if (member == null) {
 
-	            emailFromOauth = emailFromOauth.trim();
+                    System.out.println("회원 없음 → 자동 생성");
 
-	            Map<String, Object> member = null;
+                    reservationDAO.insertSocialMember(emailFromOauth); // 평문 저장
 
-	            try {
-	                String encryptedEmail = aes256.encrypt(emailFromOauth);
-	                member = reservationDAO.findMemberByEmail(encryptedEmail);
-	            } catch (Exception e) {
-	                e.printStackTrace();
-	            }
+                    member = reservationDAO.findMemberByEmail(emailFromOauth);
+                }
 
-	            if (member == null) {
-	                System.out.println("회원 없음 → 자동 생성");
-	                reservationDAO.insertSocialMember(emailFromOauth);
-	                member = reservationDAO.findMemberByEmail(emailFromOauth);
-	            }
+                // 3️⃣ 값 세팅
+                if (member != null) {
+                    memberNo = ((Number) member.get("MEMBER_NO")).intValue();
+                    email = (String) member.get("EMAIL");
+                    name = (String) member.get("NAME");
+                }
+            }
+        }
 
-	            if (member != null) {
-	                memberNo = ((Number) member.get("MEMBER_NO")).intValue();
-	                email = (String) member.get("EMAIL");
-	                name = (String) member.get("NAME");
-	            }
-	        }
-	    }
+        // 2️. 비회원 로그인
+        if (memberNo == null) {
 
-	    if (memberNo == null) {
+            Session_GuestDTO guest = (Session_GuestDTO) session.getAttribute("guestSession");
+            System.out.println("▶ guestSession : " + guest);
 
-	        Session_GuestDTO guest = (Session_GuestDTO) session.getAttribute("guestSession");
-	        System.out.println("▶ guestSession : " + guest);
+            if (guest != null) {
+                memberNo = guest.getMemberNo();
+                name = guest.getGuestName();
 
-	        if (guest != null) {
-	            memberNo = guest.getMemberNo();
-	            name = guest.getGuestName();
-	            phone = guest.getGuestPhone();
+                System.out.println("▶ [비회원 로그인] memberNo : " + memberNo);
+                System.out.println("▶ [비회원 로그인] name     : " + name);
+            }
+        }
 
-	            System.out.println("▶ [비회원 로그인] memberNo : " + memberNo);
-	            System.out.println("▶ [비회원 로그인] name     : " + name);
-	        }
-	    }
+        // 로그인 안된 경우 방지
+        if (memberNo == null) {
+            System.out.println("❌ memberNo 가 null 입니다. 로그인/비회원 세션이 없는 상태입니다.");
+            throw new RuntimeException("로그인 또는 비회원 로그인이 필요합니다.");
+        }
 
-	    if (memberNo == null) {
-	        System.out.println("❌ memberNo 가 null 입니다. 로그인/비회원 세션이 없는 상태입니다.");
-	        throw new RuntimeException("로그인 또는 비회원 로그인이 필요합니다.");
-	    }
+        paraMap.put("member_no", memberNo);
+        System.out.println("▶ paraMap.member_no : " + paraMap.get("member_no"));
 
-	    paraMap.put("member_no", memberNo);
-	    System.out.println("▶ paraMap.member_no : " + paraMap.get("member_no"));
+        // 인원수 처리
+        String guestCount = map.getOrDefault("guest_count", "1");
+        paraMap.put("guest_count", guestCount);
+        System.out.println("▶ guest_count : " + guestCount);
 
-	    String guestCount = map.getOrDefault("guest_count", "1");
-	    paraMap.put("guest_count", guestCount);
-	    System.out.println("▶ guest_count : " + guestCount);
+        // imp_uid null 방지
+        if (paraMap.get("imp_uid") == null) {
+            paraMap.put("imp_uid", "");
+        }
+        System.out.println("▶ imp_uid : " + paraMap.get("imp_uid"));
 
-	    if (paraMap.get("imp_uid") == null) {
-	        paraMap.put("imp_uid", "");
-	    }
-	    System.out.println("▶ imp_uid : " + paraMap.get("imp_uid"));
+        // 가격 결정
+        if (map.containsKey("applied_price") && !map.get("applied_price").isEmpty()) {
+            paraMap.put("total_price", map.get("applied_price"));
+        } else {
+            paraMap.put("total_price", map.getOrDefault("room_price", "100"));
+        }
+        System.out.println("▶ total_price : " + paraMap.get("total_price"));
 
-	    if (map.containsKey("total_price") && map.get("total_price") != null && !map.get("total_price").isBlank()) {
-	        paraMap.put("total_price", map.get("total_price"));
-	    }
-	    else if (map.containsKey("applied_price") && map.get("applied_price") != null && !map.get("applied_price").isBlank()) {
-	        paraMap.put("total_price", map.get("applied_price"));
-	    }
-	    else {
-	        paraMap.put("total_price", map.getOrDefault("room_price", "100"));
-	    }
-	    System.out.println("▶ total_price : " + paraMap.get("total_price"));
+        // 날짜 처리
+        System.out.println("▶ room_type_id 원본값 : " + map.get("room_type_id"));
+        System.out.println("▶ check_in   원본값 : " + map.get("check_in"));
+        System.out.println("▶ check_out  원본값 : " + map.get("check_out"));
 
-	    System.out.println("▶ room_type_id 원본값 : " + map.get("room_type_id"));
-	    System.out.println("▶ check_in   원본값 : " + map.get("check_in"));
-	    System.out.println("▶ check_out  원본값 : " + map.get("check_out"));
+        int roomId = Integer.parseInt(map.get("room_type_id"));
+        LocalDate checkIn = LocalDate.parse(map.get("check_in"));
+        LocalDate checkOut = LocalDate.parse(map.get("check_out"));
 
-	    int roomId = Integer.parseInt(map.get("room_type_id"));
-	    LocalDate checkIn = LocalDate.parse(map.get("check_in"));
-	    LocalDate checkOut = LocalDate.parse(map.get("check_out"));
+        System.out.println("▶ roomId   : " + roomId);
+        System.out.println("▶ checkIn  : " + checkIn);
+        System.out.println("▶ checkOut : " + checkOut);
 
-	    System.out.println("▶ roomId   : " + roomId);
-	    System.out.println("▶ checkIn  : " + checkIn);
-	    System.out.println("▶ checkOut : " + checkOut);
+        LocalDateTime cancelDeadline = checkIn.atStartOfDay().minusDays(1);
+        paraMap.put("cancel_deadline", cancelDeadline);
+        paraMap.put("refund_amount", 0);
 
-	    LocalDateTime cancelDeadline = checkIn.atStartOfDay().minusDays(1);
-	    paraMap.put("cancel_deadline", cancelDeadline);
-	    paraMap.put("refund_amount", 0);
+        System.out.println("▶ cancel_deadline : " + cancelDeadline);
+        System.out.println("▶ refund_amount   : " + paraMap.get("refund_amount"));
 
-	    System.out.println("▶ cancel_deadline : " + cancelDeadline);
-	    System.out.println("▶ refund_amount   : " + paraMap.get("refund_amount"));
+        // 재고 차감
+        try {
+            System.out.println("========== 재고 차감 시작 ==========");
+            roomStockService.decreaseStockByDateRange(roomId, checkIn, checkOut);
+            System.out.println("✅ 재고 차감 완료");
+        } catch (Exception e) {
+            System.out.println("❌ 재고 차감 중 예외 발생");
+            e.printStackTrace();
+            throw new RuntimeException("객실 재고 차감 중 오류가 발생했습니다. " + e.getMessage(), e);
+        }
 
-	    try {
-	        System.out.println("========== 재고 차감 시작 ==========");
-	        roomStockService.decreaseStockByDateRange(roomId, checkIn, checkOut);
-	        System.out.println("✅ 재고 차감 완료");
-	    } catch (Exception e) {
-	        System.out.println("❌ 재고 차감 중 예외 발생");
-	        e.printStackTrace();
-	        throw new RuntimeException("객실 재고 차감 중 오류가 발생했습니다. " + e.getMessage(), e);
-	    }
+        // PAYMENT insert
+        try {
+            System.out.println("========== PAYMENT insert 시작 ==========");
+            reservationDAO.insertPayment(paraMap);
+            System.out.println("✅ PAYMENT insert 완료");
+            System.out.println("▶ payment_id(insert 후 paraMap) : " + paraMap.get("payment_id"));
+           
+        } catch (Exception e) {
+            System.out.println("❌ PAYMENT insert 중 예외 발생");
+            e.printStackTrace();
+            throw new RuntimeException("결제 정보 저장 중 오류가 발생했습니다. " + e.getMessage(), e);
+        }
 
-	    try {
-	        System.out.println("========== PAYMENT insert 시작 ==========");
-	        reservationDAO.insertPayment(paraMap);
-	        System.out.println("✅ PAYMENT insert 완료");
-	        System.out.println("▶ payment_id(insert 후 paraMap) : " + paraMap.get("payment_id"));
-	    } catch (Exception e) {
-	        System.out.println("❌ PAYMENT insert 중 예외 발생");
-	        e.printStackTrace();
-	        throw new RuntimeException("결제 정보 저장 중 오류가 발생했습니다. " + e.getMessage(), e);
-	    }
+        // RESERVATION insert
+        try {
+            System.out.println("========== RESERVATION insert 시작 ==========");
+            reservationDAO.insertReservation(paraMap);
+            System.out.println("✅ RESERVATION insert 완료");
+            System.out.println("▶ reservation_id(insert 후 paraMap) : " + paraMap.get("reservation_id"));
+        } catch (Exception e) {
+            System.out.println("❌ RESERVATION insert 중 예외 발생");
+            e.printStackTrace();
+            throw new RuntimeException("예약 정보 저장 중 오류가 발생했습니다. " + e.getMessage(), e);
+        }
 
-	    try {
-	        System.out.println("========== RESERVATION insert 시작 ==========");
-	        reservationDAO.insertReservation(paraMap);
-	        System.out.println("✅ RESERVATION insert 완료");
-	        System.out.println("▶ reservation_id(insert 후 paraMap) : " + paraMap.get("reservation_id"));
-	    } catch (Exception e) {
-	        System.out.println("❌ RESERVATION insert 중 예외 발생");
-	        e.printStackTrace();
-	        throw new RuntimeException("예약 정보 저장 중 오류가 발생했습니다. " + e.getMessage(), e);
-	    }
+        Long reservationId = (Long) paraMap.get("reservation_id");
 
-	    Object reservationIdObj = paraMap.get("reservation_id");
+        if (reservationId == null) {
+            System.out.println("❌ reservation_id 가 null 입니다.");
+            throw new RuntimeException("예약번호 생성에 실패했습니다.");
+        }
 
-	    if (!(reservationIdObj instanceof Number)) {
-	        System.out.println("❌ reservation_id 가 null 입니다.");
-	        throw new RuntimeException("예약번호 생성에 실패했습니다.");
-	    }
+        // 예약 코드 생성
+        String reservationCode = "R"
+                + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                + "-" + String.format("%04d", reservationId);
 
-	    Long reservationId = ((Number) reservationIdObj).longValue();
-	    String reservationCode = buildReservationCode(reservationId);
+        // ======================= SMS 발송 =======================
+        try {
+            System.out.println("========== SMS 발송 시작 ==========");
 
-	    try {
-	        System.out.println("========== SMS 발송 시작 ==========");
+            String phone = null;
 
-	        if (phone == null) {
-	            Session_GuestDTO guest = (Session_GuestDTO) session.getAttribute("guestSession");
-	            if (guest != null) {
-	                phone = guest.getGuestPhone();
-	            }
-	        }
+            // 회원
+            if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
+                CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+                String encryptedPhone = userDetails.getMemberDto().getMobile();
 
-	        if (phone != null) {
-	            phone = phone.replace("-", "");
+                if (encryptedPhone != null) {
+                    phone = aes256.decrypt(encryptedPhone);
+                }
+            }
 
-	            String msg = "[호텔 예약 완료]\n"
-	                       + name + "님\n"
-	                       + "예약번호: " + reservationCode + "\n"
-	                       + map.get("hotel_name") + "\n"
-	                       + map.get("check_in") + " ~ " + map.get("check_out");
+            // 비회원
+            if (phone == null) {
+                Session_GuestDTO guest = (Session_GuestDTO) session.getAttribute("guestSession");
+                if (guest != null) {
+                    phone = guest.getGuestPhone();
+                }
+            }
 
-	            smsService.sendReservationSms(phone, msg);
+            if (phone != null) {
+                phone = phone.replace("-", "");
 
-	            System.out.println("✅ SMS 발송 완료");
-	        }
+                String msg = "[호텔 예약 완료]\n"
+                           + name + "님\n"
+                           + "예약번호: " + reservationCode + "\n"
+                           + map.get("hotel_name") + "\n"
+                           + map.get("check_in") + " ~ " + map.get("check_out");
 
-	    } catch (Exception e) {
-	        System.out.println("❌ SMS 발송 실패");
-	        e.printStackTrace();
-	    }
+                smsService.sendReservationSms(phone, msg);
 
-	    System.out.println("▶ reservationCode : " + reservationCode);
+                System.out.println("✅ SMS 발송 완료");
+            }
 
-	    if (email != null) {
-	        try {
-	            System.out.println("========== 예약 메일 전송 시작 ==========");
-	            reservationMailService.sendReservationMail(
-	                    email,
-	                    name,
-	                    reservationCode,
-	                    map.get("hotel_name"),
-	                    map.get("room_name"),
-	                    map.get("check_in"),
-	                    map.get("check_out"),
-	                    String.valueOf(paraMap.get("total_price"))
-	            );
-	            System.out.println("✅ 예약 메일 전송 완료");
-	        } catch (Exception e) {
-	            System.out.println("❌ 예약 메일 전송 중 예외 발생");
-	            e.printStackTrace();
-	        }
-	    }
+        } catch (Exception e) {
+            System.out.println("❌ SMS 발송 실패");
+            e.printStackTrace();
+        }
+        
+        System.out.println("▶ reservationCode : " + reservationCode);
 
-	    System.out.println("========== ReservationService.saveReservation() 종료 ==========");
-	    return reservationCode;
-	}
+        // 회원일 경우만 이메일 전송
+        if (email != null) {
+            try {
+                System.out.println("========== 예약 메일 전송 시작 ==========");
+                reservationMailService.sendReservationMail(
+                        email,
+                        name,
+                        reservationCode,
+                        map.get("hotel_name"),
+                        map.get("room_name"),
+                        map.get("check_in"),
+                        map.get("check_out"),
+                        String.valueOf(paraMap.get("total_price"))
+                );
+                System.out.println("✅ 예약 메일 전송 완료");
+            } catch (Exception e) {
+                System.out.println("❌ 예약 메일 전송 중 예외 발생");
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("========== ReservationService.saveReservation() 종료 ==========");
+        return reservationCode;
+    }
 
     
     // 예약 완료 페이지
@@ -403,35 +416,6 @@ public class ReservationService_imple implements ReservationService {
 	            e.printStackTrace();
 	        }
 	    }
-	}
-	
-	
-	@SuppressWarnings("unchecked")
-	private String extractOauthEmail(OAuth2User oauthUser) {
-
-	    String emailFromOauth = null;
-
-	    Map<String, Object> response = (Map<String, Object>) oauthUser.getAttributes().get("response");
-	    if (response != null) {
-	        emailFromOauth = (String) response.get("email");
-	    }
-
-	    if (emailFromOauth == null) {
-	        Map<String, Object> kakaoAccount = (Map<String, Object>) oauthUser.getAttributes().get("kakao_account");
-	        if (kakaoAccount != null) {
-	            emailFromOauth = (String) kakaoAccount.get("email");
-	        }
-	    }
-
-	    return emailFromOauth;
-	}
-
-	private String buildReservationCode(Long reservationId) {
-	    return "R"
-	            + java.time.LocalDate.now(java.time.ZoneId.of("Asia/Seoul"))
-	                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"))
-	            + "-"
-	            + String.format("%04d", reservationId);
 	}
 
 
