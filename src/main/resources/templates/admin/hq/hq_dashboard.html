@@ -599,34 +599,34 @@
 <body>
 <div class="container"
      th:with="
-	   a=${session.sessionAdminDTO},
-	   adminType=(${a} != null and ${a.admin_type} != null ? ${a.admin_type} : 'HQ'),
-	   adminName=(${a} != null and ${a.name} != null ? ${a.name} : '총괄관리자 홍길동'),
+	    a=${session.sessionAdminDTO},
+	    adminType=${a != null and a.admin_type != null ? a.admin_type : 'HQ'},
+	    adminName=${a != null and a.name != null ? a.name : '총괄관리자 홍길동'},
 	
-	   occupancyRate=(${kpi_occupancy} != null ? ${kpi_occupancy} : 0),
-	   monthlySales=(${kpi_sales} != null ? ${kpi_sales} : 0),
-	   cancelRate=(${kpi_cancelRate} != null ? ${kpi_cancelRate} : 0),
-	   revpar=(${kpi_revpar} != null ? ${kpi_revpar} : 0),
+	    occupancyRate=${kpi_occupancy != null ? kpi_occupancy : 0},
+	    monthlySales=${kpi_sales != null ? kpi_sales : 0},
+	    cancelRate=${kpi_cancelRate != null ? kpi_cancelRate : 0},
+	    revpar=${kpi_revpar != null ? kpi_revpar : 0},
 	
-	   paidCount=(${monthlySummary} != null and ${monthlySummary.paidCount} != null ? ${monthlySummary.paidCount} : 0),
-	   prevPaidCount=(${monthlySummary} != null and ${monthlySummary.prevPaidCount} != null ? ${monthlySummary.prevPaidCount} : 0),
-	   paidDiffCount=(${monthlySummary} != null and ${monthlySummary.paidDiffCount} != null ? ${monthlySummary.paidDiffCount} : 0),
-	   paidDiffRate=(${monthlySummary} != null and ${monthlySummary.paidDiffRate} != null ? ${monthlySummary.paidDiffRate} : '0'),
+	    paidCount=${monthlySummary != null and monthlySummary.paidCount != null ? monthlySummary.paidCount : 0},
+	    prevPaidCount=${monthlySummary != null and monthlySummary.prevPaidCount != null ? monthlySummary.prevPaidCount : 0},
+	    paidDiffCount=${monthlySummary != null and monthlySummary.paidDiffCount != null ? monthlySummary.paidDiffCount : 0},
+	    paidDiffRate=${monthlySummary != null and monthlySummary.paidDiffRate != null ? monthlySummary.paidDiffRate : '0'},
 	
-	   cancelCount=(${monthlySummary} != null and ${monthlySummary.cancelCount} != null ? ${monthlySummary.cancelCount} : 0),
-	   prevCancelCount=(${monthlySummary} != null and ${monthlySummary.prevCancelCount} != null ? ${monthlySummary.prevCancelCount} : 0),
-	   cancelDiffCount=(${monthlySummary} != null and ${monthlySummary.cancelDiffCount} != null ? ${monthlySummary.cancelDiffCount} : 0),
-	   cancelDiffRate=(${monthlySummary} != null and ${monthlySummary.cancelDiffRate} != null ? ${monthlySummary.cancelDiffRate} : '0'),
+	    cancelCount=${monthlySummary != null and monthlySummary.cancelCount != null ? monthlySummary.cancelCount : 0},
+	    prevCancelCount=${monthlySummary != null and monthlySummary.prevCancelCount != null ? monthlySummary.prevCancelCount : 0},
+	    cancelDiffCount=${monthlySummary != null and monthlySummary.cancelDiffCount != null ? monthlySummary.cancelDiffCount : 0},
+	    cancelDiffRate=${monthlySummary != null and monthlySummary.cancelDiffRate != null ? monthlySummary.cancelDiffRate : '0'},
 	
-	   netCount=(${monthlySummary} != null and ${monthlySummary.netCount} != null ? ${monthlySummary.netCount} : 0),
+	    netCount=${monthlySummary != null and monthlySummary.netCount != null ? monthlySummary.netCount : 0},
 	
-	   qnaCount=(${todoSummary != null and todoSummary.qna != null ? todoSummary.qna : 0}),
-	   reviewCount=(${todoSummary != null and todoSummary.review != null ? todoSummary.review : 0})
-	   
-	   rev=(${hqRevenueSummary} != null ? ${hqRevenueSummary} : null),
-		totalRevenue=(${rev} != null and ${rev.totalRevenue} != null ? ${rev.totalRevenue} : 0),
-		totalCount=(${rev} != null and ${rev.totalCount} != null ? ${rev.totalCount} : 0),
-		summaryOccupancyRate=(${rev} != null and ${rev.occupancyRate} != null ? ${rev.occupancyRate} : 0)
+	    qnaCount=${todoSummary != null and todoSummary.qna != null ? todoSummary.qna : 0},
+	    reviewCount=${todoSummary != null and todoSummary.review != null ? todoSummary.review : 0},
+	
+	    rev=${hqRevenueSummary != null ? hqRevenueSummary : null},
+	    totalRevenue=${rev != null and rev.totalRevenue != null ? rev.totalRevenue : 0},
+	    totalCount=${rev != null and rev.totalCount != null ? rev.totalCount : 0},
+	    summaryOccupancyRate=${rev != null and rev.occupancyRate != null ? rev.occupancyRate : 0}
 	">
 
   <div class="dash-wrap">
