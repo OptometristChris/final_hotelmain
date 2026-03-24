@@ -13,7 +13,7 @@
             h.hotel_desc    AS hotelDesc,
             h.latitude      AS latitude,
             h.longitude     AS longitude,
-            hi.image_url    AS mainImageUrl
+            REPLACE(hi.image_url, '/final_hotel', '') AS mainImageUrl
         FROM tbl_hotel h
         LEFT JOIN hotel_image hi
                ON hi.fk_hotel_id = h.hotel_id
