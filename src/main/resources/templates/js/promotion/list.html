@@ -66,26 +66,21 @@
 <th:block th:fragment="content">
     <div class="container promo-container">
         <div class="promo-title-area">
-		    <h2>프로모션</h2>
-		    <p>
-		        <th:block th:each="hotel : ${hotelList}" th:if="${#strings.equals(hotelId, hotel.HOTEL_ID)}">
-		            <span th:text="${hotel.HOTEL_NAME}" style="color: #d4af37; font-weight: 700;">지점명</span>
-		        </th:block>
+            <h2>프로모션</h2>
+            <p>
+		        <span th:text="${hotelId == 1 ? '호텔 시엘' : '르 시엘'}" 
+		              style="color: #d4af37; font-weight: 700;">지점</span>
 		        의 특별한 제안과 프로모션을 확인해보세요.
 		    </p>
-		</div>
+        </div>
 
         <div class="hotel-tabs">
-		    <th:block th:each="hotel : ${hotelList}">
-		        <a th:href="@{/promotion/list(hotelId=${hotel.HOTEL_ID})}" 
-		           class="tab-link" 
-		           th:classappend="${#strings.equals(hotelId, hotel.HOTEL_ID)} ? 'active'"
-		           th:text="${hotel.HOTEL_NAME}">호텔명</a>
-		    </th:block>
-		</div>
+            <a th:href="@{/promotion/list(hotelId=1)}" class="tab-link" th:classappend="${hotelId == 1} ? 'active'">호텔 시엘</a>
+            <a th:href="@{/promotion/list(hotelId=2)}" class="tab-link" th:classappend="${hotelId == 2} ? 'active'">르 시엘</a>
+        </div>
         
         <div class="admin-action-area" 
-		     th:if="${canWrite}" 
+		     sec:authorize="hasAnyRole('ADMIN_BRANCH', 'ROLE_ADMIN_BRANCH', 'ROLE_ADMIN', 'ADMIN')" 
 		     style="max-width: 1200px; margin: 0 auto 30px; padding: 0 20px; text-align: right;">
 		    
 		    <a th:href="@{/promotion/write(hotelId=${hotelId})}" class="btn-admin-add">
@@ -110,29 +105,38 @@
                         <span th:text="${#numbers.formatDecimal(promo.discount_rate, 0, 0)}">0</span>% OFF
                     </div>
                     
-                    <img th:with="raw=${promo.image_url != null ? promo.image_url : ''},
-                         normalized=${#strings.startsWith(raw, '/final_hotel') ? #strings.substring(raw, 12) : (#strings.startsWith(raw, 'final_hotel/') ? #strings.substring(raw, 11) : raw)},
-                         promoImgSrc=${normalized == '' ? '/images/js/spring_promo.jpg' : (#strings.startsWith(normalized, 'http') or #strings.startsWith(normalized, '/') ? normalized : (#strings.startsWith(normalized, 'file_images/') or #strings.startsWith(normalized, 'images/') ? '/' + normalized : '/file_images/js/' + normalized))}"
-                         th:src="${promoImgSrc}" alt="프로모션">
+                    <img th:with="raw=${promo.image_url},
+                                      fileName=${raw != null ? (raw.contains('/') ? raw.substring(raw.lastIndexOf('/') + 1) : raw) : ''},
+                                      promoImgSrc=${raw != null and raw != '' ?
+                                                    (#strings.startsWith(raw, 'http') ? raw :
+                                                     (#strings.startsWith(raw, '/images/js/') ? raw :
+                                                      (#strings.startsWith(raw, 'images/js/') ? '/' + raw :
+                                                       (#strings.startsWith(raw, '/file_images/js/') ? raw :
+                                                        (#strings.startsWith(raw, 'file_images/js/') ? '/' + raw :
+                                                         (#strings.startsWith(raw, '/js/') ? '/file_images/js/' + fileName :
+                                                          (#strings.startsWith(raw, 'js/') ? '/file_images/js/' + fileName :
+                                                           (#strings.startsWith(raw, '/') ? raw : '/file_images/js/' + fileName)))))))) :
+                                                    '/images/js/spring_promo.jpg'},
+                                      promoFallbackSrc=${fileName != '' ? '/images/js/' + fileName : '/images/js/spring_promo.jpg'}"
+                         th:src="${promoImgSrc}"
+                         th:attr="onerror=|this.onerror=null; this.src='${promoFallbackSrc}';|"
+                         alt="프로모션">
                 </div>
                 
                 <div class="promo-info">
-				    <span class="p-hotel">
-				        <th:block th:each="h : ${hotelList}" th:if="${#strings.equals(promo.fk_hotel_id, h.HOTEL_ID)}">
-				            <span th:text="${h.HOTEL_NAME}">지점명</span>
-				        </th:block>
-				        
-				        <small th:if="${promo.is_active == 0}" style="color:#e74c3c; font-weight:700;">[비활성]</small>
-				    </span>
-				    
-				    <h3 class="p-title" th:text="${promo.title}">프로모션 제목</h3>
-				    
-				    <p class="p-date">
-				        [[${promo.start_date}]] - [[${promo.end_date}]]
-				    </p>
-				    
-				    <a th:href="@{/promotion/detail/{id}(id=${promo.promotion_id})}" class="btn-view">VIEW MORE</a>
-				</div>
+                    <span class="p-hotel">
+                        <span th:text="${promo.fk_hotel_id == 1 ? 'CIEL HOTEL' : 'LE CIEL'}"></span>
+                        <small th:if="${promo.is_active == 0}" style="color:#e74c3c; font-weight:700;">[비활성]</small>
+                    </span>
+                    
+                    <h3 class="p-title" th:text="${promo.title}">프로모션 제목</h3>
+                    
+                    <p class="p-date">
+                        [[${promo.start_date}]] - [[${promo.end_date}]]
+                    </p>
+                    
+                    <a th:href="@{/promotion/detail/{id}(id=${promo.promotion_id})}" class="btn-view">VIEW MORE</a>
+                </div>
             </div>
         </div>
     </div>

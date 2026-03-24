@@ -46,7 +46,7 @@
       .locationHero{padding-top:150px}
   }
 </style>
-<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c2014221291f1b63602c92cea5292906"></script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=c2014221291f1b63602c92cea5292906&autoload=false"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
   document.addEventListener('DOMContentLoaded', function(){
@@ -56,28 +56,34 @@
           return;
       }
 
-      hotelList.forEach(function(hotel, idx){
-          if (hotel.latitude == null || hotel.longitude == null) return;
+      if (!(window.kakao && window.kakao.maps)) {
+          return;
+      }
 
-          const mapEl = document.getElementById('hotelMap_' + idx);
-          if (!mapEl) return;
+      kakao.maps.load(function(){
+          hotelList.forEach(function(hotel, idx){
+              if (hotel.latitude == null || hotel.longitude == null) return;
 
-          const position = new kakao.maps.LatLng(hotel.latitude, hotel.longitude);
+              const mapEl = document.getElementById('hotelMap_' + idx);
+              if (!mapEl) return;
 
-          const map = new kakao.maps.Map(mapEl, {
-              center: position,
-              level: 4
+              const position = new kakao.maps.LatLng(hotel.latitude, hotel.longitude);
+
+              const map = new kakao.maps.Map(mapEl, {
+                  center: position,
+                  level: 4
+              });
+
+              const marker = new kakao.maps.Marker({
+                  position: position
+              });
+              marker.setMap(map);
+
+              const info = new kakao.maps.InfoWindow({
+                  content: `<div style="padding:8px 12px;font-size:13px;font-weight:600;">${hotel.hotelName}</div>`
+              });
+              info.open(map, marker);
           });
-
-          const marker = new kakao.maps.Marker({
-              position: position
-          });
-          marker.setMap(map);
-
-          const info = new kakao.maps.InfoWindow({
-              content: `<div style="padding:8px 12px;font-size:13px;font-weight:600;">${hotel.hotelName}</div>`
-          });
-          info.open(map, marker);
       });
   });
 /*]]>*/
@@ -104,7 +110,12 @@
         <div class="hotelGrid">
           <div class="photoBox">
             <img th:if="${hotel.mainImageUrl != null and hotel.mainImageUrl != ''}"
-                 th:with="hotelImgSrc=${#strings.startsWith(hotel.mainImageUrl, 'http') or #strings.startsWith(hotel.mainImageUrl, '/')} ? hotel.mainImageUrl : '/file_images/hotel/' + hotel.mainImageUrl"
+                 th:with="hotelImgSrc=${#strings.startsWith(hotel.mainImageUrl, 'http') ? hotel.mainImageUrl :
+                                        (#strings.startsWith(hotel.mainImageUrl, '/file_images/') ? hotel.mainImageUrl :
+                                         (#strings.startsWith(hotel.mainImageUrl, 'file_images/') ? '/' + hotel.mainImageUrl :
+                                          (#strings.startsWith(hotel.mainImageUrl, '/hotel/') ? '/file_images' + hotel.mainImageUrl :
+                                           (#strings.startsWith(hotel.mainImageUrl, 'hotel/') ? '/file_images/' + hotel.mainImageUrl :
+                                            (#strings.startsWith(hotel.mainImageUrl, '/') ? hotel.mainImageUrl : '/file_images/hotel/' + hotel.mainImageUrl)))))}"
                  th:src="${hotelImgSrc}"
                  th:alt="${hotel.hotelName}"
                  onerror="this.onerror=null; this.src='/images/js/cielHotel.png';">

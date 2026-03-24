@@ -784,11 +784,21 @@ function switchReserveTab(type) {
             <div class="thumb">
               <img class="promoImg"
                    th:if="${promo.image_url != null and promo.image_url != ''}"
-                   th:with="raw=${promo.image_url != null ? promo.image_url : ''},
-                            normalized=${#strings.startsWith(raw, '/final_hotel') ? #strings.substring(raw, 12) : (#strings.startsWith(raw, 'final_hotel/') ? #strings.substring(raw, 11) : raw)},
-                            promoImgSrc=${normalized == '' ? '/images/js/spring_promo.jpg' : (#strings.startsWith(normalized, 'http') or #strings.startsWith(normalized, '/') ? normalized : (#strings.startsWith(normalized, 'file_images/') or #strings.startsWith(normalized, 'images/') ? '/' + normalized : '/file_images/js/' + normalized))}"
+                   th:with="raw=${promo.image_url},
+                            fileName=${raw != null ? (raw.contains('/') ? raw.substring(raw.lastIndexOf('/') + 1) : raw) : ''},
+                            promoImgSrc=${raw != null and raw != '' ?
+                                          (#strings.startsWith(raw, 'http') ? raw :
+                                           (#strings.startsWith(raw, '/images/js/') ? raw :
+                                            (#strings.startsWith(raw, 'images/js/') ? '/' + raw :
+                                             (#strings.startsWith(raw, '/file_images/js/') ? raw :
+                                              (#strings.startsWith(raw, 'file_images/js/') ? '/' + raw :
+                                               (#strings.startsWith(raw, '/js/') ? '/file_images/js/' + fileName :
+                                                (#strings.startsWith(raw, 'js/') ? '/file_images/js/' + fileName :
+                                                 (#strings.startsWith(raw, '/') ? raw : '/file_images/js/' + fileName)))))))) :
+                                          '/images/js/spring_promo.jpg'},
+                            promoFallbackSrc=${fileName != '' ? '/images/js/' + fileName : '/images/js/spring_promo.jpg'}"
                    th:src="${promoImgSrc}"
-                   onerror="this.src='/images/js/spring_promo.jpg'"
+                   th:attr="onerror=|this.onerror=null; this.src='${promoFallbackSrc}';|"
                    alt="프로모션 이미지">
               <span th:if="${promo.image_url == null or promo.image_url == ''}">프로모션</span>
             </div>
