@@ -170,8 +170,7 @@
 		    <div class="slide-item-wrapper" th:each="banner : ${mainBannerList}">
 		        <div class="slide-item">
 		            <img th:with="fileName=${banner.image_url}"
-		                 th:src="${fileName == null or fileName == ''} ? '/images/no-image.png'
-		                          : (#strings.contains(fileName, '/file_images/') ? fileName : '/file_images/hotel/' + fileName)"
+		                 th:src="${fileName == null or fileName == '' ? '/images/no-image.png' : (#strings.contains(fileName, '/file_images/') ? fileName : '/file_images/hotel/' + fileName)}"
 		                 th:alt="${banner.title != null and banner.title != '' ? banner.title : 'main-banner'}">
 		        </div>
 		        <div class="room-info-overlay position-absolute" style="bottom: 15%; left: 5%; z-index: 10;">
@@ -250,11 +249,10 @@
 	                 th:onclick="|location.href='@{/room/detail(room_id=${room.room_type_id})}'|">
 	                
 	                <div class="room-img-container" style="aspect-ratio: 16 / 9; width: 100%; overflow: hidden; background: #f0f0f0;">
-	                    <img th:src="${room.image_url == null or room.image_url == ''} ? '/images/no-image.png'
-                         : (#strings.startsWith(room.image_url, 'http') ? room.image_url : room.image_url)"
-                         class="w-100 h-100"
-                         style="object-fit: cover; transition: transform 0.5s ease;"
-                         th:alt="${room.room_name != null and room.room_name != '' ? room.room_name : 'room-image'}">
+	                    <img th:src="${room.image_url == null or room.image_url == '' ? '/images/no-image.png' : (#strings.startsWith(room.image_url, 'http') ? room.image_url : room.image_url)}"
+						     class="w-100 h-100"
+						     style="object-fit: cover; transition: transform 0.5s ease;"
+						     th:alt="${room.room_name != null and room.room_name != '' ? room.room_name : 'room-image'}">
 	                </div>
 	                
 	                <div class="room-info-overlay position-absolute w-100 p-4" 
@@ -278,11 +276,10 @@
             <div class="col-md-4 mb-4" th:each="dining : ${diningList}">
                 <div class="dining-card overflow-hidden rounded mb-3" style="height: 250px;"
                      th:onclick="|location.href='@{/dining/detail/{id}(id=${dining.dining_id})}'|">
-                    <img th:src="${dining.main_img == null or dining.main_img == ''} ? '/images/no-image.png'
-                                 : (#strings.startsWith(dining.main_img, '/') ? dining.main_img : '/images/dining/' + dining.main_img)"
-                         class="img-fluid w-100 h-100"
-                         style="object-fit: cover; transition: 0.5s;"
-                         th:alt="${dining.name != null and dining.name != '' ? dining.name : 'dining-image'}">
+                    <img th:src="${dining.main_img == null or dining.main_img == '' ? '/images/no-image.png' : (#strings.startsWith(dining.main_img, '/') ? dining.main_img : '/images/dining/' + dining.main_img)}"
+					     class="img-fluid w-100 h-100"
+					     style="object-fit: cover; transition: 0.5s;"
+					     th:alt="${dining.name != null and dining.name != '' ? dining.name : 'dining-image'}">
                 </div>
                 <p class="mb-1 font-weight-bold small text-muted" th:text="${dining.fk_hotel_id == 1 ? 'Ciel Hotel' : 'Le Ciel'}">지점명</p>
                 <p class="font-weight-bold" style="font-size: 1.2rem;" th:text="${dining.name}">식당명</p>
@@ -303,12 +300,9 @@
                 <div class="p-4 promo-img-wrapper" style="background-color: #a69689; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                     <div th:if="${promoCardList[0].discount_rate > 0}" class="discount-badge" th:text="${#numbers.formatDecimal(promoCardList[0].discount_rate, 0, 0) + '% OFF'}"></div>
                     <div style="width: 85%; height: 70%; overflow: hidden; background: #fff; border-radius: 3px;">
-                        <img th:src="${promoCardList[0].image_url == null or promoCardList[0].image_url == ''} ? '/images/no-image.png'
-                                     : (#strings.startsWith(promoCardList[0].image_url, 'http') ? promoCardList[0].image_url
-                                     : (#strings.startsWith(promoCardList[0].image_url, '/') ? promoCardList[0].image_url
-                                     : '/images/js/' + promoCardList[0].image_url))"
-                             class="w-100 h-100" style="object-fit: cover;"
-                             th:alt="${promoCardList[0].title != null and promoCardList[0].title != '' ? promoCardList[0].title : 'promotion-image'}">
+                        <img th:src="${promoCardList[0].image_url == null or promoCardList[0].image_url == '' ? '/images/no-image.png' : (#strings.startsWith(promoCardList[0].image_url, 'http') ? promoCardList[0].image_url : (#strings.startsWith(promoCardList[0].image_url, '/') ? promoCardList[0].image_url : '/images/js/' + promoCardList[0].image_url))}"
+						     class="w-100 h-100" style="object-fit: cover;"
+						     th:alt="${promoCardList[0].title != null and promoCardList[0].title != '' ? promoCardList[0].title : 'promotion-image'}">
                     </div>
                     <div class="text-center text-white mt-4">
                         <p class="font-weight-bold mb-1" style="font-size: 1.3rem;" th:text="${promoCardList[0].title}">프로모션 제목</p>
@@ -320,21 +314,15 @@
             <div class="col-md-4 px-md-4">
                 <div class="mb-5" th:if="${promoCardList.size() > 1}" th:onclick="|location.href='@{/promotion/detail/{id}(id=${promoCardList[1].promotion_id})}'|">
                     <div class="promo-img-wrapper" style="height: 260px;">
-                        <img th:src="${promoCardList[1].image_url == null or promoCardList[1].image_url == ''} ? '/images/no-image.png'
-                                     : (#strings.startsWith(promoCardList[1].image_url, 'http') ? promoCardList[1].image_url
-                                     : (#strings.startsWith(promoCardList[1].image_url, '/') ? promoCardList[1].image_url
-                                     : '/images/js/' + promoCardList[1].image_url))"
-                             th:alt="${promoCardList[1].title != null and promoCardList[1].title != '' ? promoCardList[1].title : 'promotion-image'}">
+                        <img th:src="${promoCardList[1].image_url == null or promoCardList[1].image_url == '' ? '/images/no-image.png' : (#strings.startsWith(promoCardList[1].image_url, 'http') ? promoCardList[1].image_url : (#strings.startsWith(promoCardList[1].image_url, '/') ? promoCardList[1].image_url : '/images/js/' + promoCardList[1].image_url))}"
+     						 th:alt="${promoCardList[1].title != null and promoCardList[1].title != '' ? promoCardList[1].title : 'promotion-image'}">
                     </div>
                     <span class="d-block font-weight-bold mt-3 text-dark" th:text="${promoCardList[1].title}">제목</span>
                 </div>
                 <div class="mb-4" th:if="${promoCardList.size() > 2}" th:onclick="|location.href='@{/promotion/detail/{id}(id=${promoCardList[2].promotion_id})}'|">
                     <div class="promo-img-wrapper" style="height: 380px;">
-                        <img th:src="${promoCardList[2].image_url == null or promoCardList[2].image_url == ''} ? '/images/no-image.png'
-                                     : (#strings.startsWith(promoCardList[2].image_url, 'http') ? promoCardList[2].image_url
-                                     : (#strings.startsWith(promoCardList[2].image_url, '/') ? promoCardList[2].image_url
-                                     : '/images/js/' + promoCardList[2].image_url))"
-                             th:alt="${promoCardList[2].title != null and promoCardList[2].title != '' ? promoCardList[2].title : 'promotion-image'}">
+                        <img th:src="${promoCardList[2].image_url == null or promoCardList[2].image_url == '' ? '/images/no-image.png' : (#strings.startsWith(promoCardList[2].image_url, 'http') ? promoCardList[2].image_url : (#strings.startsWith(promoCardList[2].image_url, '/') ? promoCardList[2].image_url : '/images/js/' + promoCardList[2].image_url))}"
+     						 th:alt="${promoCardList[2].title != null and promoCardList[2].title != '' ? promoCardList[2].title : 'promotion-image'}">
                     </div>
                     <span class="d-block font-weight-bold mt-3 text-dark" th:text="${promoCardList[2].title}">제목</span>
                 </div>
@@ -343,28 +331,22 @@
             <div class="col-md-4">
                 <div class="mb-5" th:if="${promoCardList.size() > 3}" th:onclick="|location.href='@{/promotion/detail/{id}(id=${promoCardList[3].promotion_id})}'|">
                     <div class="promo-img-wrapper" style="height: 340px;">
-                        <img th:src="${promoCardList[3].image_url == null or promoCardList[3].image_url == ''} ? '/images/no-image.png'
-                                     : (#strings.startsWith(promoCardList[3].image_url, 'http') ? promoCardList[3].image_url
-                                     : (#strings.startsWith(promoCardList[3].image_url, '/') ? promoCardList[3].image_url
-                                     : '/images/js/' + promoCardList[3].image_url))"
-                             th:alt="${promoCardList[3].title != null and promoCardList[3].title != '' ? promoCardList[3].title : 'promotion-image'}">
+                        <img th:src="${promoCardList[3].image_url == null or promoCardList[3].image_url == '' ? '/images/no-image.png' : (#strings.startsWith(promoCardList[3].image_url, 'http') ? promoCardList[3].image_url : (#strings.startsWith(promoCardList[3].image_url, '/') ? promoCardList[3].image_url : '/images/js/' + promoCardList[3].image_url))}"
+     						 th:alt="${promoCardList[3].title != null and promoCardList[3].title != '' ? promoCardList[3].title : 'promotion-image'}">
                     </div>
                     <span class="d-block font-weight-bold mt-3 text-dark" th:text="${promoCardList[3].title}">제목</span>
                 </div>
                 <div class="mb-4" th:if="${promoCardList.size() > 4}" th:onclick="|location.href='@{/promotion/detail/{id}(id=${promoCardList[4].promotion_id})}'|">
                     <div class="promo-img-wrapper" style="height: 220px;">
-                        <img th:src="${promoCardList[4].image_url == null or promoCardList[4].image_url == ''} ? '/images/no-image.png'
-                                     : (#strings.startsWith(promoCardList[4].image_url, 'http') ? promoCardList[4].image_url
-                                     : (#strings.startsWith(promoCardList[4].image_url, '/') ? promoCardList[4].image_url
-                                     : '/images/js/' + promoCardList[4].image_url))"
-                             th:alt="${promoCardList[4].title != null and promoCardList[4].title != '' ? promoCardList[4].title : 'promotion-image'}">
+                        <img th:src="${promoCardList[4].image_url == null or promoCardList[4].image_url == '' ? '/images/no-image.png' : (#strings.startsWith(promoCardList[4].image_url, 'http') ? promoCardList[4].image_url : (#strings.startsWith(promoCardList[4].image_url, '/') ? promoCardList[4].image_url : '/images/js/' + promoCardList[4].image_url))}"
+     						 th:alt="${promoCardList[4].title != null and promoCardList[4].title != '' ? promoCardList[4].title : 'promotion-image'}">
                     </div>
                     <span class="d-block font-weight-bold mt-3 text-dark" th:text="${promoCardList[4].title}">제목</span>
                 </div>
             </div>
         </div>
         </div>
-    </div>
+    
 </section>
 </body>
 </html>
