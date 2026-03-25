@@ -59,10 +59,16 @@ public class RoomTypeService_imple implements RoomTypeService {
 		
 	}
 
-	// 상세 페이지 로그인 기반 추천 객실 조회
+	// 로그인 -> 최근 본 객실 (조회이력 기반, 최신순)
 	@Override
-	public List<RoomTypeDTO> getRecommendedRooms(Integer memberNo, Long roomId) {
-		return roomdao.selectRecommendedRooms(memberNo, roomId);
-	}
+    public List<RoomTypeDTO> getRecentRooms(Integer memberNo) {
+        return roomdao.selectRecentRooms(memberNo);
+    }
+
+	
+	@Override
+    public List<RoomTypeDTO> getRecommendedRooms(Object object, Long roomId) {
+        return roomdao.selectRecommendedRooms(null, roomId);
+    }
 	
 }

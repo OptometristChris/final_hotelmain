@@ -186,6 +186,97 @@ div[style="margin-top:30px;"] {
     height:100%;
     object-fit:cover;
 }
+
+
+/* ================= 최근 본 객실 (Recent Section Update) ================= */
+
+/* 섹션 전체 배경 및 여백 수정 */
+.recent-section {
+    background-color: #fcfaf7; /* 아주 연한 베이지톤으로 고급감 부여 */
+    padding: 60px 40px;
+    border-radius: 20px;
+    margin-top: 100px;
+}
+
+/* 제목 하단 라인 추가 */
+.recent-section .amenity-title {
+    font-size: 24px;
+    margin-bottom: 40px;
+    position: relative;
+    display: inline-block;
+}
+
+
+
+/* 카드 디자인 전면 수정 */
+.recent-section .recommend-card {
+    background: #fff;
+    border: none; /* 보더 제거 */
+    border-radius: 12px;
+    overflow: hidden; /* 이미지 넘침 방지 */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* 은은한 그림자 */
+    padding: 0; /* 내부 패딩 제거 (이미지 꽉 차게) */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.recent-section .recommend-card:hover {
+    transform: translateY(-8px); /* 위로 살짝 들림 */
+    box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+}
+
+/* 이미지 영역 높이 및 애니메이션 */
+.recent-section .rec-img {
+    height: 180px;
+    margin-bottom: 0;
+    overflow: hidden;
+}
+
+.recent-section .rec-img img {
+    transition: transform 0.5s ease;
+}
+
+.recent-section .recommend-card:hover .rec-img img {
+    transform: scale(1.1); /* 호버 시 이미지 확대 */
+}
+
+/* 카드 내부 텍스트 영역 패딩 */
+.recent-section .recommend-card a {
+    display: block;
+    padding-bottom: 20px;
+}
+
+.recent-section .rec-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #222;
+    margin-top: 15px;
+    padding: 0 15px;
+}
+
+.recent-section .rec-price {
+    font-size: 15px;
+    color: #8d704b; /* 가격에 포인트 컬러 (금색/갈색톤) */
+    font-weight: 700;
+    padding: 0 15px;
+}
+
+/* 조회 시간 스타일링 */
+.recent-section .rec-date {
+    font-size: 12px;
+    color: #bbb;
+    margin-top: 10px;
+    padding: 8px 15px 0;
+    border-top: 1px dashed #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recent-section .rec-date::before {
+    content: '🕒'; /* 아이콘 살짝 추가 */
+    margin-right: 4px;
+    font-size: 10px;
+}
 </style>
 </head>
 
@@ -338,7 +429,7 @@ div[style="margin-top:30px;"] {
 	            <a th:href="@{/room/detail(room_id=${rec.room_type_id})}">
 	            	
 	            	<div class="rec-img">
-			            <img th:src="@{${rec.image_url}}">
+			            <img th:src="${rec.image_url}">
 			        </div>
 	            	
 	                <div class="rec-name"
@@ -353,6 +444,41 @@ div[style="margin-top:30px;"] {
 	
 	    </div>
 	</div>
+	
+	<!-- ================= 최근 본 객실 ================= -->
+<div class="recommend-section recent-section"
+     th:if="${recentList != null and !#lists.isEmpty(recentList)}">
+
+    <h2 class="amenity-title">최근 본 객실</h2>
+
+    <div class="recommend-grid">
+
+        <div class="recommend-card"
+             th:each="rec : ${recentList}">
+
+            <a th:href="@{/room/detail(room_id=${rec.room_type_id})}">
+                
+                <div class="rec-img">
+                    <img th:src="${rec.image_url}">
+                </div>
+                
+                <div class="rec-name"
+                     th:text="${rec.room_name}"></div>
+
+                <div class="rec-price">
+                    ₩ <span th:text="${#numbers.formatInteger(rec.base_price, 3, 'COMMA')}"></span>
+                </div>
+                
+                <div class="rec-date">
+				    최근 조회 :
+				    <span th:text="${#temporals.format(rec.viewed_at, 'MM-dd HH:mm')}"></span>
+				</div>
+            </a>
+
+        </div>     
+
+    </div>
+</div>
 	
 </div>
 

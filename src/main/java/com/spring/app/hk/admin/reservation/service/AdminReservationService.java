@@ -24,7 +24,14 @@ public interface AdminReservationService {
 	// 체크아웃 완료 목록 조회
 	List<Map<String, Object>> getCheckoutCompleteList();
 	
+	// 체크아웃 지연 
 	List<Map<String, Object>> getOverdueList();
+	
+	// 체크인 지연
+	List<Map<String, Object>> getNoShowList();
+	
+	// 노쇼 처리
+	void noShowReservation(int reservationId);
 	
 	int getTodayCheckinTotalCount();
 

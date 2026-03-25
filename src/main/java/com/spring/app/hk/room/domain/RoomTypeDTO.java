@@ -1,5 +1,7 @@
 package com.spring.app.hk.room.domain;
 
+import java.time.LocalDateTime;
+
 import lombok.Data;
 
 @Data
@@ -23,6 +25,9 @@ public class RoomTypeDTO {
     
     // room min price
     private Integer minPrice;
+    
+    // 추가
+    private LocalDateTime viewed_at;
     
     
     // ====== admin ====== 

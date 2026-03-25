@@ -18,7 +18,6 @@ public interface ReservationService {
 
     // 예약 완료 페이지 조회
 	Map<String, Object> getReservationByCode(String code);
-
 	
 	// 마이페이지 예약 목록 조회
 	List<Map<String, Object>> selectMyReservationList(int memberNo);

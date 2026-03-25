@@ -9,7 +9,8 @@
     <th:block th:fragment="style">
         <style>
             #mycontent { padding-top: 150px !important; padding-bottom: 100px; min-height: 100vh; background: #f9f9f9; }
-            .stat-card { background: #fff; border: 1px solid #e0e0e0; padding: 20px; text-align: center; transition: 0.3s; }
+            .stat-card { background: #fff; border: 1px solid #e0e0e0; padding: 20px; text-align: center; transition: 0.3s; border-radius: 4px; }
+            .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
             .stat-card h3 { color: #9d815d; font-weight: bold; margin-bottom: 5px; }
             .stat-label { font-size: 14px; color: #777; text-transform: uppercase; }
             .search-box { background: #fff; border: 1px solid #e0e0e0; padding: 20px; margin-bottom: 30px; }
@@ -22,106 +23,274 @@
             .status-canceled { background: #ffebee; color: #d32f2f; }
             .btn-admin { border: 1px solid #9d815d; color: #9d815d; background: none; padding: 3px 10px; font-size: 12px; transition: 0.2s; margin-right: 2px; }
             .btn-admin:hover { background: #9d815d; color: #fff; }
-            /* 상세 모달 스타일 */
             .detail-row { display: flex; border-bottom: 1px solid #eee; padding: 10px 0; }
             .detail-label { width: 100px; font-weight: bold; color: #777; }
+            .progress-bar { transition: width 0.6s ease; }
+            .slot-item { border-bottom: 1px solid #f0f0f0; padding: 8px 0; }
+            .slot-item:last-child { border-bottom: none; }
+            .highlight-shop { border: 2px solid #C5A073 !important; background-color: #fffaf5 !important; }
+			#configModal .modal-header { border-bottom: 2px solid #9d815d; }
+			#configModal .form-control:focus { border-color: #9d815d; box-shadow: 0 0 0 0.2rem rgba(157, 129, 93, 0.25); }	
+			#slotConfigList { max-height: 450px; overflow-y: auto; padding-right: 5px; }
+			#slotConfigList::-webkit-scrollbar { width: 6px; }			
+			#slotConfigList::-webkit-scrollbar-thumb { background-color: #e0e0e0; border-radius: 10px; }       
         </style>
     </th:block>
 
     <th:block th:fragment="script">
-        <script th:inline="javascript">
-            /*<![CDATA[*/
-            $(document).ready(function() {
-                const token = $("meta[name='_csrf']").attr("content");
-                const header = $("meta[name='_csrf_header']").attr("content");
-                $(document).ajaxSend(function(e, xhr, options) {
-                    if (token && header) { xhr.setRequestHeader(header, token); }
-                });
-            });
-        
-            // 상태 변경 함수 (방문, 노쇼, 취소 공용)
-            function changeStatus(resId, status) {
-                const url = /*[[@{/admin/dining/updateStatus}]]*/ "/admin/dining/updateStatus";
-                let msg = "";
-                if (status === 'VISITED') msg = "방문 완료 처리하시겠습니까?";
-                else if (status === 'NOSHOW') msg = "노쇼(No-Show) 처리하시겠습니까?";
-                else if (status === 'CANCELED') msg = "예약을 취소 처리하시겠습니까?"; 
-                
-                if(!confirm(msg)) return;
+	    <script th:inline="javascript">
+	        /*<![CDATA[*/
+	        $(document).ready(function() {
+	            const token = $("meta[name='_csrf']").attr("content");
+	            const header = $("meta[name='_csrf_header']").attr("content");
+	            $(document).ajaxSend(function(e, xhr, options) {
+	                if (token && header) { xhr.setRequestHeader(header, token); }
+	            });
+	        });
+	    
+	        function changeStatus(resId, status) {
+	            const url = /*[[@{/admin/dining/updateStatus}]]*/ "/admin/dining/updateStatus";
+	            let msg = (status === 'VISITED') ? "방문 완료 처리하시겠습니까?" : 
+	                      (status === 'NOSHOW') ? "노쇼(No-Show) 처리하시겠습니까?" : "예약을 취소 처리하시겠습니까?";
+	            
+	            if(!confirm(msg)) return;
+	            $.ajax({
+	                url: url, type: "POST", data: { "resId": resId, "status": status },
+	                success: function(res) {
+	                    if(res === "success") { alert("상태가 변경되었습니다."); location.reload(); }
+	                    else { alert("업데이트 실패"); }
+	                },
+	                error: function() { alert("서버 통신 오류"); }
+	            });
+	        }
+	
+	        function submitManualRes() {
+	            const url = /*[[@{/admin/dining/registerManual}]]*/ "/admin/dining/registerManual";
+	            let formData = $('#manualResForm').serializeArray();
+	            formData.push({ name: "fkHotelId", value: "1" }); 
+	            if(!$('input[name="guestName"]').val() || !$('input[name="guestPhone"]').val()) { alert("성함과 연락처는 필수입니다."); return; }
+	            if(confirm("예약을 등록하시겠습니까?")) {
+	                $.ajax({
+	                    url: url, type: "POST", data: $.param(formData),
+	                    success: function(res) {
+	                        if(res === "success") { alert("등록되었습니다."); location.reload(); }
+	                        else { alert("등록 실패"); }
+	                    },
+	                    error: function() { alert("서버 오류"); }
+	                });
+	            }
+	        }
+	        
+	        function showDetail(resId) {
+	            const url = /*[[@{/admin/dining/detail}]]*/ "/admin/dining/detail";
+	            $.ajax({
+	                url: url, type: "GET", data: { "resId": resId },
+	                success: function(data) {
+	                    let peopleText = `성인 ${data.adultCount || 0}`;
+	                    if (data.childCount > 0) peopleText += `, 소아 ${data.childCount}`;
+	                    if (data.infantCount > 0) peopleText += `, 유아 ${data.infantCount}`;
+	                    let html = `
+	                        <div class="detail-row"><div class="detail-label">예약번호</div><div>${data.diningReservationId}</div></div>
+	                        <div class="detail-row"><div class="detail-label">업장명</div><div>${data.diningName}</div></div>
+	                        <div class="detail-row"><div class="detail-label">예약자</div><div>${data.guestName} ${data.fkMemberNo ? '<span class="badge bg-warning">회원</span>' : '(비회원)'}</div></div>
+	                        <div class="detail-row"><div class="detail-label">연락처</div><div>${data.guestPhone}</div></div>
+	                        <div class="detail-row"><div class="detail-label">예약일시</div><div>${data.resDate} ${data.resTime}</div></div>
+	                        <div class="detail-row"><div class="detail-label">인원</div><div>${peopleText}</div></div>
+	                        <div class="detail-row"><div class="detail-label">상태</div><div>${data.status}</div></div>
+	                        <div class="detail-row"><div class="detail-label">요청사항</div><div>${data.specialRequests}</div></div>
+	                    `;
+	                    $('#detailModalBody').html(html);
+	                    new bootstrap.Modal(document.getElementById('detailModal')).show();
+	                },
+	                error: function() { alert("정보를 불러오지 못했습니다."); }
+	            });
+	        }
+	
+	        function showManualModal() { new bootstrap.Modal(document.getElementById('manualResModal')).show(); }
+	
+	        function filterByShop(diningId) {
+	            const form = document.createElement('form');
+	            form.method = 'GET';
+	            form.action = /*[[@{/admin/dining/dashboard}]]*/ '/admin/dining/dashboard';
+	            
+	            const input = document.createElement('input');
+	            input.type = 'hidden';
+	            input.name = 'diningId'; 
+	            input.value = diningId;
+	            
+	            form.appendChild(input);
+	            document.body.appendChild(form);
+	            form.submit();
+	        }
 
-                $.ajax({
-                    url: url,
-                    type: "POST",
-                    data: { "resId": resId, "status": status },
-                    success: function(res) {
-                        if(res === "success") {
-                            alert("상태가 변경되었습니다.");
-                            location.href = location.href;
-                        } else { alert("업데이트 실패"); }
-                    },
-                    error: function() { alert("서버 통신 오류"); }
-                });
-            }
+	        function openConfig(diningId) {
+	        	
+	        	// console.log("--- 함수 실행 ---");
+	            console.log("넘겨받은 diningId:", diningId);
+	            
+	            let selectedId = diningId;
+	            
+	            if (selectedId === undefined || selectedId === null || selectedId === "") {
+	                selectedId = $('#selectConfigDining').val();
+	            }
 
-            // 현장 예약 등록
-            function submitManualRes() {
-                const url = /*[[@{/admin/dining/registerManual}]]*/ "/admin/dining/registerManual";
-                let formData = $('#manualResForm').serializeArray();
-                formData.push({ name: "fkHotelId", value: "1" }); // 호텔 ID 1번 강제 추가
+	            // console.log("서버로 보낼 ID:", selectedId);
+	        	
+	        	const url = /*[[@{/admin/dining/getConfig}]]*/ "/admin/dining/getConfig";
+	            
+	            $.ajax({
+	                url: url,
+	                data: { "diningId": selectedId },
+	                success: function(list) {
+	                    if(!list || list.length === 0) {
+	                        $('#slotConfigList').html('<p class="text-center p-3">데이터가 없습니다.</p>');
+	                        return;
+	                    }
 
-                if(!$('input[name="guestName"]').val() || !$('input[name="guestPhone"]').val()) {
-                    alert("성함과 연락처는 필수입니다."); return;
-                }
+	                    const first = list[0];
+	                    $('#configDiningId').val(first.diningId);
+	                    $('#configTitleName').text(first.shopName);
+	                    $('#inputMaxTotal').val(first.maxTotal || first.maxCapacity || 0);
 
-                if(confirm("예약을 등록하시겠습니까?")) {
-                    $.ajax({
-                        url: url,
-                        type: "POST",
-                        data: $.param(formData),
-                        success: function(res) {
-                            if(res === "success") {
-                                alert("등록되었습니다.");
-                                location.reload();
-                            } else { alert("등록 실패"); }
-                        },
-                        error: function() { alert("서버 오류"); }
-                    });
-                }
-            }
-            
-            // 상세 조회 함수
-            function showDetail(resId) {
-            	const url = /*[[@{/admin/dining/detail}]]*/ "/admin/dining/detail";
-            	
-                $.ajax({
-                    url: url,
-                    type: "GET",
-                    data: { "resId": resId },
-                    success: function(data) {
-                        let html = `
-                            <div class="detail-row"><div class="detail-label">예약번호</div><div>${data.diningReservationId}</div></div>
-                            <div class="detail-row"><div class="detail-label">업장명</div><div>${data.diningName}</div></div>
-                            <div class="detail-row"><div class="detail-label">예약자</div><div>${data.guestName}</div></div>
-                            <div class="detail-row"><div class="detail-label">연락처</div><div>${data.guestPhone}</div></div>
-                            <div class="detail-row"><div class="detail-label">예약일시</div><div>${data.resDate} ${data.resTime}</div></div>
-                            <div class="detail-row"><div class="detail-label">인원</div><div>성인 ${data.adultCount}, 소아 ${data.childCount}, 유아 ${data.infantCount}</div></div>
-                            <div class="detail-row"><div class="detail-label">상태</div><div>${data.status}</div></div>
-                        `;
-                        $('#detailModalBody').html(html);
+	                    let html = '<div class="row g-3">';
+	                    list.forEach(slot => {
+	                        const sId = slot.slotId;
+	                        const rTime = slot.resTime;
+	                        const sCap = slot.slotCapacity;
 
-                        const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
-                        detailModal.show();
-                    },
-                    error: function() { alert("정보를 불러오지 못했습니다."); }
-                });
-            }
+	                        if(sId) {
+	                        	html += `
+	                        	    <div class="col-md-6">
+	                        	        <div class="card border-0 shadow-sm h-100" style="background: #fdfdfd; border-left: 4px solid #9d815d !important;">
+	                        	            <div class="card-body p-3">
+	                        	                <div class="d-flex justify-content-between align-items-center mb-2">
+	                        	                    <span class="badge rounded-pill" style="background: #f4f1ee; color: #9d815d; font-size: 0.85rem; padding: 5px 10px;">
+	                        	                        🕒 ${rTime}
+	                        	                    </span>
+	                        	                    <small class="text-muted">ID: ${sId}</small>
+	                        	                </div>
+	                        	                <div class="input-group input-group-sm">
+	                        	                    <input type="number" class="form-control text-center fw-bold" 
+	                        	                           id="slot_${sId}" value="${sCap}" style="font-size: 1rem;"
+                        	                        	   oninput="checkLiveTotal()">
+	                        	                           
+	                        	                    <button class="btn btn-dark px-3" onclick="saveSlotCap(${sId})">
+	                        	                        변경
+	                        	                    </button>
+	                        	                </div>
+	                        	            </div>
+	                        	        </div>
+	                        	    </div>`;
+	                        }
+	                    });
+	                    html += '</div>';
 
-            function showManualModal() {
-                new bootstrap.Modal(document.getElementById('manualResModal')).show();
-            }
-            /*]]>*/
-        </script>
-    </th:block>
+	                    $('#slotConfigList').html(html || '<p class="text-center p-3">시간대 정보(slotId)가 없습니다.</p>');
+	                    $('#configModal').modal('show');
+	                },
+	                error: function(xhr) { 
+	                	alert("서버 통신 오류가 발생했습니다.");
+	                    console.error(xhr);
+	                	
+	                }
+	            });
+	        }
+	
+	        function saveTotalCap() {
+	            const diningId = $('#configDiningId').val();
+	            const maxCap = parseInt($('#inputMaxTotal').val()) || 0;
+	            
+	            let sumAllSlots = 0;
+	            $('input[id^="slot_"]').each(function() {
+	                sumAllSlots += (parseInt($(this).val()) || 0);
+	            });
+
+	            if (maxCap < sumAllSlots) {
+	                alert("일일 총 인원은 설정된 시간대별 인원의 합계(" + sumAllSlots + "명)보다 적게 설정할 수 없습니다.");
+	                return;
+	            }
+
+	            const url = /*[[@{/admin/dining/updateMaxCapacity}]]*/ "/admin/dining/updateMaxCapacity";
+	            $.post(url, { "diningId": diningId, "maxCapacity": maxCap }, function(res) {
+	                if(res === "success") alert("전체 수용 인원이 변경되었습니다.");
+	                else alert("변경 실패");
+	            });
+	        }
+	
+	        function saveSlotCap(slotId) {
+	            const maxTotal = parseInt($('#inputMaxTotal').val()) || 0; // 일일 총 정원
+	            const currentInputVal = parseInt($('#slot_' + slotId).val()) || 0; // 현재 입력한 값
+	            
+	            let sumOtherSlots = 0;
+
+	            $('input[id^="slot_"]').each(function() {
+	                const id = $(this).attr('id').replace('slot_', '');
+	                if (id != slotId) {
+	                    sumOtherSlots += (parseInt($(this).val()) || 0);
+	                }
+	            });
+
+	            if (sumOtherSlots + currentInputVal > maxTotal) {
+	                alert("시간대별 인원의 총합(" + (sumOtherSlots + currentInputVal) + "명)이 일일 총 수용 인원(" + maxTotal + "명)을 초과할 수 없습니다.");
+	                return; 
+	            }
+
+	            const url = /*[[@{/admin/dining/updateSlotCapacity}]]*/ "/admin/dining/updateSlotCapacity";
+	            $.post(url, { "slotId": slotId, "maxSlotCapacity": currentInputVal }, function(res) {
+	                if(res === "success") alert("해당 시간대 인원이 변경되었습니다.");
+	                else alert("변경 실패");
+	            });
+	        }
+	        
+	        function checkLiveTotal() {
+	            const maxTotal = parseInt($('#inputMaxTotal').val()) || 0;
+	            let sumAllSlots = 0;
+
+	            $('input[id^="slot_"]').each(function() {
+	                sumAllSlots += (parseInt($(this).val()) || 0);
+	            });
+
+	            const $msgArea = $('#totalCheckMsg');
+	            
+	            if (sumAllSlots > maxTotal) {
+	                $msgArea.html(`<span class="text-danger">⚠️ 현재 합계(${sumAllSlots}명)가 총 정원(${maxTotal}명)을 초과했습니다!</span>`);
+	            } else {
+	                $msgArea.html(`<span class="text-success">✅ 적정 범위 내입니다. (합계: ${sumAllSlots} / ${maxTotal})</span>`);
+	            }
+	        }
+	        
+	        function filterByShop(diningId) {
+	            const url = /*[[@{/admin/dining/getTodayShopResList}]]*/ "/admin/dining/getTodayShopResList";
+	            
+	            $.ajax({
+	                url: url,
+	                type: "GET",
+	                data: { "diningId": diningId },
+	                success: function(list) {
+	                    let html = '';
+	                    if(!list || list.length === 0) {
+	                        html = '<tr><td colspan="4" class="py-4 text-center">오늘 예약 내역이 없습니다.</td></tr>';
+	                    } else {
+	                        list.forEach((res, index) => {
+	                            html += `
+	                                <tr>
+	                                    <td>${index + 1}</td>
+	                                    <td>${res.guestName}</td>
+	                                    <td>${res.resTime}</td>
+	                                    <td><span class="status-badge status-confirmed">${res.status}</span></td>
+	                                </tr>`;
+	                        });
+	                    }
+	                    $('#shopTodayResBody').html(html);
+	                    new bootstrap.Modal(document.getElementById('shopTodayResModal')).show();
+	                },
+	                error: function() { alert("데이터를 불러오지 못했습니다."); }
+	            });
+	        }
+	        
+	        /*]]>*/
+	    </script>
+	</th:block>
 </head>
 
 <body>
@@ -138,9 +307,40 @@
                     <div class="col-md-3"><div class="stat-card" style="border-top: 3px solid #2e7d32;"><div class="stat-label">Visited</div><h3 th:text="${counts.VISITED}">0</h3></div></div>
                     <div class="col-md-3"><div class="stat-card" style="border-top: 3px solid #d32f2f;"><div class="stat-label">No-Show</div><h3 th:text="${counts.NOSHOW}">0</h3></div></div>
                 </div>
+                
+                <div class="row g-3 mb-5">
+				    <div class="col-12"><h5 class="fw-bold mb-0" style="color: #555; font-size: 16px;"><i class="bi bi-shop me-2"></i>Today's Shop Status</h5></div>
+				    <div class="col-md-3" th:each="shop : ${shopCounts}">
+				        <div class="stat-card" style="border-top: 3px solid #C5A073; background: #fff; cursor:pointer;" 
+                             th:onclick="filterByShop([[${shop.diningId}]])"
+                             th:classappend="${param.diningId != null and param.diningId[0] == shop.diningId.toString()} ? 'highlight-shop' : ''">
+				            <div class="fw-bold mb-2" style="color: #9d815d; font-size: 15px;" th:text="${shop.shopName}">DREAM</div>
+				            <div class="d-flex justify-content-between px-2 mb-1">
+				                <span class="small text-muted">오늘 예약</span>
+				                <span class="small fw-bold" th:text="${shop.totalCount + '건'}">0건</span>
+				            </div>
+				            <div class="d-flex justify-content-between px-2 mb-3">
+				                <span class="small text-muted">방문 완료</span>
+				                <span class="small fw-bold text-success" th:text="${shop.visitedCount + '건'}">0건</span>
+				            </div>
+				            <div class="pt-2 border-top">
+				                <div class="stat-label" style="font-size: 11px;">오늘 예약 인원 현황</div>
+				                <div class="mt-1">
+				                    <span style="font-size: 18px; font-weight: bold; color: #333;" th:text="${shop.currentPeople}">0</span>
+				                    <span style="color: #999; font-size: 14px;"> / [[${shop.maxCapacity}]] 명</span>
+				                </div>
+				                <div class="progress mt-2" style="height: 6px; background-color: #eee;">
+				                    <div class="progress-bar" role="progressbar" 
+				                         th:style="'width: ' + (${shop.maxCapacity > 0} ? (${shop.currentPeople} * 100 / ${shop.maxCapacity}) : 0) + '%; background-color: #C5A073;'"></div>
+				                </div>
+				            </div>
+				        </div>
+				    </div>
+				</div>
 
                 <div class="search-box">
                     <form th:action="@{/admin/dining/dashboard}" method="get" class="row g-2 justify-content-center">
+                        <input type="hidden" name="diningId" th:value="${param.diningId}">
                         <div class="col-md-4"><input type="text" name="keyword" class="form-control form-control-sm" placeholder="이름 또는 연락처" th:value="${param.keyword}"></div>
                         <div class="col-md-2">
                             <select name="status" class="form-select form-control-sm">
@@ -156,25 +356,27 @@
                 </div>
 
                 <div class="res-table-container shadow-sm">
-                    <table class="table table-hover align-middle text-center">
+                    <table class="table table-hover align-middle text-center mb-0">
                         <thead>
-                            <tr>
-                                <th>No.</th><th>업장</th><th>예약자</th><th>일시</th><th>인원</th><th>상태</th><th>액션</th>
-                            </tr>
+                            <tr><th>No.</th><th>업장</th><th>예약자</th><th>일시</th><th>인원</th><th>상태</th><th>액션</th></tr>
                         </thead>
                         <tbody>
                             <tr th:each="res : ${resList}" style="cursor: pointer;">
                                 <td th:text="${res.diningReservationId}" th:onclick="showDetail([[${res.diningReservationId}]])">1</td>
                                 <td class="fw-bold" th:text="${res.diningName}" th:onclick="showDetail([[${res.diningReservationId}]])">레스토랑</td>
                                 <td th:onclick="showDetail([[${res.diningReservationId}]])">
-                                    <span th:text="${res.guestName}">성함</span><br><small class="text-muted" th:text="${res.guestPhone}">연락처</small>
-                                </td>
+								    <span th:if="${res.fkMemberNo != null}" class="badge rounded-pill me-1" style="background-color: #C5A073; font-size: 10px; vertical-align: middle;">M</span>
+								    <span th:text="${res.guestName}" th:classappend="${res.fkMemberNo != null} ? 'fw-bold' : ''">성함</span>
+								    <br><small class="text-muted" th:text="${res.guestPhone}">연락처</small>
+								</td>
                                 <td th:onclick="showDetail([[${res.diningReservationId}]])">
                                     <span th:text="${res.resDate}">날짜</span><br><span th:text="${res.resTime}">시간</span>
                                 </td>
                                 <td th:onclick="showDetail([[${res.diningReservationId}]])">
-                                    <small>성인</small> <span th:text="${res.adultCount}">0</span>
-                                </td>
+								    <small>성인</small> [[${res.adultCount}]]
+								    <th:block th:if="${res.childCount > 0}"> / <small>소아</small> [[${res.childCount}]]</th:block>
+								    <th:block th:if="${res.infantCount > 0}"> / <small>유아</small> [[${res.infantCount}]]</th:block>
+								</td>
                                 <td>
                                     <span th:if="${res.status == 'CONFIRMED'}" class="status-badge status-confirmed">예약확정</span>
                                     <span th:if="${res.status == 'VISITED'}" class="status-badge status-visited">방문완료</span>
@@ -190,22 +392,43 @@
                                     <span th:unless="${res.status == 'CONFIRMED'}" class="text-muted small">-</span>
                                 </td>
                             </tr>
+                            <tr th:if="${#lists.isEmpty(resList)}">
+                                <td colspan="7" class="py-5 text-muted">예약 내역이 없습니다.</td>
+                            </tr>
                         </tbody>
                     </table>
+                    
+                    <nav aria-label="Page navigation" class="py-3 border-top">
+                        <ul class="pagination pagination-sm justify-content-center m-0">
+                            <li class="page-item" th:classappend="${currentPage <= 1} ? 'disabled'">
+							    <a class="page-link" th:href="@{/admin/dining/dashboard(page=${currentPage - 1}, keyword=${paraMap['keyword']}, status=${paraMap['status']}, diningId=${param.diningId})}">&laquo;</a>
+							</li>
+							<th:block th:if="${totalPage > 0}" th:each="i : ${#numbers.sequence(startPage, endPage)}">
+							    <li class="page-item" th:classappend="${i == currentPage} ? 'active'">
+							        <a class="page-link" th:href="@{/admin/dining/dashboard(page=${i}, keyword=${paraMap['keyword']}, status=${paraMap['status']}, diningId=${param.diningId})}" th:text="${i}"
+							           th:style="${i == currentPage} ? 'background-color: #9d815d; border-color: #9d815d; color: white;' : ''">1</a>
+							    </li>
+							</th:block>
+							<li class="page-item" th:classappend="${currentPage >= totalPage} ? 'disabled'">
+							    <a class="page-link" th:href="@{/admin/dining/dashboard(page=${currentPage + 1}, keyword=${paraMap['keyword']}, status=${paraMap['status']}, diningId=${param.diningId})}">&raquo;</a>
+							</li>
+                        </ul>
+                    </nav>
+                </div>
+                
+                <div class="text-end mb-3 mt-4">
+                    <button type="button" class="btn btn-outline-dark btn-sm" onclick="openConfig(1)">⚙ 인원 설정</button>
+                    <button type="button" class="btn btn-dark" onclick="showManualModal()" style="background: #9d815d; border: none;">+ 현장 등록</button>
                 </div>
             </div>
-        </div>
-        
-        <div class="text-end mb-3 mt-4 container">
-            <button type="button" class="btn btn-dark" onclick="showManualModal()" style="background: #9d815d; border: none;">+ 현장 예약 등록</button>
         </div>
         
         <div class="modal fade" id="manualResModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header" style="background: #f4f1ee;">
-                        <h5 class="modal-title fw-bold" style="color: #9d815d;">현장 예약 직접 등록</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 class="modal-title fw-bold" style="color: #9d815d;">현장 직접 등록</h5>
+                        <button type="button" class="btn-close" data-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <form id="manualResForm">
@@ -228,22 +451,94 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">닫기</button>
+						<button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">닫기</button>
                         <button type="button" class="btn btn-dark btn-sm" onclick="submitManualRes()" style="background: #9d815d; border: none;">등록</button>
                     </div>
                 </div>
             </div>
         </div>
 
+		<div class="modal fade" id="shopTodayResModal" tabindex="-1" aria-hidden="true">
+		    <div class="modal-dialog modal-lg modal-dialog-centered">
+		        <div class="modal-content">
+		            <div class="modal-header" style="background: #f4f1ee;">
+		                <h5 class="modal-title fw-bold" style="color: #9d815d;">오늘의 업장 예약 현황</h5>
+		                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+		            </div>
+		            <div class="modal-body">
+		                <table class="table text-center align-middle">
+		                    <thead class="table-light">
+		                        <tr>
+		                            <th>No</th>
+		                            <th>예약자명</th>
+		                            <th>예약시간</th>
+		                            <th>상태</th>
+		                        </tr>
+		                    </thead>
+		                    <tbody id="shopTodayResBody">
+		                        </tbody>
+		                </table>
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">닫기</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+
         <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header"><h5 class="modal-title fw-bold">예약 상세 정보</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-header"><h5 class="modal-title fw-bold">예약 상세 정보</h5><button type="button" class="btn-close" data-dismiss="modal"></button></div>
                     <div class="modal-body" id="detailModalBody"> 로딩 중... </div>
-                    <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">닫기</button></div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">닫기</button></div>
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="configModal" tabindex="-1" aria-labelledby="configModalLabel">
+		    <div class="modal-dialog modal-dialog-centered">
+		        <div class="modal-content">
+		            <div class="modal-header" style="background: #f4f1ee;">
+		                <h5 class="modal-title fw-bold" style="color: #9d815d;">
+		                    <span id="configTitleName"></span> 인원 설정 관리
+		                </h5>
+		                <button type="button" class="btn-close" data-dismiss="modal"></button>
+		            </div>
+		            <div class="modal-body">
+		                <div class="mb-4">
+		                    <label class="fw-bold small mb-2">설정할 매장 선택</label>
+		                    
+		                    <select id="selectConfigDining" class="form-select" onchange="openConfig(this.value)">
+							    <option th:each="shop : ${shopCounts}" 
+							            th:value="${shop.diningId}" 
+							            th:text="${shop.shopName}"
+							            th:selected="${shop.diningId == 1}">매장명</option>
+							</select>
+		                </div>
+		                
+		                <input type="hidden" id="configDiningId">
+		                
+		                <div class="mb-4 p-3 rounded" style="background: #f8f9fa; border: 1px dashed #9d815d;">
+						    <label class="fw-bold small mb-2 text-uppercase text-muted">매장 일일 전체 수용 인원</label>
+						    <div class="input-group">
+						        <input type="number" id="inputMaxTotal" oninput="checkLiveTotal()" class="form-control form-control-lg fw-bold text-center">
+						        <button class="btn btn-dark px-4" onclick="saveTotalCap()">전체 저장</button>
+						    </div>
+						    <div id="totalCheckMsg" class="mt-2 small fw-bold"></div>
+						    <small class="text-muted mt-1 d-block">* 모든 시간대를 포함한 매장의 총 정원입니다.</small>
+						</div>
+		                
+		                <label class="fw-bold small mb-2">시간대별 인원 제한</label>
+		                <div id="slotConfigList"></div>
+
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">닫기</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
         
     </div>
 </body>

@@ -28,9 +28,13 @@ public interface RoomTypeDAO {
 
 	// 상세 페이지 로그인 기반 조회기록 저장
 	void insertViewHistory(Integer memberNo, Long roomId);
-
-	// 상세 페이지 로그인 기반 추천 객실 조회
-	List<RoomTypeDTO> selectRecommendedRooms(Integer memberNo, Long roomId);
+	
+	// 상세페이지
+	// 로그인 -> 최근 본 객실 조회	
+	List<RoomTypeDTO> selectRecentRooms(Integer memberNo);
+	
+	// 비로그인 -> 추천 객실 조회
+	List<RoomTypeDTO> selectRecommendedRooms(Object object, Long roomId);
 
 	
 	

@@ -82,6 +82,22 @@ public class AdminReservationDAO_imple implements AdminReservationDAO {
 		return sqlsession.selectList("adminReservation.selectHotelList");
 	}
 
+	@Override
+	public List<Map<String, Object>> getNoShowList() {
+	    return sqlsession.selectList("adminReservation.getNoShowList");
+	}
+
+	@Override
+	public void updateNoShow(int reservationId) {
+	    sqlsession.update("adminReservation.updateNoShow", reservationId);
+	}
+
+	// 🔥 서비스에서 상태 체크용
+	@Override
+	public Map<String, Object> findReservation(int reservationId) {
+	    return sqlsession.selectOne("adminReservation.findReservation", reservationId);
+	}
+
 	
 	
 

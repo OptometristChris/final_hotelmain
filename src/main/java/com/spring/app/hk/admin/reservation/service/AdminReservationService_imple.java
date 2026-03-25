@@ -70,6 +70,15 @@ public class AdminReservationService_imple implements AdminReservationService {
 		return reservationDAO.selectHotelList();
 	}
 
+	@Override
+	public List<Map<String, Object>> getNoShowList() {
+	    return reservationDAO.getNoShowList();
+	}
+
+	@Override
+	public void noShowReservation(int reservationId) {
+	    reservationDAO.updateNoShow(reservationId);
+	}
 	
 	
 }

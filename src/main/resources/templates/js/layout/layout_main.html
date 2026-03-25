@@ -42,14 +42,21 @@
 
        /* --- 드롭다운 스타일 --- */
        .custom-dropdown { position: relative; display: inline-flex; align-items: center; }
-       .custom-dropdown .dropdown-toggle { color: #eee !important; font-size: 0.75rem; text-decoration: none; cursor: pointer; margin-left: 20px; }
+       .custom-dropdown .dropdown-toggle { 
+       		color: #eee !important; font-size: 0.75rem; text-decoration: none; 
+       		cursor: pointer; margin-left: 20px; 
+       	}
        .custom-dropdown .dropdown-menu {
-           position: absolute !important; top: 100% !important; right: 0 !important;
+           position: absolute !important; top: 100% !important; right: 0 !important; left: auto !important;
            background-color: #1a1a1a !important; border: 1px solid rgba(212, 175, 55, 0.5) !important;
-           min-width: 160px; padding: 0 !important; display: none;
+           min-width: 160px; padding: 0 !important; margin: 0 !important; display: none; overflow: hidden; 	
        }
-       .custom-dropdown.show .dropdown-menu { display: block; }
-       .custom-dropdown .dropdown-item { color: #fff !important; font-size: 0.75rem; padding: 12px 20px !important; display: flex; align-items: center; transition: 0.2s; }
+       .custom-dropdown.show .dropdown-menu { display: block;  }
+       .custom-dropdown .dropdown-item { 
+       		color: #fff !important; font-size: 0.75rem; padding: 12px 20px !important; 
+       		display: flex; align-items: center; width: 100% !important; box-sizing: border-box !important; transition: 0.2s; 
+       		border: none !important; background: transparent; margin: 0 !important;
+       	}
        .custom-dropdown .dropdown-item:hover { background-color: #d4af37 !important; color: #000 !important; }
 
        /* --- 네비게이션 스타일 --- */
@@ -108,7 +115,7 @@
 				<th:block th:if="${session.guestSession == null}" sec:authorize="hasRole('ADMIN_HQ')">
 				    <span class="user-welcome">
 				        <i class="fas fa-user-shield mr-1"></i>
-				        <span th:text="${session.sessionAdminDTO != null and session.sessionAdminDTO.name != null ? session.sessionAdminDTO.name : (#authentication != null and #authentication.principal != null and #authentication.principal.name != null ? #authentication.principal.name : #authentication.name)}"></span>님 환영합니다
+				        <span sec:authentication="name"></span>님 환영합니다
 				    </span>
 				    <a th:href="@{/admin/hq/dashboard}">관리자 대시보드</a>
 				    <a href="javascript:void(0);" onclick="logoutAdmin();">로그아웃</a>
@@ -118,7 +125,7 @@
 				<th:block th:if="${session.guestSession == null}" sec:authorize="hasRole('ADMIN_BRANCH')">
 				    <span class="user-welcome">
 				        <i class="fas fa-user-shield mr-1"></i>
-				        <span th:text="${session.sessionAdminDTO != null and session.sessionAdminDTO.name != null ? session.sessionAdminDTO.name : (#authentication != null and #authentication.principal != null and #authentication.principal.name != null ? #authentication.principal.name : #authentication.name)}"></span>님 환영합니다
+				        <span sec:authentication="name"></span>님 환영합니다
 				    </span>
 				    <a th:href="@{/admin/branch/dashboard}">관리자 대시보드</a>
 				    <a href="javascript:void(0);" onclick="logoutAdmin();">로그아웃</a>
@@ -130,7 +137,7 @@
                 <th:block th:if="${session.guestSession == null}" sec:authorize="isAuthenticated() and !hasAnyRole('ADMIN_HQ','ADMIN_BRANCH')">
                     <span class="user-welcome">
                         <i class="fas fa-user-circle mr-1"></i>
-                        <span th:text="${session.sessionMemberDTO != null and session.sessionMemberDTO.name != null ? session.sessionMemberDTO.name : (#authentication != null and #authentication.principal != null and #authentication.principal.name != null ? #authentication.principal.name : #authentication.name)}"></span>님 환영합니다
+                        <span sec:authentication="name"></span>님 환영합니다
                     </span>
                     <a th:href="@{/security/member/mypage}">마이페이지</a>
                     <a href="javascript:void(0);" onclick="logoutMember();">로그아웃</a>
@@ -164,25 +171,22 @@
 					    <strong>CIEL</strong>
 					</a>
                     <ul class="navbar-nav">
-					    <li class="nav-item"><a class="nav-link" th:href="@{/room/list}">객실</a></li>
-					    <li class="nav-item"><a class="nav-link" th:href="@{/dining/all}">다이닝</a></li>
-					    <li class="nav-item"><a class="nav-link" th:href="@{/promotion/list}">프로모션</a></li>
-					
-					    <th:block sec:authorize="!hasAnyRole('ADMIN_HQ','ADMIN_BRANCH')">
-					        <li class="nav-item"><a class="nav-link" th:href="@{/shuttle/confirm/view}">객실 예약확인</a></li>
-					        <li class="nav-item"><a class="nav-link" th:href="@{/dining/reservation_search}">다이닝 내역조회</a></li>
-					    </th:block>
-					
-					    <li class="nav-item"><a class="nav-link" th:href="@{/hotel/location}">호텔위치</a></li>
-					
-					    <th:block th:if="${session.guestSession == null}" sec:authorize="hasRole('ADMIN_HQ')">
-					        <li class="nav-item"><a class="nav-link" th:href="@{/admin/banner/write}">배너관리</a></li>
-					    </th:block>
-					
-					    <th:block th:if="${session.guestSession == null}" sec:authorize="hasAnyRole('ADMIN_HQ','ADMIN_BRANCH')">
-					        <li class="nav-item"><a class="nav-link" th:href="@{/admin/revenue}">수익관리</a></li>
-					    </th:block>
-					</ul>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/room/list}">객실</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/dining/all}">다이닝</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/promotion/list}">프로모션</a></li>
+						<th:block sec:authorize="!hasAnyRole('ADMIN_HQ','ADMIN_BRANCH')">
+                        	<li class="nav-item"><a class="nav-link" th:href="@{/shuttle/confirm/view}">객실 예약확인</a></li>
+							<li class="nav-item"><a class="nav-link" th:href="@{/dining/reservation_search}">다이닝 내역조회</a></li>
+                        </th:block>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/hotel/location}">호텔위치</a></li>
+                        <th:block th:if="${session.guestSession == null}" sec:authorize="hasAnyRole('ADMIN_HQ')">
+                        	<li class="nav-item"><a class="nav-link" th:href="@{/admin/banner/write}">배너관리</a> </li>
+                        </th:block>
+                        <th:block th:if="${session.guestSession == null}" sec:authorize="hasAnyRole('ADMIN_HQ','ADMIN_BRANCH')">
+                        	<li class="nav-item"><a class="nav-link" th:href="@{/admin/revenue}">수익관리</a> </li>
+                        </th:block>
+                        
+                    </ul>
                 </nav>
             </div>
         </div>
@@ -253,7 +257,6 @@
                 },
                 success: function(){
                     sessionStorage.removeItem("JWT");
-                    document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
                     location.href = contextPath + "index";
                 },
                 error: function(request, status, error){
@@ -281,7 +284,6 @@
                 },
                 success: function(){
                     sessionStorage.removeItem("JWT");
-                    document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
                     location.href = contextPath + "admin/login";
                 },
                 error: function(request, status, error){
@@ -297,7 +299,6 @@
             게스트는 현재 기존 세션 방식 유지이므로
             /guest/logout 으로 이동하여 guestSession 을 제거한다.
          */
-
         function logoutGuest() {
             location.href = contextPath + "guest/logout";
         }

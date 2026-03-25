@@ -186,7 +186,7 @@
                                         <span th:text="${block.blockTime}" 
                                               th:class="${block.blockTime == 'ALL' ? 'badge bg-secondary' : ''}"></span>
                                     </td>
-                                    <td th:text="${block.reason}" class="text-start ps-4">사유 내용</td>
+                                    <td th:text="${block['reason'] ?: '-'}" class="text-start ps-4">사유 내용</td>
                                     <td>
                                         <button class="btn-delete" th:onclick="deleteBlock([[${block.blockId}]])">차단 해제</button>
                                     </td>

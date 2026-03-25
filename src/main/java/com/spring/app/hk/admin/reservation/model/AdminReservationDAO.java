@@ -26,6 +26,12 @@ public interface AdminReservationDAO {
 	
 	List<Map<String, Object>> getOverdueList();
 	
+	List<Map<String, Object>> getNoShowList();
+
+	void updateNoShow(int reservationId);
+
+	Map<String, Object> findReservation(int reservationId);
+	
 	// ----- 총괄관리자 ----- 
 	// 전체 객실 예약 리스트 조회
 	List<Map<String, Object>> selectAdminReservationList(Map<String, Object> param);
@@ -36,6 +42,8 @@ public interface AdminReservationDAO {
 
 	// 호텔 조회 필터 추가
 	List<Map<String, Object>> selectHotelList();
+
+	
 
 	
 

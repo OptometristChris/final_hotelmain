@@ -47,7 +47,8 @@ public class AdminReservationController {
 	    List<Map<String, Object>> stayList = reservationService.getStayList();
 	    List<Map<String, Object>> checkoutCompleteList = reservationService.getCheckoutCompleteList();
 	    List<Map<String, Object>> overdueList = reservationService.getOverdueList();
-
+	    List<Map<String, Object>> noShowList = reservationService.getNoShowList();
+	    
 	    // ===== KPI =====
 
 	    // 🔥 오늘 체크인 "전체 대상 수" (변하지 않는 값)
@@ -80,6 +81,7 @@ public class AdminReservationController {
 	    model.addAttribute("stayList", stayList);
 	    model.addAttribute("checkoutCompleteList", checkoutCompleteList);
 	    model.addAttribute("overdueList", overdueList);
+	    model.addAttribute("noShowList", noShowList);
 
 	    model.addAttribute("todayCheckinReserved", todayCheckinTotal); // 이름 유지
 	    model.addAttribute("todayCheckinDone", todayCheckinDone);
@@ -112,6 +114,15 @@ public class AdminReservationController {
 		return "redirect:/admin/reservation/manage";
 	}
 
+	// 노쇼처리
+	@PostMapping("/noshow")
+	public String noShow(@RequestParam("reservationId") int reservationId) {
+
+	    reservationService.noShowReservation(reservationId);
+
+	    return "redirect:/admin/reservation/manage";
+	}
+	
 	// ======= 총괄 관리자 ========= //
 	// 전체 객실 예약 리스트 조회 + 검색
 	@PreAuthorize("hasRole('ADMIN_HQ')")
@@ -146,7 +157,7 @@ public class AdminReservationController {
 	
 	
 	// 엑셀 다운로드
-	@PreAuthorize("hasRole('ADMIN_HQ')")
+	//@PreAuthorize("hasRole('ADMIN_HQ')")
 	@GetMapping("/excel")
 	public void downloadExcel(
 	        @RequestParam(value="name", required=false) String name,

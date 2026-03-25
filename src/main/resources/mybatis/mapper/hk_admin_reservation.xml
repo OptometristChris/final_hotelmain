@@ -123,6 +123,7 @@
 	</select>
 	
 	
+	<!-- 체크아웃 지연 -->
 	<select id="getOverdueList" resultType="map">
 		SELECT
 		    r.reservation_id,
@@ -143,6 +144,43 @@
 		AND r.checkout_date <![CDATA[ < ]]> TRUNC(SYSDATE)
 		
 		ORDER BY r.checkout_date
+	</select>
+	
+	<!-- 체크인 지연 (노쇼) -->
+	<select id="getNoShowList" resultType="map">
+		SELECT
+		    r.reservation_id,
+		    m.name,
+		    rt.room_name,
+		    r.checkin_date,
+		    r.checkout_date,
+		    r.total_price
+		FROM reservation r
+		
+		JOIN TBL_MEMBER_SECURITY m
+		ON r.member_no = m.member_no
+		
+		JOIN room_type rt
+		ON r.room_type_id = rt.room_type_id
+		
+		WHERE r.reservation_status = 'CONFIRMED'
+		AND r.checkin_date <![CDATA[ < ]]> TRUNC(SYSDATE)
+		
+		ORDER BY r.checkin_date
+	</select>
+	
+	<!-- 노쇼처리 -->
+	<update id="updateNoShow">
+		UPDATE reservation
+		SET reservation_status = 'NO_SHOW'
+		WHERE reservation_id = #{reservationId}
+	</update>
+	
+	<!-- 상태조회 -->
+	<select id="findReservation" resultType="map">
+		SELECT reservation_status, checkin_date
+		FROM reservation
+		WHERE reservation_id = #{reservationId}
 	</select>
 	
 	

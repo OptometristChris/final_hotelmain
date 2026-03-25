@@ -239,21 +239,17 @@ public class ReservationService_imple implements ReservationService {
             throw new RuntimeException("예약 정보 저장 중 오류가 발생했습니다. " + e.getMessage(), e);
         }
 
-        Object reservationIdObj = paraMap.get("reservation_id");
+        Long reservationId = (Long) paraMap.get("reservation_id");
 
-        if (!(reservationIdObj instanceof Number)) {
+        if (reservationId == null) {
             System.out.println("❌ reservation_id 가 null 입니다.");
             throw new RuntimeException("예약번호 생성에 실패했습니다.");
         }
 
-        Long reservationId = ((Number) reservationIdObj).longValue();
-
-        String reservationCode = reservationDAO.selectReservationCodeById(reservationId);
-
-        if (reservationCode == null || reservationCode.isBlank()) {
-            System.out.println("❌ reservation_code 조회 실패");
-            throw new RuntimeException("예약코드 조회에 실패했습니다.");
-        }
+        // 예약 코드 생성
+        String reservationCode = "R"
+                + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                + "-" + String.format("%04d", reservationId);
 
         // ======================= SMS 발송 =======================
         try {
@@ -331,10 +327,7 @@ public class ReservationService_imple implements ReservationService {
 	public Map<String, Object> getReservationByCode(String code) {
 		return reservationDAO.findByReservationCode(code);
 	}
-
-
 	
-
 
 	// 마이페이지 예약 목록 조회
 	@Override

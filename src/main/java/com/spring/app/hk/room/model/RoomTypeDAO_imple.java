@@ -63,14 +63,21 @@ public class RoomTypeDAO_imple implements RoomTypeDAO {
 		
 	}
 
-	// 상세 페이지 로그인 기반 추천 객실 조회
+	// 상세 페이지 최근 객실 조회
 	@Override
-	public List<RoomTypeDTO> selectRecommendedRooms(Integer memberNo, Long roomId) {
-		Map<String, Object> paramMap = new HashMap<>();
-	    paramMap.put("memberNo", memberNo);
-	    paramMap.put("currentRoomId", roomId);
+    public List<RoomTypeDTO> selectRecentRooms(Integer memberNo) {
+        return sqlsession.selectList("room.selectRecentRooms", memberNo);
+    }
 
-	    return sqlsession.selectList("room.selectRecommendedRooms", paramMap);
-	}
+	// 상세페이지 추천 객실 조회
+	@Override
+    public List<RoomTypeDTO> selectRecommendedRooms(Object object, Long roomId) {
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("currentRoomId", roomId);
+
+        return sqlsession.selectList("room.selectRecommendedRooms", paramMap);
+    }
+
 	
 }

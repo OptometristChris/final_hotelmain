@@ -96,26 +96,36 @@ public class RoomController {
 	                                @RequestParam("room_id") Long roomId,
 	                                HttpSession session) {
 
-	     // 1️. 상세 정보 조회
+	     // ① 기본 정보 조회 (공통)
 	     RoomTypeDTO room = roomService.getRoomDetail(roomId);
 	     List<String> imageList = roomService.getRoomImages(roomId);
 
 	     mav.addObject("room", room);
 	     mav.addObject("imageList", imageList);
 
-	     // 2️. 로그인 사용자 확인
-	     Session_MemberDTO loginUser = (Session_MemberDTO) session.getAttribute("sessionMemberDTO");
+	     // ② 로그인 사용자 확인
+	     Session_MemberDTO loginUser =
+	             (Session_MemberDTO) session.getAttribute("sessionMemberDTO");
 
 	     if(loginUser != null) {
+	         // 🔹 로그인 사용자 → 최근 본 객실
 
-	    	 Integer memberNo = loginUser.getMemberNo();
+	         Integer memberNo = loginUser.getMemberNo();
 
-	         // 3️. 조회 기록 저장
+	         // 1. 조회 기록 저장
 	         roomService.insertViewHistory(memberNo, roomId);
 
-	         // 4️. 추천 객실 조회
+	         // 2. 최근 본 객실 조회
+	         List<RoomTypeDTO> recentList =
+	                 roomService.getRecentRooms(memberNo);
+
+	         mav.addObject("recentList", recentList);
+
+	     } else {
+	         // 🔹 비로그인 사용자 → 추천 객실
+
 	         List<RoomTypeDTO> recommendList =
-	                 roomService.getRecommendedRooms(memberNo, roomId);
+	                 roomService.getRecommendedRooms(null, roomId);
 
 	         mav.addObject("recommendList", recommendList);
 	     }
@@ -144,6 +154,7 @@ public class RoomController {
     @ResponseBody
     public List<RoomTypeDTO> compareRooms(@RequestBody List<Long> roomIds){
 
+    	 System.out.println("roomIds = " + roomIds);
         return roomService.getRoomsByIds(roomIds);
     }
     
