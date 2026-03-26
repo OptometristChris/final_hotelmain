@@ -46,6 +46,11 @@ public class CustomUserDetails implements UserDetails {
 		// (너의 DTO에서는 memberid 이다.)
 		return memberDto.getMemberid();
 	}
+	
+	// 이름
+	public String getName() {
+	    return memberDto.getName();
+	}
 
 
 	// 비밀번호

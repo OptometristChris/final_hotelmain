@@ -49,6 +49,12 @@ public class CustomAdminDetails implements UserDetails {
 		// (너의 DTO에서는 adminid 이다.)
 		return adminDto.getAdminid();
 	}
+	
+	
+	// 이름
+	public String getName() {
+	    return adminDto.getName();
+	}
 
 
 	// 비밀번호
