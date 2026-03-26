@@ -51,7 +51,7 @@ pipeline {
                             docker stop $CONTAINER_NAME || true
                             docker rm $CONTAINER_NAME || true
                             docker pull $DOCKER_IMAGE:latest
-                            docker run -d --name $CONTAINER_NAME -p 8001:8001 $DOCKER_IMAGE:latest
+                            docker run -d --name $CONTAINER_NAME -p 8001:8001 -v /home/ubuntu/file_images:/app/file_images $DOCKER_IMAGE:latest
                         '
                     """
                 }
