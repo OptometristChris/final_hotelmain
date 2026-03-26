@@ -225,6 +225,42 @@
         }
 
         form { margin: 0; }
+        
+        /* 🔥 버튼 강제 스타일 적용 */
+button {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    background: #3b82f6;
+    color: white;
+    transition: all 0.2s;
+}
+
+/* hover 효과 */
+button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+/* 체크인 */
+button[onclick*="CHECKIN"] {
+    background: #10b981;
+}
+
+/* 노쇼 */
+button[onclick*="NOSHOW"] {
+    background: #ef4444;
+}
+
+/* 체크아웃 */
+button[onclick*="CHECKOUT"] {
+    background: #f97316;
+}
     </style>
 </head>
 
@@ -292,11 +328,11 @@
                                 <div class="flex-actions">
                                     <form th:action="@{/admin/reservation/checkin}" method="post">
                                         <input type="hidden" name="reservationId" th:value="${r['RESERVATION_ID']}">
-                                        <button class="btn btn-success">체크인</button>
+                                        <button onclick="changeStatus('CHECKIN')">체크인</button>
                                     </form>
                                     <form th:action="@{/admin/reservation/noshow}" method="post">
                                         <input type="hidden" name="reservationId" th:value="${r['RESERVATION_ID']}">
-                                        <button class="btn btn-outline-danger">노쇼</button>
+                                        <button onclick="changeStatus('NOSHOW')">노쇼 처리</button>
                                     </form>
                                 </div>
                             </td>
@@ -310,7 +346,7 @@
                             <td>
                                 <form th:action="@{/admin/reservation/checkout}" method="post">
                                     <input type="hidden" name="reservationId" th:value="${r['RESERVATION_ID']}">
-                                    <button class="btn btn-primary">즉시 체크아웃</button>
+                                    <button onclick="changeStatus('CHECKOUT')">즉시 체크아웃</button>
                                 </form>
                             </td>
                         </tr>
@@ -379,7 +415,28 @@
                         <td th:text="${r['NAME']}"></td>
                         <td th:text="${r['ROOM_NAME']}"></td>
                         <td th:text="${#dates.format(r['CHECKOUT_DATE'],'yyyy-MM-dd')}"></td>
-                        <td><span class="badge badge-info">투숙 중</span></td>
+                       <td>
+						    <div style="display:flex; align-items:center; gap:8px;">
+						        
+						        <span class="badge badge-info">투숙 중</span>
+						
+						        <!-- 오늘 체크아웃인 경우만 버튼 노출 -->
+						        <form th:if="${#dates.format(r['CHECKOUT_DATE'],'yyyy-MM-dd') == #dates.format(#dates.createNow(),'yyyy-MM-dd')}"
+						              th:action="@{/admin/reservation/checkout}" 
+						              method="post"
+						              onsubmit="return confirm('정말 체크아웃 처리하시겠습니까?')"
+						              style="margin:0;">
+						
+						            <input type="hidden" name="reservationId" th:value="${r['RESERVATION_ID']}">
+						            
+						            <button class="btn btn-sm"
+						                    style="background:#ef4444; color:white; border-radius:999px;">
+						                체크아웃
+						            </button>
+						        </form>
+						
+						    </div>
+						</td>
                     </tr>
                 </tbody>
             </table>
@@ -387,12 +444,32 @@
     </div>
 
 <div class="text-center" style="margin-top:80px; margin-bottom:60px;">
-    <a href="/admin/branch/dashboard" class="btn btn-dark px-4 py-2">
+    <a href="/final_hotel/admin/branch/dashboard" class="btn btn-dark px-4 py-2">
         관리자 메인으로 이동
     </a>
 </div>
 
 </div>
+
+<script>
+function changeStatus(status) {
+
+    let message = "";
+
+    if(status === "CHECKIN") {
+        message = "체크인 처리하시겠습니까?";
+    } else if(status === "CHECKOUT") {
+        message = "체크아웃 처리하시겠습니까?";
+    } else if(status === "NOSHOW") {
+        message = "노쇼 처리하시겠습니까?";
+    }
+
+    if(confirm(message)) {
+        location.href = "/admin/reservation/updateStatus?status=" + status;
+    }
+
+}
+</script>
 
 </body>
 </html>
