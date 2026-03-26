@@ -129,7 +129,7 @@ app:
     from: "CIEL <jehyung00000@gmail.com>"
     
 file:
-  images-dir: file_images
+  images-dir: /app/file_images
 
 coolsms:
   api:
