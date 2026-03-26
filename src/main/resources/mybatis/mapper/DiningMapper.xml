@@ -281,27 +281,31 @@
     </select>
 
     <select id="getUnavailableTimeList" parameterType="map" resultType="string">
-        SELECT 'ALL' AS res_time
-        FROM tbl_dining_block
-        WHERE fk_dining_id = #{diningId}
-          AND block_date = #{resDate}
-          AND block_time = 'ALL'
-        UNION
-        SELECT block_time AS res_time
-        FROM tbl_dining_block
-        WHERE fk_dining_id = #{diningId}
-          AND block_date = #{resDate}
-          AND block_time != 'ALL'
-        UNION
-        SELECT r.res_time
-        FROM dining_reservations r
-        JOIN tbl_dining d ON r.dining_id = d.dining_id
-        WHERE r.dining_id = #{diningId}
-          AND r.res_date = #{resDate}
-          AND r.status != 'CANCELED'
-        GROUP BY r.res_time, d.max_total_capacity
-        HAVING SUM(r.adult_count + r.child_count + r.infant_count) >= d.max_total_capacity
-    </select>
+	    SELECT 'ALL' AS res_time
+	    FROM tbl_dining_block
+	    WHERE fk_dining_id = #{diningId}
+	      AND block_date = TO_DATE(#{resDate}, 'YYYY-MM-DD')
+	      AND block_time = 'ALL'
+	
+	    UNION
+	
+	    SELECT block_time AS res_time
+	    FROM tbl_dining_block
+	    WHERE fk_dining_id = #{diningId}
+	      AND block_date = TO_DATE(#{resDate}, 'YYYY-MM-DD')
+	      AND block_time != 'ALL'
+	
+	    UNION
+	
+	    SELECT r.res_time
+	    FROM dining_reservations r
+	    JOIN tbl_dining d ON r.dining_id = d.dining_id
+	    WHERE r.dining_id = #{diningId}
+	      AND r.res_date = TO_DATE(#{resDate}, 'YYYY-MM-DD')
+	      AND r.status != 'CANCELED'
+	    GROUP BY r.res_time, d.max_total_capacity
+	    HAVING SUM(r.adult_count + r.child_count + r.infant_count) >= d.max_total_capacity
+	</select>
 
     <select id="getTodayShopStats" resultType="com.spring.app.ih.dining.model.ShopReservationStatDTO">
         SELECT
@@ -350,18 +354,25 @@
         ORDER BY res_time ASC
     </select>
 
-    <select id="getAvailableSeatCount" resultType="int">
-        SELECT
-            (SELECT max_slot_capacity FROM tbl_dining_time_slot WHERE dining_id = #{diningId} AND res_time = #{resTime})
-            -
-            (SELECT NVL(SUM(adult_count + child_count + infant_count), 0)
-             FROM dining_reservations
-             WHERE dining_id = #{diningId}
-               AND res_date = #{resDate}
-               AND res_time = #{resTime}
-               AND status IN ('CONFIRMED', 'VISITED')) AS available_seat
-        FROM DUAL
-    </select>
+	<select id="getAvailableSeatCount" resultType="int">
+	    SELECT
+	        (
+	            SELECT max_slot_capacity
+	            FROM tbl_dining_time_slot
+	            WHERE dining_id = #{diningId}
+	              AND res_time = #{resTime}
+	        )
+	        -
+	        (
+	            SELECT NVL(SUM(adult_count + child_count + infant_count), 0)
+	            FROM dining_reservations
+	            WHERE dining_id = #{diningId}
+	              AND res_date = TO_DATE(#{resDate}, 'YYYY-MM-DD')
+	              AND res_time = #{resTime}
+	              AND status IN ('CONFIRMED', 'VISITED')
+	        ) AS available_seat
+	    FROM dual
+	</select>
 
     <update id="updateDiningDetails" parameterType="DiningDTO">
         UPDATE tbl_dining
