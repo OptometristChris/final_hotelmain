@@ -32,6 +32,47 @@
             .btn-delete { background: #fff; color: #cc0000; border: 1px solid #cc0000; }
             .btn-delete:hover { background: #cc0000; color: #fff; }
             .hotel-tag { color: #b08d2b; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; display: block; }
+            
+            /* 대괄호 자체의 스타일과 간격 조절 */
+			.hotel-bracket {
+			    color: #b08d2b; /* 호텔 시그니처 컬러가 있다면 적용 (선택사항) */
+			    font-weight: bold;
+			}
+			
+			/* 왼쪽 대괄호와 텍스트 사이 간격 */
+			.hotel-bracket:first-of-type {
+			    margin-right: -2px; /* 숫자를 줄이면 더 붙습니다 (0이면 완전히 밀착) */
+			}
+			
+			/* 오른쪽 대괄호와 텍스트 사이 간격 */
+			.hotel-bracket:last-of-type {
+			    margin-left: -2px;
+			}
+			
+			/* 답변 수정 버튼 전용 스타일 */
+			.btn-edit-trigger {
+			    background: #fff;
+			    color: #b08d2b; /* 호텔 시그니처 금색 */
+			    border: 1px solid #b08d2b;
+			    padding: 8px 25px;
+			    font-size: 0.9rem;
+			    font-weight: 600;
+			    transition: all 0.3s;
+			    margin-top: 30px; /* 답변 내용과의 간격을 넉넉히 확보 */
+			}
+			
+			.btn-edit-trigger:hover {
+			    background: #b08d2b;
+			    color: #fff;
+			}
+			
+			/* 수정 폼 내의 버튼 그룹 간격 */
+			.edit-btn-group {
+			    margin-top: 25px;
+			    display: flex;
+			    justify-content: flex-end;
+			    gap: 10px;
+			}
         </style>
     </th:block>
 </head>
@@ -43,7 +84,11 @@
 
         <div class="qna-detail-wrap" th:if="${qna != null}">
             <div class="qna-header">
-                <span class="hotel-tag" th:text="${qna['FK_HOTEL_ID'] == '1' ? '호텔 시엘 (CIEL)' : '르 시엘 (LE CIEL)'}">호텔명</span>
+                <span class="hotel-tag">
+				    <th:block th:each="h : ${hotelList}" th:if="${#strings.equals(qna['FK_HOTEL_ID'], h.HOTEL_ID)}">
+				        [[${h.HOTEL_NAME}]]
+				    </th:block>
+				</span>
                 <h3 class="qna-subject">
                     <i th:if="${qna['IS_SECRET'] == '1'}" class="bi bi-lock-fill" style="font-size: 1.1rem; margin-right: 5px;"></i>
                     <span th:text="${qna['TITLE']}">문의 제목</span>
@@ -54,33 +99,90 @@
                         <span><strong style="color:#333;">작성일</strong> [[${qna['Q_DATE']}]]</span>
                     </div>
                     <span th:classappend="${qna['ANS_CONTENT'] == null ? 'status-waiting' : 'status-complete'}" 
-                          class="status-badge"
-                          th:text="${qna['ANS_CONTENT'] == null ? '답변대기' : '답변완료'}">상태</span>
+					      class="status-badge">
+					    <i th:if="${qna['ANS_CONTENT'] != null}" class="bi bi-check-circle-fill"></i>
+					    [[${qna['ANS_CONTENT'] == null ? '답변대기' : '답변완료'}]]
+					</span>
                 </div>
             </div>
 
-            <div class="qna-content-box" th:text="${qna['CONTENT']}">문의 내용</div>
+            <div class="qna-content-box" th:utext="${qna['CONTENT']}">문의 내용</div>
 
             <div class="answer-wrap" th:if="${qna['ANS_CONTENT'] != null}">
-                <div class="answer-header">
-                    <span class="admin-name"><i class="bi bi-chat-dots-fill"></i> CIEL HOTEL 답변</span>
-                    <span class="answer-date" th:text="${qna['A_DATE']}">답변 날짜</span>
-                </div>
-                <div class="answer-body" th:text="${qna['ANS_CONTENT']}">답변 내용</div>
-            </div>
-            
-            <div class="answer-wrap" th:if="${qna['ANS_CONTENT'] == null}">
-                <p class="no-answer">담당자가 문의 내용을 확인 중입니다. 빠른 시일 내에 답변 드리겠습니다.</p>
-            </div>
+			    <div class="answer-header">
+			        <span class="admin-name">
+			            <i class="bi bi-chat-dots-fill"></i> 
+			            <span class="hotel-bracket">[</span>
+			            <th:block th:each="h : ${hotelList}" th:if="${#strings.equals(qna['FK_HOTEL_ID'], h.HOTEL_ID)}">[[${h.HOTEL_NAME}]]</th:block>
+			            <span class="hotel-bracket">]</span>
+			            공식 답변
+			        </span>
+			        <span class="answer-date" th:text="${qna['A_DATE']}">답변 날짜</span>
+			    </div>
+			
+			    <div id="answerDisplayArea">
+				    <div class="answer-body" th:text="${qna['ANS_CONTENT']}" style="white-space: pre-wrap;"></div>
+				    
+				    <div th:if="${isMyBranch}" style="text-align: right;">
+				        <button type="button" class="btn-custom btn-edit-trigger" onclick="toggleEditForm()">
+				            답변 수정하기
+				        </button>
+				    </div>
+				</div>
+				
+				<div th:if="${isMyBranch}" id="answerEditArea" style="display: none;">
+				    <form th:action="@{/cs/qnaAnswerEnd}" method="post" id="answerUpdateForm">
+				        <input type="hidden" name="qnaId" th:value="${qna['QNA_ID']}">
+				        <input type="hidden" name="hotelId" th:value="${qna['FK_HOTEL_ID']}">
+				        
+				        <textarea name="ansContent" id="ansUpdateContent" class="form-control" 
+				                  style="width:100%; min-height:180px; padding:15px; border:1px solid #b08d2b; resize:none;" 
+				                  th:text="${qna['ANS_CONTENT']}"></textarea>
+				                  
+				        <div class="edit-btn-group">
+				            <button type="button" class="btn-custom" onclick="toggleEditForm()" 
+				                    style="background:#f4f4f4; color:#666; border:1px solid #eee; padding:10px 30px;">취소</button>
+				            <button type="button" class="btn-custom" onclick="goUpdateAnswer()" 
+				                    style="background:#1a1a1a; color:#fff; border:none; padding:10px 30px;">수정 완료</button>
+				        </div>
+				    </form>
+				</div>
+			</div>
+			
+			<div class="answer-wrap" th:if="${qna['ANS_CONTENT'] == null}">
+			    <div th:if="${isMyBranch}" class="admin-answer-form">
+			        <div class="answer-header" style="border-bottom:none; margin-bottom:10px;">
+			            <span class="admin-name">
+			                <i class="bi bi-pencil-fill"></i> 
+			                <th:block th:each="h : ${hotelList}" th:if="${#strings.equals(qna['FK_HOTEL_ID'], h.HOTEL_ID)}">[[${h.HOTEL_NAME}]]</th:block>
+			                답변 작성
+			            </span>
+			        </div>
+			        <form th:action="@{/cs/qnaAnswerEnd}" method="post" id="answerForm">
+			            <input type="hidden" name="qnaId" th:value="${qna['QNA_ID']}">
+			            <input type="hidden" name="hotelId" th:value="${qna['FK_HOTEL_ID']}">
+			            <textarea name="ansContent" id="ansContent" class="form-control" 
+			                      style="width:100%; min-height:150px; padding:15px; border:1px solid #ddd; resize:none;" 
+			                      placeholder="답변 내용을 입력해주세요."></textarea>
+			            <div style="text-align:right; margin-top:15px;">
+			                <button type="button" class="btn-custom" onclick="goAnswer()" 
+			                        style="background:#1a1a1a; color:#fff; border:none; padding:10px 30px;">답변 등록</button>
+			            </div>
+			        </form>
+			    </div>
+			
+			    <p th:unless="${isMyBranch}" class="no-answer">해당 지점에서 문의 내용을 확인 중입니다. 빠른 시일 내에 답변 드리겠습니다.</p>
+			</div>
 
             <div class="btn-group">
 			    <a th:href="@{/cs/list(hotelId=${qna['FK_HOTEL_ID']})}" class="btn-custom btn-list">목록으로</a>
 			
-			    <a th:if="${isMemberOwner or isGuestOwner}" 
-			       th:href="@{/cs/qnaUpdate(qnaId=${qna['QNA_ID']}, hotelId=${qna['FK_HOTEL_ID']})}" 
-			       class="btn-custom btn-list" style="border: 1px solid #1a1a1a; color: #1a1a1a;">
-			        수정하기
-			    </a>
+			    <th:block th:if="${(isMemberOwner or isGuestOwner) and qna['ANS_CONTENT'] == null}">
+			        <a th:href="@{/cs/qnaUpdate(qnaId=${qna['QNA_ID']}, hotelId=${qna['FK_HOTEL_ID']})}" 
+			           class="btn-custom btn-list" style="border: 1px solid #1a1a1a; color: #1a1a1a;">
+			            수정하기
+			        </a>
+			    </th:block>
 			
 			    <button type="button" 
 			            class="btn-custom btn-delete" 
@@ -99,18 +201,58 @@
 
 <th:block th:fragment="script">
     <script th:inline="javascript">
-	    function goDelete() {
-	        /* Thymeleaf 주석 인라인 문법을 사용하여 에디터 오류 방지.
-	           뒤에 붙은 '0'이나 '1'은 정적 환경(서버 미실행)일 때 사용될 기본값입니다.
-	        */
-	        const qnaId = /*[[${qna['QNA_ID']}]]*/ 0;
-	        const hotelId = /*[[${qna['FK_HOTEL_ID']}]]*/ '1';
-	
-	        if(confirm("정말로 이 문의글을 삭제하시겠습니까?")) {
-	            // hotelId를 함께 넘겨주어야 삭제 후 해당 호텔 목록으로 돌아갈 수 있습니다.
-	            location.href = "/cs/qnaDelete?qna_id=" + qnaId + "&hotelId=" + hotelId;
-	        }
-	    }
+    	
+ 	// 수정 폼 토글 함수
+    function toggleEditForm() {
+        const displayArea = document.getElementById("answerDisplayArea");
+        const editArea = document.getElementById("answerEditArea");
+        
+        if (editArea.style.display === "none") {
+            displayArea.style.display = "none";
+            editArea.style.display = "block";
+        } else {
+            displayArea.style.display = "block";
+            editArea.style.display = "none";
+        }
+    }
+
+    // 수정 처리 함수
+    function goUpdateAnswer() {
+        const content = document.getElementById("ansUpdateContent").value.trim();
+        if(!content) {
+            alert("수정할 답변 내용을 입력해주세요.");
+            return;
+        }
+        if(confirm("수정된 내용을 저장하시겠습니까?")) {
+            document.getElementById("answerUpdateForm").submit();
+        }
+    }
+   
+   
+    function goAnswer() {
+        const content = document.getElementById("ansContent").value.trim();
+        if(!content) {
+            alert("답변 내용을 입력해주세요.");
+            return;
+        }
+        if(confirm("작성하신 답변을 등록하시겠습니까?")) {
+            document.getElementById("answerForm").submit();
+        }
+    }
+   
+	function goDelete() {
+    // qna 데이터가 대문자로 들어오는지 소문자로 들어오는지 확인 (Oracle은 보통 대문자)
+		const qnaId = /*[[${qna['QNA_ID']}]]*/ '0';
+		const hotelId = /*[[${qna['FK_HOTEL_ID']}]]*/ '0';
+           
+        // [핵심] 삭제 경로도 타임리프 URL 빌더 사용
+        const deleteBaseUrl = /*[[@{/cs/qnaDelete}]]*/ '/cs/qnaDelete';
+   
+        if(confirm("정말로 이 문의글을 삭제하시겠습니까?")) {
+        // 최종 이동 주소 예시: /final_hotel/cs/qnaDelete?qna_id=14&hotelId=1
+        	location.href = deleteBaseUrl + "?qna_id=" + qnaId + "&hotelId=" + hotelId;
+       }
+    }
     </script>
 </th:block>
 </body>
