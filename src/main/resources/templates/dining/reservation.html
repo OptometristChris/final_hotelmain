@@ -14,572 +14,496 @@
             --hotel-dark: #222222;
         }
 
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Noto Serif KR', serif;
-        }
+        body { background-color: #f8f9fa; font-family: 'Noto Serif KR', serif; }
 
         .hero-image {
-            width: 100%;
-            height: 400px;
-            background-size: cover;
-            background-position: center;
+            width: 100%; height: 400px;
+            background-size: cover; background-position: center;
             position: relative;
         }
-
         .hero-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.3);
         }
 
         .reserve-container {
-            max-width: 1100px;
-            margin: -100px auto 100px;
-            background: white;
-            padding: 60px;
-            position: relative;
-            z-index: 10;
+            max-width: 1100px; margin: -100px auto 100px;
+            background: white; padding: 60px;
+            position: relative; z-index: 10;
             border-radius: 5px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
 
-        .gold-text {
-            color: var(--hotel-gold);
-            font-weight: bold;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-        }
+        .gold-text { color: var(--hotel-gold); font-weight: bold; letter-spacing: 3px; text-transform: uppercase; font-size: 0.9rem; }
 
-        #calendar {
-            border: 1px solid #eee;
-            padding: 15px;
-            background: #fff;
-            margin-bottom: 30px;
-        }
-
-        .fc-toolbar-title {
-            font-size: 1.2rem !important;
-            font-weight: 700;
-            color: #333;
-        }
-
-        .fc-button-primary {
-            background-color: var(--hotel-dark) !important;
-            border: none !important;
-            border-radius: 0 !important;
-        }
+        #calendar { border: 1px solid #eee; padding: 15px; background: #fff; margin-bottom: 30px; }
+        .fc-toolbar-title { font-size: 1.2rem !important; font-weight: 700; color: #333; }
+        .fc-button-primary { background-color: var(--hotel-dark) !important; border: none !important; border-radius: 0 !important; }
 
         .time-slot-group h5 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 1.5rem;
-            color: var(--hotel-gold);
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
+            font-size: 1rem; font-weight: 600; margin-top: 1.5rem; color: var(--hotel-gold);
+            border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px;
         }
 
-        .btn-check {
-            display: none;
-        }
-
+        .btn-check { display: none; }
         .btn-outline-time {
-            border: 1px solid #ddd;
-            color: #666;
-            padding: 12px 0;
-            font-size: 0.85rem;
-            background-color: #fff;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            border: 1px solid #ddd; color: #666; padding: 12px 0; font-size: 0.85rem;
+            background-color: #fff; cursor: pointer; transition: all 0.2s; border-radius: 0;
+            display: flex; justify-content: center; align-items: center;
         }
-
         .btn-check:checked + .btn-outline-time {
-            background-color: var(--hotel-gold) !important;
-            border-color: var(--hotel-gold) !important;
-            color: #fff !important;
-            font-weight: bold;
+            background-color: var(--hotel-gold) !important; border-color: var(--hotel-gold) !important; color: #fff !important; font-weight: bold;
         }
-
         .btn-check:disabled + .btn-outline-time {
-            background-color: #f2f2f2 !important;
-            border-color: #eee !important;
-            color: #ccc !important;
-            cursor: not-allowed;
-            text-decoration: line-through;
-            opacity: 0.6;
+            background-color: #f2f2f2 !important; border-color: #eee !important; color: #ccc !important;
+            cursor: not-allowed; text-decoration: line-through;
         }
 
-        .section-title {
-            font-weight: 500;
-            border-left: 4px solid var(--hotel-gold);
-            padding-left: 15px;
-            margin-bottom: 25px;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: #555;
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-        }
-
-        .form-control {
-            border-radius: 0;
-            border: 1px solid #ddd;
-            box-shadow: none !important;
-            font-size: 0.95rem;
-            padding: 12px;
-        }
-
-        .form-control:focus {
-            border-color: var(--hotel-gold);
-        }
+        .form-label { font-weight: 600; color: #444; margin-bottom: 10px; display: block; font-size: 0.9rem; }
+        .form-control { border-radius: 0; border: 1px solid #ddd; padding: 12px; font-size: 0.95rem; }
+        .form-control:focus { border-color: var(--hotel-gold); box-shadow: none; }
 
         .terms-box {
-            height: 120px;
-            overflow-y: auto;
-            background: #fcfcfc;
-            border: 1px solid #eee;
-            padding: 15px;
-            font-size: 0.85rem;
-            line-height: 1.6;
-            color: #666;
+            background: #f9f9f9; border: 1px solid #eee; padding: 15px;
+            height: 120px; overflow-y: scroll; font-size: 0.85rem; color: #777; line-height: 1.6;
+            margin-bottom: 10px;
         }
 
-        .btn-gold {
-            background-color: var(--hotel-gold);
-            color: #fff;
-            border-radius: 0;
-            border: none;
-            padding: 15px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            transition: background-color 0.3s;
+        .btn-reserve-submit {
+            background-color: var(--hotel-gold); color: white !important;
+            border-radius: 0; padding: 20px; font-size: 1.1rem; font-weight: bold;
+            transition: 0.3s; border: none; letter-spacing: 2px;
         }
+        .btn-reserve-submit:hover { background-color: #846d4f; }
+        .btn-reserve-submit:disabled { background-color: #ccc; cursor: not-allowed; }
 
-        .btn-gold:hover {
-            background-color: #846d4f;
-            color: #fff;
-        }
-
-        .btn-gold:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        @media (max-width: 991px) {
-            .reserve-container {
-                margin: -50px 15px 60px;
-                padding: 30px 20px;
-            }
-
-            .hero-image {
-                height: 250px;
-            }
+        .section-title { font-weight: 500; border-left: 4px solid var(--hotel-gold); padding-left: 15px; margin-bottom: 25px; }
+        .btn-check:disabled + .btn-outline-time {
+            background-color: #f2f2f2 !important; border-color: #eee !important; color: #ccc !important;
+            cursor: not-allowed; text-decoration: line-through; opacity: 0.6;
         }
     </style>
 </head>
 
 <body>
-<div th:fragment="content">
-    <div class="hero-image" th:style="|background-image: url('@{/images/dining/}${dining.mainImg}');|">
-        <div class="hero-overlay"></div>
-    </div>
-
-    <div class="container reserve-container">
-        <div class="text-center mb-5">
-            <span class="gold-text">DINING RESERVATION</span>
-            <h1 class="display-4 mt-2" th:text="${dining.name}">레스토랑 이름</h1>
-            <hr style="width: 60px; border-top: 2px solid var(--hotel-gold); margin: 20px auto;">
+    <div th:fragment="content">
+        <div class="hero-image" th:style="|background-image: url('@{/images/dining/}${dining.main_img}');|">
+            <div class="hero-overlay"></div>
         </div>
 
-        <form id="resForm" th:action="@{/dining/reserve/confirm}" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <input type="hidden" id="diningId" name="diningId" th:value="${dining.diningId}">
-            <input type="hidden" id="fkHotelId" name="fkHotelId" th:value="${dining.fkHotelId}">
-
-            <div class="row">
-                <div class="col-lg-7">
-                    <h4 class="section-title">날짜 선택</h4>
-                    <div id="calendar" class="shadow-sm"></div>
-
-                    <h4 class="section-title mt-5">추가 요청사항</h4>
-                    <div class="mb-4">
-                        <textarea name="specialRequests" class="form-control" rows="4"
-                                  placeholder="알레르기 정보나 좌석 관련 요청사항이 있으시면 입력해 주세요."></textarea>
-                    </div>
-
-                    <h4 class="section-title mt-5">이용약관 동의</h4>
-                    <div class="terms-box">
-                        [예약 규정 안내]<br>
-                        1. 예약 시간 15분이 경과하면 예약이 자동 취소될 수 있습니다.<br>
-                        2. 당일 취소 및 No-Show 발생 시 향후 이용에 제한이 있을 수 있습니다.<br>
-                        회사는 예약 서비스 제공을 위해 성함, 연락처 등의 개인정보를 수집하며, 이는 예약 확인 및 안내 목적으로만 사용됩니다.
-                    </div>
-
-                    <div class="custom-control custom-checkbox mb-4">
-                        <input type="checkbox" class="custom-control-input" id="agreeTerms" required>
-                        <label class="custom-control-label" for="agreeTerms" style="margin-left:10px;">
-                            위의 예약 규정 및 개인정보 수집 이용에 동의합니다. (필수)
-                        </label>
-                    </div>
-                </div>
-
-                <div class="col-lg-5 px-lg-4">
-                    <h4 class="section-title mt-4 mt-lg-0">예약 세부 사항</h4>
-
-                    <div class="mb-4">
-                        <label class="form-label">RESERVATION DATE</label>
-                        <input type="text" id="selectedDate" name="resDate" class="form-control bg-light" readonly
-                               placeholder="달력에서 날짜를 선택해 주세요.">
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label">RESERVATION TIME</label>
-
-                        <div id="soldOutMessage" class="alert alert-danger text-center"
-                             style="display:none; padding:10px; font-size:0.9rem; border-radius:0;">
-                            <i class="bi bi-exclamation-circle"></i> 죄송합니다. 선택하신 날짜는 모든 시간대 예약이 마감되었습니다.
-                        </div>
-
-                        <div th:if="${#lists.isEmpty(lunchSlots) and #lists.isEmpty(dinnerSlots)}"
-                             class="alert alert-light text-center">
-                            <p class="mb-0">선택 가능한 예약 시간이 없습니다.</p>
-                        </div>
-
-                        <div th:if="${not #lists.isEmpty(lunchSlots)}" class="time-slot-group">
-                            <h5>LUNCH</h5>
-                            <div class="row g-2">
-                                <div class="col-4" th:each="slot : ${lunchSlots}">
-                                    <input type="radio" class="btn-check" name="resTime"
-                                           th:id="'time_' + ${slot}" th:value="${slot}">
-                                    <label class="btn btn-outline-time w-100" th:for="'time_' + ${slot}" th:text="${slot}"></label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div th:if="${not #lists.isEmpty(dinnerSlots)}" class="time-slot-group">
-                            <h5>DINNER</h5>
-                            <div class="row g-2">
-                                <div class="col-4" th:each="slot : ${dinnerSlots}">
-                                    <input type="radio" class="btn-check" name="resTime"
-                                           th:id="'time_' + ${slot}" th:value="${slot}">
-                                    <label class="btn btn-outline-time w-100" th:for="'time_' + ${slot}" th:text="${slot}"></label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label mb-0">인원 선택</label>
-                            <span id="seatCountMsg" class="small fw-bold"></span>
-                        </div>
-
-                        <div class="row text-center">
-                            <div class="col-4">
-                                <small class="text-muted">성인</small>
-                                <input type="number" id="adult_count" name="adultCount" class="form-control text-center"
-                                       value="2" min="1" th:max="${dining.maxTotalCapacity}">
-                            </div>
-                            <div class="col-4">
-                                <small class="text-muted">어린이</small>
-                                <input type="number" id="child_count" name="childCount" class="form-control text-center"
-                                       value="0" min="0" th:max="${dining.maxTotalCapacity}">
-                            </div>
-                            <div class="col-4">
-                                <small class="text-muted">유아</small>
-                                <input type="number" id="infant_count" name="infantCount" class="form-control text-center"
-                                       value="0" min="0" th:max="${dining.maxTotalCapacity}">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pt-4 border-top mt-4">
-                        <div class="row">
-                            <div class="form-group col-6">
-                                <label class="form-label">NAME</label>
-                                <input type="text" name="guestName" class="form-control"
-                                       th:value="${memberInfo != null ? memberInfo.name : ''}" required>
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label class="form-label">PHONE</label>
-                                <input type="text" name="guestPhone" class="form-control"
-                                       th:value="${memberInfo != null ? memberInfo.mobile : ''}" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group mt-3">
-                            <label class="form-label">EMAIL</label>
-                            <input type="email" name="guestEmail" class="form-control"
-                                   th:value="${memberInfo != null ? memberInfo.email : ''}" required>
-                        </div>
-
-                        <div class="form-group mt-3" th:if="${memberInfo == null}">
-                            <label class="form-label">PASSWORD (4 DIGITS)</label>
-                            <input type="password" name="resPassword" class="form-control"
-                                   maxlength="4" placeholder="조회용 비밀번호" required>
-                        </div>
-                    </div>
-
-                    <button type="button" id="btnSubmit" class="btn btn-gold btn-block w-100 mt-4"
-                            onclick="goReserve()" disabled>
-                        RESERVATION
-                    </button>
-                </div>
+        <div class="container reserve-container">
+            <div class="text-center mb-5">
+                <span class="gold-text">DINING RESERVATION</span>
+                <h1 class="display-4 mt-2" th:text="${dining.name}">레스토랑 이름</h1>
+                <hr style="width: 60px; border-top: 2px solid var(--hotel-gold); margin: 20px auto;">
             </div>
-        </form>
+
+            <form id="resForm" th:action="@{/dining/reserve/confirm}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" id="diningId" name="diningId" th:value="${dining.dining_id}">
+                <input type="hidden" id="fkHotelId" name="fkHotelId" th:value="${dining.fk_hotel_id}">
+
+                <div class="row">
+                    <div class="col-lg-7">
+                        <h4 class="section-title">날짜 선택</h4>
+                        <div id='calendar' class="shadow-sm"></div>
+
+                        <h4 class="section-title mt-5">추가 요청사항</h4>
+                        <div class="mb-4">
+                            <textarea name="specialRequests" class="form-control" rows="4"
+                                      placeholder="알레르기 정보나 좌석 관련 요청사항이 있으시면 입력해 주세요."></textarea>
+                        </div>
+
+                        <h4 class="section-title mt-5">이용약관 동의</h4>
+                        <div class="terms-box">
+                            [예약 규정 안내]<br>
+                            1. 예약 시간 15분이 경과하면 예약이 자동 취소될 수 있습니다.<br>
+                            2. 당일 취소 및 No-Show 발생 시 향후 이용에 제한이 있을 수 있습니다.<br>
+                            회사는 예약 서비스 제공을 위해 성함, 연락처 등의 개인정보를 수집하며, 이는 예약 확인 및 안내 목적으로만 사용됩니다.
+                        </div>
+                        <div class="custom-control custom-checkbox mb-4">
+                            <input type="checkbox" class="custom-control-input" id="agreeTerms" required>
+                            <label class="custom-control-label" for="agreeTerms" style="margin-left:10px;">위의 예약 규정 및 개인정보 수집 이용에 동의합니다. (필수)</label>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5 px-lg-4">
+                        <h4 class="section-title mt-4 mt-lg-0">예약 세부 사항</h4>
+
+                        <div class="mb-4">
+                            <label class="form-label">RESERVATION DATE</label>
+                            <input type="text" id="selectedDate" name="resDate" class="form-control bg-light" readonly placeholder="달력에서 날짜를 선택해 주세요.">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">RESERVATION TIME</label>
+
+                            <div id="soldOutMessage" class="alert alert-danger text-center" style="display: none; padding: 10px; font-size: 0.9rem; border-radius: 0;">
+                                <i class="bi bi-exclamation-circle"></i> 죄송합니다. 선택하신 날짜는 모든 시간대 예약이 마감되었습니다.
+                            </div>
+
+                            <div th:if="${#lists.isEmpty(lunchSlots) and #lists.isEmpty(dinnerSlots)}" class="alert alert-light text-center">
+                                <p class="mb-0">선택 가능한 예약 시간이 없습니다.</p>
+                            </div>
+
+                            <div class="time-slot-group" th:if="${not #lists.isEmpty(lunchSlots)}">
+                                <h5>LUNCH</h5>
+                                <div class="row row-cols-3 g-2">
+                                    <div th:each="time : ${lunchSlots}" class="col mb-2">
+                                        <input type="radio" class="btn-check" name="resTime" th:id="${'lunch_' + time}" th:value="${time}"
+                                               th:disabled="${reservedSlots != null && reservedSlots.contains(time)}" required>
+                                        <label class="btn btn-outline-time w-100" th:for="${'lunch_' + time}" th:text="${time}">12:00</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="time-slot-group" th:if="${not #lists.isEmpty(dinnerSlots)}">
+                                <h5>DINNER</h5>
+                                <div class="row row-cols-3 g-2">
+                                    <div th:each="time : ${dinnerSlots}" class="col mb-2">
+                                        <input type="radio" class="btn-check" name="resTime" th:id="${'dinner_' + time}" th:value="${time}"
+                                               th:disabled="${reservedSlots != null && reservedSlots.contains(time)}" required>
+                                        <label class="btn btn-outline-time w-100" th:for="${'dinner_' + time}" th:text="${time}">18:00</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <label class="fw-bold m-0"><i class="bi bi-people me-2"></i>인원 선택</label>
+                                <span id="seatCountMsg" class="small fw-bold"></span>
+                            </div>
+                            <div class="row g-2 text-center">
+                                <div class="col-4">
+                                    <small class="text-muted mb-1 d-block">성인</small>
+                                    <input type="number" id="adult_count" name="adultCount" class="form-control text-center" value="2" min="1">
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted mb-1 d-block">어린이</small>
+                                    <input type="number" id="child_count" name="childCount" class="form-control text-center" value="0" min="0">
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted mb-1 d-block">유아</small>
+                                    <input type="number" id="infant_count" name="infantCount" class="form-control text-center" value="0" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-top mt-4">
+                            <div class="row g-2 mb-2">
+                                <div class="form-group col-6">
+                                    <label class="form-label">NAME</label>
+                                    <input type="text" name="guestName" class="form-control" th:value="${memberInfo != null ? memberInfo.name : ''}" required>
+                                </div>
+                                <div class="form-group col-6">
+                                    <label class="form-label">PHONE</label>
+                                    <input type="text" name="guestPhone" class="form-control" th:value="${memberInfo != null ? memberInfo.mobile : ''}" required>
+                                </div>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="form-label">EMAIL</label>
+                                <input type="email" name="guestEmail" class="form-control" th:value="${memberInfo != null ? memberInfo.email : ''}" required>
+                            </div>
+                            <div class="form-group mb-2" th:if="${memberInfo == null}">
+                                <label class="form-label">PASSWORD (4 DIGITS)</label>
+                                <input type="password" name="resPassword" class="form-control" maxlength="4" placeholder="조회용 비밀번호" required>
+                            </div>
+                        </div>
+
+                        <button type="button" id="btnSubmit" class="btn btn-reserve-submit w-100"
+                                onclick="goReserve()" disabled>RESERVATION</button>
+
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
-<script th:fragment="script" src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script th:fragment="script" src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
-<script th:fragment="script" th:inline="javascript">
-    $(document).ready(function() {
+    <script th:fragment="script" th:inline="javascript">
+        $(document).ready(function() {
+            let latestAvailableSeat = null;
 
-        var calendarEl = document.getElementById('calendar');
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'ko',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: ''
-            },
-            selectable: true,
-            dateClick: function(info) {
-                var today = new Date();
-                today.setHours(0, 0, 0, 0);
+            function getGuestCounts() {
+                return {
+                    adult: parseInt($('#adult_count').val()) || 0,
+                    child: parseInt($('#child_count').val()) || 0,
+                    infant: parseInt($('#infant_count').val()) || 0
+                };
+            }
 
-                var clickedDate = new Date(info.dateStr);
+            function getRequestedTotal() {
+                const counts = getGuestCounts();
+                return counts.adult + counts.child + counts.infant;
+            }
 
-                if (clickedDate < today) {
-                    alert("지난 날짜는 예약이 불가합니다.");
+            function applySeatMessage(availableSeat, requested) {
+                const $msgSpan = $('#seatCountMsg');
+                latestAvailableSeat = availableSeat;
+
+                if (availableSeat === -1) {
+                    $msgSpan.text(' (조회 오류)').css('color', 'red');
+                } else if (availableSeat <= 0) {
+                    $msgSpan.text(' (예약 마감)').css('color', 'red');
+                } else if (availableSeat < requested) {
+                    $msgSpan.text(' (잔여 ' + availableSeat + '석 / 부족)').css('color', 'red');
+                } else {
+                    $msgSpan.text(' (' + availableSeat + '석 예약 가능)').css('color', '#9d815d');
+                }
+            }
+
+            function clampChangedInput($changed, availableSeat) {
+                if (availableSeat < 0) return;
+
+                const currentVal = parseInt($changed.val()) || 0;
+                const adult = parseInt($('#adult_count').val()) || 0;
+                const child = parseInt($('#child_count').val()) || 0;
+                const infant = parseInt($('#infant_count').val()) || 0;
+
+                let others = 0;
+                if ($changed.attr('id') === 'adult_count') {
+                    others = child + infant;
+                } else if ($changed.attr('id') === 'child_count') {
+                    others = adult + infant;
+                } else {
+                    others = adult + child;
+                }
+
+                const minAllowed = $changed.attr('id') === 'adult_count' ? 1 : 0;
+                const maxAllowed = Math.max(minAllowed, availableSeat - others);
+
+                if (currentVal > maxAllowed) {
+                    $changed.val(maxAllowed);
+                    alert('현재 선택한 날짜/시간에는 최대 ' + availableSeat + '명까지 예약 가능합니다.');
+                }
+            }
+
+            function validateAvailability(changedInput) {
+                const resDate = $('#selectedDate').val();
+                const resTime = $('input[name="resTime"]:checked').val();
+                const counts = getGuestCounts();
+                const requested = counts.adult + counts.child + counts.infant;
+
+                if (!(resDate && resTime)) {
+                    latestAvailableSeat = null;
+                    $('#seatCountMsg').text('');
+                    checkFormValidity();
                     return;
                 }
 
-                $('#selectedDate').val(info.dateStr);
-                loadUnavailableSlots(info.dateStr);
-                $('input[name="resTime"]').prop('checked', false);
-                $('#seatCountMsg').text('');
-                checkFormValidity();
+                $.ajax({
+                    url: '/admin/dining/check',
+                    type: 'POST',
+                    data: {
+                        'diningId': '[[${dining.dining_id}]]',
+                        'resDate': resDate,
+                        'resTime': resTime,
+                        'adult_count': counts.adult,
+                        'child_count': counts.child,
+                        'infant_count': counts.infant
+                    },
+                    beforeSend: function(xhr) {
+                        const token = $("meta[name='_csrf']").attr('content');
+                        const header = $("meta[name='_csrf_header']").attr('content');
+                        if (token && header) xhr.setRequestHeader(header, token);
+                    },
+                    success: function(result) {
+                        let availableSeat = parseInt(result);
+                        if (Number.isNaN(availableSeat)) availableSeat = -1;
+
+                        if (changedInput && availableSeat >= 0 && requested > availableSeat) {
+                            clampChangedInput($(changedInput), availableSeat);
+                        }
+
+                        const refreshedRequested = getRequestedTotal();
+                        applySeatMessage(availableSeat, refreshedRequested);
+                        checkFormValidity();
+                    },
+                    error: function() {
+                        latestAvailableSeat = -1;
+                        $('#seatCountMsg').text(' (조회 오류)').css('color', 'red');
+                        checkFormValidity();
+                    }
+                });
             }
-        });
 
-        calendar.render();
+            function loadUnavailableSlots(selectedDate) {
+                const diningId = '[[${dining.dining_id}]]';
+                const $timeInputs = $('input[name="resTime"]');
+                const $soldOutMsg = $('#soldOutMessage');
 
-        function loadUnavailableSlots(selectedDate) {
-            const diningId = "[[${dining.diningId}]]";
-            const $timeInputs = $('input[name="resTime"]');
-            const $soldOutMsg = $('#soldOutMessage');
+                $timeInputs.prop('disabled', false).prop('checked', false);
+                $soldOutMsg.hide();
+                latestAvailableSeat = null;
+                $('#seatCountMsg').text('');
 
-            $timeInputs.prop('disabled', false).prop('checked', false);
-            $soldOutMsg.hide();
+                $.ajax({
+                    url: '/admin/dining/getUnavailableSlots',
+                    type: 'GET',
+                    data: {
+                        'diningId': diningId,
+                        'resDate': selectedDate
+                    },
+                    success: function(unavailableList) {
+                        console.log('받아온 차단 목록:', unavailableList);
 
-            $.ajax({
-                url: "/admin/dining/getUnavailableSlots",
-                type: "GET",
-                data: {
-                    diningId: diningId,
-                    resDate: selectedDate
-                },
-                success: function(unavailableList) {
-                    console.log("받아온 차단 목록:", unavailableList);
+                        if (unavailableList && unavailableList.includes('ALL')) {
+                            $timeInputs.prop('disabled', true);
+                            $soldOutMsg.show();
+                        } else if (unavailableList) {
+                            unavailableList.forEach(function(time) {
+                                $("input[name='resTime'][value='" + time + "']").prop('disabled', true);
+                            });
+                        }
 
-                    if (unavailableList && unavailableList.includes("ALL")) {
-                        $timeInputs.prop('disabled', true);
-                        $soldOutMsg.show();
+                        checkFormValidity();
+                    },
+                    error: function() {
+                        console.error('예약 가능 시간 조회 실패');
                     }
-                    else if (unavailableList) {
-                        unavailableList.forEach(function(time) {
-                            $(`input[name="resTime"][value="${time}"]`).prop('disabled', true);
-                        });
+                });
+            }
+
+            function checkFormValidity() {
+                const isDateSelected = $('#selectedDate').val().trim() !== '';
+                const isTermsAgreed = $('#agreeTerms').is(':checked');
+                const isTimeSelected = $('input[name="resTime"]:checked').length > 0;
+
+                const nameVal = $('input[name="guestName"]').val().trim();
+                const phoneVal = $('input[name="guestPhone"]').val().trim();
+                const emailVal = $('input[name="guestEmail"]').val().trim();
+                const isGuestInfoValid = (nameVal !== '' && phoneVal !== '' && emailVal !== '');
+
+                const $pwInput = $('input[name="resPassword"]');
+                let isPasswordValid = true;
+                if ($pwInput.length > 0) {
+                    isPasswordValid = $pwInput.val().length === 4;
+                }
+
+                const requested = getRequestedTotal();
+                let isSeatValid = true;
+                if (isDateSelected && isTimeSelected) {
+                    if (latestAvailableSeat === null) {
+                        isSeatValid = false;
+                    } else if (latestAvailableSeat === -1) {
+                        isSeatValid = false;
+                    } else {
+                        isSeatValid = (requested <= latestAvailableSeat && latestAvailableSeat > 0);
+                    }
+                }
+
+                if (isDateSelected && isTermsAgreed && isTimeSelected && isGuestInfoValid && isPasswordValid && isSeatValid) {
+                    $('#btnSubmit').prop('disabled', false);
+                } else {
+                    $('#btnSubmit').prop('disabled', true);
+                }
+            }
+
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ko',
+                headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+                selectable: true,
+                dateClick: function(info) {
+                    var today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    var clickedDate = new Date(info.dateStr);
+
+                    if (clickedDate < today) {
+                        alert('지난 날짜는 예약이 불가합니다.');
+                        return;
                     }
 
+                    $('#selectedDate').val(info.dateStr);
+                    loadUnavailableSlots(info.dateStr);
                     checkFormValidity();
-                },
-                error: function() {
-                    console.error("예약 가능 시간 조회 실패");
                 }
             });
-        }
 
-        function validateAvailability() {
-            const resDate = $('#selectedDate').val();
-            const resTime = $('input[name="resTime"]:checked').val();
+            calendar.render();
+            setTimeout(function() {
+                calendar.updateSize();
+            }, 100);
+
+            $('#resForm input').on('input change', checkFormValidity);
+            $('input[name="guestName"], input[name="guestPhone"], input[name="guestEmail"], input[name="resPassword"]').on('input', checkFormValidity);
+            $('#agreeTerms').on('change', checkFormValidity);
+
+            $('input[name="resTime"]').on('click', function() {
+                validateAvailability();
+            });
+
+            $('#adult_count, #child_count, #infant_count').on('input change', function() {
+                const $this = $(this);
+                const value = parseInt($this.val());
+                const minVal = parseInt($this.attr('min')) || 0;
+                if (Number.isNaN(value) || value < minVal) {
+                    $this.val(minVal);
+                }
+
+                if ($('input[name="resTime"]:checked').length > 0) {
+                    validateAvailability(this);
+                } else {
+                    latestAvailableSeat = null;
+                    $('#seatCountMsg').text('');
+                    checkFormValidity();
+                }
+            });
+        });
+
+        function goReserve() {
+            var $pwInput = $('input[name="resPassword"]');
+            if ($pwInput.length > 0 && $pwInput.val().length !== 4) {
+                alert('조회용 비밀번호 4자리를 정확히 입력해주세요.');
+                $pwInput.focus();
+                return;
+            }
 
             const adult = parseInt($('#adult_count').val()) || 0;
             const child = parseInt($('#child_count').val()) || 0;
             const infant = parseInt($('#infant_count').val()) || 0;
             const requested = adult + child + infant;
 
-            if (resDate && resTime) {
-                $.ajax({
-                    url: "/admin/dining/check",
-                    type: "POST",
-                    data: {
-                        diningId: "[[${dining.diningId}]]",
-                        resDate: resDate,
-                        resTime: resTime,
-                        adult_count: adult,
-                        child_count: child,
-                        infant_count: infant
-                    },
-                    beforeSend: function(xhr) {
-                        const token = $("meta[name='_csrf']").attr("content");
-                        const header = $("meta[name='_csrf_header']").attr("content");
-                        if (token && header) {
-                            xhr.setRequestHeader(header, token);
-                        }
-                    },
-                    success: function(result) {
-                        const availableSeat = parseInt(result);
-                        const $msgSpan = $('#seatCountMsg');
+            const pMap = {
+                'diningId': $('#diningId').val(),
+                'resDate': $('#selectedDate').val(),
+                'resTime': $('input[name="resTime"]:checked').val(),
+                'adult_count': adult,
+                'child_count': child,
+                'infant_count': infant
+            };
 
-                        if (availableSeat === -1) {
-                            $msgSpan.text(" (조회 오류)").css("color", "red");
-                        }
-                        else if (availableSeat <= 0) {
-                            $msgSpan.text(" (예약 마감)").css("color", "red");
-                        }
-                        else if (availableSeat < requested) {
-                            $msgSpan.text(" (잔여 " + availableSeat + "석 / 부족)").css("color", "red");
-                        }
-                        else {
-                            $msgSpan.text(" (" + availableSeat + "석 예약 가능)").css("color", "#9d815d");
-                        }
+            $.ajax({
+                url: '/admin/dining/check',
+                type: 'POST',
+                data: pMap,
+                beforeSend: function(xhr) {
+                    const token = $("meta[name='_csrf']").attr('content');
+                    const header = $("meta[name='_csrf_header']").attr('content');
+                    if (token && header) xhr.setRequestHeader(header, token);
+                },
+                success: function(result) {
+                    const availableSeat = parseInt(result);
 
-                        checkFormValidity();
-                    },
-                    error: function() {
-                        $('#seatCountMsg').text(" (조회 오류)").css("color", "red");
-                        checkFormValidity();
+                    if (availableSeat >= requested) {
+                        if (confirm('입력하신 정보로 예약을 확정하시겠습니까?')) {
+                            $('#resForm').attr('action', '/dining/reserve/confirm');
+                            $('#resForm').submit();
+                        }
+                    } else if (availableSeat === -1) {
+                        alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                    } else {
+                        alert('죄송합니다. 현재 해당 시간대는 최대 ' + (availableSeat < 0 ? 0 : availableSeat) + '명까지 예약이 가능하여 예약이 불가합니다.');
                     }
-                });
-            }
+                },
+                error: function(xhr) {
+                    alert('통신 오류가 발생했습니다. 상태코드: ' + xhr.status);
+                }
+            });
         }
-
-        function checkFormValidity() {
-            const isDateSelected = $('#selectedDate').val().trim() !== '';
-            const isTermsAgreed = $('#agreeTerms').is(':checked');
-            const isTimeSelected = $('input[name="resTime"]:checked').length > 0;
-
-            const guestName = $('input[name="guestName"]').val()?.trim() || '';
-            const guestPhone = $('input[name="guestPhone"]').val()?.trim() || '';
-            const guestEmail = $('input[name="guestEmail"]').val()?.trim() || '';
-            const isGuestInfoValid = guestName !== '' && guestPhone !== '' && guestEmail !== '';
-
-            var $pwInput = $('input[name="resPassword"]');
-            var isPasswordValid = true;
-            if ($pwInput.length > 0) {
-                isPasswordValid = $pwInput.val().length === 4;
-            }
-
-            if (isDateSelected && isTermsAgreed && isTimeSelected && isGuestInfoValid && isPasswordValid) {
-                $('#btnSubmit').prop('disabled', false);
-            }
-            else {
-                $('#btnSubmit').prop('disabled', true);
-            }
-        }
-
-        $('#resForm input').on('input change', checkFormValidity);
-
-        $('input[name="guestName"], input[name="guestPhone"], input[name="guestEmail"], input[name="resPassword"]').on('input', checkFormValidity);
-
-        $('#agreeTerms').on('change', checkFormValidity);
-
-        $('input[name="resTime"]').on('click', function() {
-            validateAvailability();
-        });
-
-        $('#adult_count, #child_count, #infant_count').on('input change', function() {
-            const maxCap = parseInt("[[${dining.maxTotalCapacity}]]");
-            const adult = parseInt($('#adult_count').val()) || 0;
-            const child = parseInt($('#child_count').val()) || 0;
-            const infant = parseInt($('#infant_count').val()) || 0;
-            const total = adult + child + infant;
-
-            if (total > maxCap) {
-                alert("죄송합니다. 해당 업장의 일일 최대 수용 인원은 " + maxCap + "명입니다.");
-                $(this).val(0);
-                $('#btnSubmit').prop('disabled', true);
-                return;
-            }
-
-            if ($('input[name="resTime"]:checked').length > 0) {
-                validateAvailability();
-            }
-            else {
-                checkFormValidity();
-            }
-        });
-    });
-
-    function goReserve() {
-        var $pwInput = $('input[name="resPassword"]');
-        if ($pwInput.length > 0 && $pwInput.val().length !== 4) {
-            alert("조회용 비밀번호 4자리를 정확히 입력해주세요.");
-            $pwInput.focus();
-            return;
-        }
-
-        const adult = parseInt($('#adult_count').val()) || 0;
-        const child = parseInt($('#child_count').val()) || 0;
-        const infant = parseInt($('#infant_count').val()) || 0;
-        const requested = adult + child + infant;
-
-        const pMap = {
-            diningId: $('#diningId').val(),
-            resDate: $('#selectedDate').val(),
-            resTime: $('input[name="resTime"]:checked').val(),
-            adult_count: adult,
-            child_count: child,
-            infant_count: infant
-        };
-
-        $.ajax({
-            url: "/admin/dining/check",
-            type: "POST",
-            data: pMap,
-            beforeSend: function(xhr) {
-                const token = $("meta[name='_csrf']").attr("content");
-                const header = $("meta[name='_csrf_header']").attr("content");
-                if (token && header) {
-                    xhr.setRequestHeader(header, token);
-                }
-            },
-            success: function(result) {
-                const availableSeat = parseInt(result);
-
-                if (availableSeat >= requested) {
-                    if (confirm("입력하신 정보로 예약을 확정하시겠습니까?")) {
-                        $('#resForm').attr('action', '/dining/reserve/confirm');
-                        $('#resForm').submit();
-                    }
-                }
-                else if (availableSeat === -1) {
-                    alert("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-                }
-                else {
-                    alert("죄송합니다. 현재 해당 시간대는 최대 " + (availableSeat < 0 ? 0 : availableSeat) + "명까지 예약이 가능하여 예약이 불가합니다.");
-                }
-            },
-            error: function(xhr) {
-                alert("통신 오류가 발생했습니다. 상태코드: " + xhr.status);
-            }
-        });
-    }
-</script>
+    </script>
 </body>
 </html>
