@@ -26,6 +26,7 @@ import com.spring.app.jh.security.model.AdminDAO;
 import com.spring.app.jh.security.model.MemberDAO;
 import com.spring.app.jh.security.model.RefreshTokenDAO;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -243,14 +244,34 @@ public class JwtAuthService_imple implements JwtAuthService {
                        HttpServletRequest request,
                        HttpServletResponse response) {
 
-        refreshTokenDAO.deleteRefreshToken(principalType, principalNo);
+        // 1. refresh token DB 정리
+        if (principalType != null && principalNo != null) {
+            refreshTokenDAO.deleteRefreshToken(principalType, principalNo);
+        }
 
+        // 2. SecurityContext 정리
         SecurityContextHolder.clearContext();
 
+        // 3. 세션 무효화
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
+
+        // 4. 인증 관련 쿠키 삭제
+        expireCookie(response, "accessToken", "/");
+        expireCookie(response, "refreshToken", "/");
+        expireCookie(response, "JSESSIONID", "/");
+
+        // CSRF 쿠키도 같이 비우고 싶으면 추가
+        expireCookie(response, "XSRF-TOKEN", "/");
+    }
+
+    private void expireCookie(HttpServletResponse response, String cookieName, String path) {
+        Cookie cookie = new Cookie(cookieName, null);
+        cookie.setPath(path);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 
     // =====================================================================
