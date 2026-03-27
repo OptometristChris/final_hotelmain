@@ -31,6 +31,7 @@
 	        JOIN room_image RI ON RT.room_type_id = RI.room_type_id
 	        WHERE RT.is_active = 'Y'
 	          AND RI.is_main = 'Y'
+	          AND RT.APPROVE_STATUS = 'APPROVED'
 	        ORDER BY DBMS_RANDOM.VALUE
 	    ) WHERE ROWNUM <= 2
 	    ]]>
