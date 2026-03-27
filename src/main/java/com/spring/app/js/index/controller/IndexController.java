@@ -50,60 +50,79 @@ public class IndexController {
 
     @GetMapping("/search")
     public String searchRooms(HttpServletRequest request, Model model) {
+
+        // 1. 공통 파라미터
         String reserveType = request.getParameter("reserveType");
+        String hotel = request.getParameter("hotel");
         String hotelId = request.getParameter("hotelId");
 
-        if (reserveType == null || reserveType.isBlank()) {
-            reserveType = "room";
+        // hotel 우선, 없으면 hotelId fallback
+        if (hotel == null || hotel.isBlank()) {
+            hotel = hotelId;
         }
 
+        // 2. 다이닝 예약
         if ("dining".equals(reserveType)) {
             String diningType = request.getParameter("diningType");
-            return "redirect:/dining/all?hotel_id=" + (hotelId == null ? "" : hotelId)
-                    + "&d_type=" + (diningType == null ? "" : diningType);
+            return "redirect:/dining/all?hotel_id=" + hotel + "&d_type=" + diningType;
         }
 
-        String daterange = request.getParameter("daterange");
-        String capacity = request.getParameter("capacity");
-        String filterCheckIn = request.getParameter("filter_check_in");
-        String filterCheckOut = request.getParameter("filter_check_out");
+        // 3. 객실 검색 파라미터
+        String roomGrade = request.getParameter("room_grade");
+        String bedType   = request.getParameter("bed_type");
+        String viewType  = request.getParameter("view_type");
+        String capacity  = request.getParameter("capacity");
+        String sort      = request.getParameter("sort");
 
-        String checkIn = "";
-        String checkOut = "";
+        String checkIn  = request.getParameter("check_in");
+        String checkOut = request.getParameter("check_out");
 
-        if (daterange != null && !daterange.isBlank()) {
-            if (daterange.contains(" ~ ")) {
-                String[] dateParts = daterange.split(" ~ ");
-                if (dateParts.length == 2) {
+        // 기존 Final_hotel 방식 fallback
+        if ((checkIn == null || checkIn.isBlank()) || (checkOut == null || checkOut.isBlank())) {
+            String daterange = request.getParameter("daterange");
+
+            if (daterange != null && !daterange.isBlank()) {
+                String[] dateParts = null;
+
+                if (daterange.contains(" ~ ")) {
+                    dateParts = daterange.split(" ~ ");
+                }
+                else if (daterange.contains(" - ")) {
+                    dateParts = daterange.split(" - ");
+                }
+
+                if (dateParts != null && dateParts.length == 2) {
                     checkIn = dateParts[0].trim();
                     checkOut = dateParts[1].trim();
                 }
             }
-            else if (daterange.contains(" - ")) {
-                String[] dateParts = daterange.split(" - ");
-                if (dateParts.length == 2) {
-                    checkIn = dateParts[0].trim();
-                    checkOut = dateParts[1].trim();
-                }
-            }
-        }
-
-        if ((checkIn.isBlank() || checkOut.isBlank()) && filterCheckIn != null && filterCheckOut != null) {
-            checkIn = filterCheckIn.trim();
-            checkOut = filterCheckOut.trim();
         }
 
         Map<String, Object> paraMap = new HashMap<>();
-        paraMap.put("hotelId", hotelId);
+        paraMap.put("hotel", hotel);
+        paraMap.put("room_grade", roomGrade);
+        paraMap.put("bed_type", bedType);
+        paraMap.put("view_type", viewType);
+        paraMap.put("capacity", capacity);
+        paraMap.put("sort", sort);
+        paraMap.put("check_in", checkIn);
+        paraMap.put("check_out", checkOut);
+
+        // 뷰 호환용 fallback 키도 같이 유지
+        paraMap.put("hotelId", hotel);
         paraMap.put("checkIn", checkIn);
         paraMap.put("checkOut", checkOut);
-        paraMap.put("capacity", capacity);
+        paraMap.put("bedType", bedType);
 
+        // 필터용 호텔 목록
         List<Map<String, String>> hotelList = service.getHotelList();
         model.addAttribute("hotelList", hotelList);
 
+        // 검색 결과 객실 목록
         List<RoomTypeDTO> roomList = service.getAvailableRooms(paraMap);
         model.addAttribute("roomList", roomList);
+
+        // UI 유지용 파라미터 전달
         model.addAttribute("searchParams", paraMap);
 
         return "hk/room/list";
