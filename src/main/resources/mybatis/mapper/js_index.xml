@@ -40,10 +40,10 @@
 	    <![CDATA[
 	    SELECT * FROM (
 	        SELECT
-	            DINING_ID,
-	            FK_HOTEL_ID,
-	            NAME,
-	            REPLACE(MAIN_IMG, '/final_hotel', '') AS MAIN_IMG
+	            DINING_ID   AS dining_id,
+	            FK_HOTEL_ID AS fk_hotel_id,
+	            NAME        AS name,
+	            REPLACE(MAIN_IMG, '/final_hotel', '') AS main_img
 	        FROM tbl_dining
 	        ORDER BY DBMS_RANDOM.VALUE
 	    ) WHERE ROWNUM <= 3
@@ -102,20 +102,20 @@
 	</select>
 
     <select id="getHotelList" resultType="HashMap">
-        SELECT hotel_id AS HOTEL_ID,
-               hotel_name AS HOTEL_NAME
-        FROM tbl_hotel
-        WHERE active_yn = 'Y'
-          AND approve_status = 'APPROVED'
-        ORDER BY hotel_id ASC
-    </select>
+	    SELECT hotel_id AS hotel_id,
+	           hotel_name AS hotel_name
+	    FROM tbl_hotel
+	    WHERE active_yn = 'Y'
+	      AND approve_status = 'APPROVED'
+	    ORDER BY hotel_id ASC
+	</select>
 
-	 <select id="getHotelImages" parameterType="String" resultType="map">
+	<select id="getHotelImages" parameterType="String" resultType="map">
 	    SELECT
-	        image_id AS IMAGE_ID,
-	        REPLACE(image_url, '/final_hotel', '') AS IMAGE_URL,
-	        is_main AS IS_MAIN,
-	        sort_order AS SORT_ORDER
+	        image_id AS image_id,
+	        REPLACE(image_url, '/final_hotel', '') AS image_url,
+	        is_main AS is_main,
+	        sort_order AS sort_order
 	    FROM HOTEL_IMAGE
 	    WHERE fk_hotel_id = #{hotelId}
 	    ORDER BY is_main DESC, sort_order ASC
@@ -123,11 +123,11 @@
 
 	<select id="getBannerByHotelId" parameterType="String" resultType="map">
 	    SELECT
-	        banner_id AS BANNER_ID,
-	        title AS TITLE,
-	        subtitle AS SUBTITLE,
-	        REPLACE(image_url, '/final_hotel', '') AS IMAGE_URL,
-	        sort_order AS SORT_ORDER
+	        banner_id AS banner_id,
+	        title AS title,
+	        subtitle AS subtitle,
+	        REPLACE(image_url, '/final_hotel', '') AS image_url,
+	        sort_order AS sort_order
 	    FROM PROMOTION_BANNER
 	    WHERE fk_hotel_id = #{hotelId}
 	      AND banner_type = 'MAIN'

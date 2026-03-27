@@ -288,7 +288,6 @@ public class MemberController {
 
 
     // 마이페이지로
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("member/mypage")
     public String mypage(HttpSession session, Model model) {
 
@@ -339,7 +338,6 @@ public class MemberController {
 
 
     // 회원정보 수정 폼 페이지
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("member/profileEdit")
     public String profileEdit(HttpSession session, Model model) {
 
@@ -350,6 +348,7 @@ public class MemberController {
 
         MemberDTO memberdto = memberService.findByMemberNo(memberNo);
         model.addAttribute("memberdto", memberdto);
+        model.addAttribute("memberDto", memberdto);
 
         boolean canEditEmail =
                 memberdto != null
@@ -363,7 +362,6 @@ public class MemberController {
 
 
     // 회원정보 수정 저장
-    @PreAuthorize("hasRole('USER')")
     @PostMapping("member/profileEdit")
     public String profileEditEnd(MemberDTO memberdto,
                                  HttpSession session,
@@ -391,7 +389,6 @@ public class MemberController {
 
 
     // 회원탈퇴 form
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("member/withdraw")
     public String withdrawForm(HttpSession session, Model model) {
 

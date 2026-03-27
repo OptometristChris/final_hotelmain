@@ -38,37 +38,61 @@ public class CsController {
 
     @GetMapping("/list")
     public ModelAndView csList(ModelAndView mav,
-                               @RequestParam(value = "hotelId", defaultValue = "1") String hotelId,
-                               @RequestParam(value = "searchKeyword", defaultValue = "") String searchKeyword,
-                               HttpServletRequest request) {
-
-        String str_currentShowPageNo = request.getParameter("curPage");
-        int currentShowPageNo = (str_currentShowPageNo == null) ? 1 : Integer.parseInt(str_currentShowPageNo);
+                               @RequestParam(value = "hotelId", required = false, defaultValue = "1") String hotelId,
+                               @RequestParam(value = "searchKeyword", required = false, defaultValue = "") String searchKeyword,
+                               @RequestParam(value = "currentShowPageNo", required = false, defaultValue = "1") String currentShowPageNo) {
 
         Map<String, String> paraMap = new HashMap<>();
         paraMap.put("hotelId", hotelId);
         paraMap.put("searchKeyword", searchKeyword);
+        paraMap.put("currentShowPageNo", currentShowPageNo);
 
-        mav.addObject("hotelList", indexService.getHotelList());
-        mav.addObject("faqList", service.getFaqListByHotel(hotelId));
-
-        int totalCount = service.getQnaTotalCount(paraMap);
-        int sizePerPage = 10;
-        int totalPage = (int) Math.ceil((double) totalCount / sizePerPage);
-        int startRno = ((currentShowPageNo - 1) * sizePerPage) + 1;
-        int endRno = startRno + sizePerPage - 1;
-
-        paraMap.put("startRno", String.valueOf(startRno));
-        paraMap.put("endRno", String.valueOf(endRno));
-
+        List<Map<String, String>> faqList = service.getFaqListByHotel(hotelId);
         List<Map<String, String>> qnaList = service.getQnaListWithPaging(paraMap);
+        int totalCount = service.getQnaTotalCount(paraMap);
 
+        int sizePerPage = 10;
+        int curPage = 1;
+
+        try {
+            curPage = Integer.parseInt(currentShowPageNo);
+            if (curPage < 1) curPage = 1;
+        } catch (NumberFormatException e) {
+            curPage = 1;
+        }
+
+        int totalPage = (int) Math.ceil((double) totalCount / sizePerPage);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isAdmin = false;
+        boolean isHq = false;
+        String myHotelId = "";
+
+        if (auth != null && auth.getPrincipal() instanceof CustomAdminDetails) {
+            CustomAdminDetails adminDetails = (CustomAdminDetails) auth.getPrincipal();
+            AdminDTO adminDto = adminDetails.getAdminDto();
+
+            isAdmin = true;
+            isHq = auth.getAuthorities().stream()
+                    .anyMatch(a -> "ROLE_ADMIN_HQ".equals(a.getAuthority()));
+
+            if (adminDto != null && adminDto.getFk_hotel_id() != null) {
+                myHotelId = String.valueOf(adminDto.getFk_hotel_id());
+            }
+        }
+
+        mav.addObject("faqList", faqList);
         mav.addObject("qnaList", qnaList);
         mav.addObject("hotelId", hotelId);
         mav.addObject("searchKeyword", searchKeyword);
         mav.addObject("totalCount", totalCount);
-        mav.addObject("curPage", currentShowPageNo);
+        mav.addObject("curPage", curPage);
         mav.addObject("totalPage", totalPage);
+
+        mav.addObject("isAdmin", isAdmin);
+        mav.addObject("isHq", isHq);
+        mav.addObject("myHotelId", myHotelId);
 
         mav.setViewName("js/cs/csList");
         return mav;

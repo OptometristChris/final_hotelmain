@@ -280,9 +280,9 @@ h1 {
 			<div class="filter-wrapper">
 			    
 			    <div class="filter-row">
-			        <form id="filterForm" class="filter-group">
+			        <form id="filterForm" class="filter-group" th:action="@{/search}" method="get">
 			
-			            <select name="hotel">
+			            <select name="hotelId">
 			                <option value="">호텔 전체</option>
 			                
 			               <option th:each="hotel : ${hotelList}"
@@ -292,6 +292,8 @@ h1 {
 			           	   </option>
 			            </select>
 			
+			            <input type="hidden" name="reserveType" value="room" />
+
 			            <select name="room_grade">
 			                <option value="">객실등급 전체</option>
 			                <option value="DELUXE">DELUXE</option>
@@ -302,9 +304,9 @@ h1 {
 			
 			            <select name="bed_type" id="bedTypeSelect">
 			             <option value="">침대타입 전체</option>
-			             <option value="DOUBLE" th:selected="${searchParams?.bedType == 'DOUBLE'}">DOUBLE</option>
-			             <option value="TWIN" th:selected="${searchParams?.bedType == 'TWIN'}">TWIN</option>
-			             <option value="KING" th:selected="${searchParams?.bedType == 'KING'}">KING</option>
+			             <option value="DOUBLE" th:selected="${searchParams != null and searchParams.bedType == 'DOUBLE'}">DOUBLE</option>
+			             <option value="TWIN" th:selected="${searchParams != null and searchParams.bedType == 'TWIN'}">TWIN</option>
+			             <option value="KING" th:selected="${searchParams != null and searchParams.bedType == 'KING'}">KING</option>
 			         	</select>
 			
 			            <select name="view_type">
@@ -338,10 +340,10 @@ h1 {
 			    <div class="filter-row" style="margin-top:15px;">
 			        <div class="filter-date">
 			            <input type="date" id="filterCheckIn" name="filter_check_in"
-			                th:value="${searchParams?.checkIn}">
+			                th:value="${searchParams != null ? searchParams.checkIn : ""}">
 			            <span>~</span>
 			            <input type="date" id="filterCheckOut" name="filter_check_out"
-			                th:value="${searchParams?.checkOut}">
+			                th:value="${searchParams != null ? searchParams.checkOut : ""}">
 			        </div>
 			         
 			        <button type="submit" form="filterForm" class="filter-search-btn">

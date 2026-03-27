@@ -22,4 +22,5 @@ public class DiningDTO {
     private String menu_pdf;
     private String extra_info;
 	private String available_times;
+	private int max_total_capacity;
 }
