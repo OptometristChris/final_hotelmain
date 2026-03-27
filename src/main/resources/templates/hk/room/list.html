@@ -277,12 +277,12 @@ h1 {
 			    <div class="filter-row">
 			        <form id="filterForm" class="filter-group" th:action="@{/search}" method="get">
 
-						<select name="hotelId">
+						<select name="hotel">
 						    <option value="">호텔 전체</option>
 						    <option th:each="hotel : ${hotelList}"
 							        th:value="${hotel['hotel_id']}"
 							        th:text="${hotel['hotel_name']}"
-							        th:selected="${searchParams != null and #strings.equals(#strings.toString(hotel['hotel_id']), #strings.toString(searchParams['hotelId']))}">
+							        th:selected="${searchParams != null and #strings.equals(#strings.toString(hotel['hotel_id']), #strings.toString(searchParams['hotel']))}">
 							</option>
 						</select>
 
@@ -298,9 +298,9 @@ h1 {
 
 			            <select name="bed_type" id="bedTypeSelect">
 			             <option value="">침대타입 전체</option>
-			             <option value="DOUBLE" th:selected="${searchParams != null and searchParams['bedType'] == 'DOUBLE'}">DOUBLE</option>
-			             <option value="TWIN" th:selected="${searchParams != null and searchParams['bedType'] == 'TWIN'}">TWIN</option>
-			             <option value="KING" th:selected="${searchParams != null and searchParams['bedType'] == 'KING'}">KING</option>
+			             <option value="DOUBLE" th:selected="${searchParams != null and searchParams['bed_type'] == 'DOUBLE'}">DOUBLE</option>
+			             <option value="TWIN" th:selected="${searchParams != null and searchParams['bed_type'] == 'TWIN'}">TWIN</option>
+			             <option value="KING" th:selected="${searchParams != null and searchParams['bed_type'] == 'KING'}">KING</option>
 			         	</select>
 
 			            <select name="view_type">
@@ -311,10 +311,10 @@ h1 {
 
 			            <select name="capacity">
 						    <option value="">인원 전체</option>
-						    <option value="1" th:selected="${searchParams != null and searchParams['capacity'] == '1'}">1명</option>
-						    <option value="2" th:selected="${searchParams != null and searchParams['capacity'] == '2'}">2명</option>
-						    <option value="3" th:selected="${searchParams != null and searchParams['capacity'] == '3'}">3명</option>
-						    <option value="4" th:selected="${searchParams != null and searchParams['capacity'] == '4'}">4명 이상</option>
+						    <option value="1" th:selected="${searchParams != null and #strings.equals(#strings.toString(searchParams['capacity']), '1')}">1명</option>
+						    <option value="2" th:selected="${searchParams != null and #strings.equals(#strings.toString(searchParams['capacity']), '2')}">2명</option>
+						    <option value="3" th:selected="${searchParams != null and #strings.equals(#strings.toString(searchParams['capacity']), '3')}">3명</option>
+						    <option value="4" th:selected="${searchParams != null and #strings.equals(#strings.toString(searchParams['capacity']), '4')}">4명 이상</option>
 						</select>
 
 			        </form>
@@ -322,9 +322,9 @@ h1 {
 			        <div class="sort-group">
 			            <span>정렬</span>
 			            <select id="sortSelect">
-			                <option value="">기본순</option>
-			                <option value="priceAsc">가격 낮은순</option>
-			                <option value="priceDesc">가격 높은순</option>
+			                <option value="" th:selected="${searchParams == null or searchParams['sort'] == null or searchParams['sort'] == ''}">기본순</option>
+			                <option value="priceAsc" th:selected="${searchParams != null and searchParams['sort'] == 'priceAsc'}">가격 낮은순</option>
+			                <option value="priceDesc" th:selected="${searchParams != null and searchParams['sort'] == 'priceDesc'}">가격 높은순</option>
 			            </select>
 			        </div>
 
@@ -332,11 +332,17 @@ h1 {
 
 			    <div class="filter-row" style="margin-top:15px;">
 			        <div class="filter-date">
-			            <input type="date" id="filterCheckIn" name="filter_check_in"
-			                th:value="${searchParams != null ? searchParams['checkIn'] : ''}">
+			            <input type="date"
+			                   id="filterCheckIn"
+			                   name="check_in"
+			                   form="filterForm"
+			                   th:value="${searchParams != null ? searchParams['check_in'] : ''}">
 			            <span>~</span>
-			            <input type="date" id="filterCheckOut" name="filter_check_out"
-			                th:value="${searchParams != null ? searchParams['checkOut'] : ''}">
+			            <input type="date"
+			                   id="filterCheckOut"
+			                   name="check_out"
+			                   form="filterForm"
+			                   th:value="${searchParams != null ? searchParams['check_out'] : ''}">
 			        </div>
 
 			        <button type="submit" form="filterForm" class="filter-search-btn">
@@ -638,7 +644,7 @@ function loadMinPrice(roomId){
 
 function loadRooms() {
 
-    const hotel = document.querySelector("[name='hotelId']").value;
+    const hotel = document.querySelector("[name='hotel']").value;
     const roomGrade = document.querySelector("[name='room_grade']").value;
     const bedType = document.querySelector("[name='bed_type']").value;
     const viewType = document.querySelector("[name='view_type']").value;
