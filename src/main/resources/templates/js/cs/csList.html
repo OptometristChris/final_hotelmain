@@ -92,7 +92,7 @@
         <div class="faq-section">
             <div class="section-label-wrap">
                 <div class="section-label"><i class="bi bi-chat-quote-fill"></i> 자주 묻는 질문 (FAQ)</div>
-                <div th:if="${isAdmin != null and isAdmin and #strings.equals(hotelId, myHotelId)}">
+                <div th:if="${isAdmin and #strings.equals(hotelId, myHotelId)}">
                     <a th:href="@{/cs/faqWrite(hotelId=${hotelId})}" class="btn-write btn-faq-add">
                         <i class="bi bi-plus-lg"></i> FAQ 등록
                     </a>
@@ -136,7 +136,7 @@
                    href="javascript:void(0);"
                    th:onclick="checkAccess([[${qna.IS_SECRET}]], [[${qna.WRITER_NAME}]], [[${qna.QNA_ID}]], [[${qna.FK_HOTEL_ID}]])"
                    class="qna-item">
-                    <div class="col-num" th:text="${totalCount - ((currentShowPageNo-1) * 10) - status.index}">1</div>
+                    <div class="col-num" th:text="${totalCount - ((curPage-1) * 10) - status.index}">1</div>
                     <div class="col-title">
                         <i th:if="${qna.IS_SECRET == 'Y' || qna.IS_SECRET == '1'}" class="bi bi-lock-fill icon-lock"></i>
                         <span th:text="${qna.TITLE}">문의 제목</span>
@@ -168,12 +168,12 @@
             </div>
 
             <div class="pagination-container" th:if="${totalPage > 0}">
-                <a class="page-box" th:href="@{/cs/list(hotelId=${hotelId}, currentShowPageNo=1, searchKeyword=${searchKeyword})}"><i class="bi bi-chevron-double-left"></i></a>
+                <a class="page-box" th:href="@{/cs/list(hotelId=${hotelId}, curPage=1, searchKeyword=${searchKeyword})}"><i class="bi bi-chevron-double-left"></i></a>
                 <th:block th:each="p : ${#numbers.sequence(1, totalPage)}">
-                    <a class="page-box" th:classappend="${p == currentShowPageNo} ? 'active'" 
-                       th:href="@{/cs/list(hotelId=${hotelId}, currentShowPageNo=${p}, searchKeyword=${searchKeyword})}" th:text="${p}">1</a>
+                    <a class="page-box" th:classappend="${p == curPage} ? 'active'" 
+                       th:href="@{/cs/list(hotelId=${hotelId}, curPage=${p}, searchKeyword=${searchKeyword})}" th:text="${p}">1</a>
                 </th:block>
-                <a class="page-box" th:href="@{/cs/list(hotelId=${hotelId}, currentShowPageNo=${totalPage}, searchKeyword=${searchKeyword})}"><i class="bi bi-chevron-double-right"></i></a>
+                <a class="page-box" th:href="@{/cs/list(hotelId=${hotelId}, curPage=${totalPage}, searchKeyword=${searchKeyword})}"><i class="bi bi-chevron-double-right"></i></a>
             </div>
         </div>
     </div>
