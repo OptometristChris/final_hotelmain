@@ -201,40 +201,40 @@ h1 {
 	outline: none;
 }
 
-#compareItems{
-    display:flex;
-    align-items:center;
-    gap:15px;
-    flex-wrap:wrap;
+#compareItems {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	flex-wrap: wrap;
 }
 
-.compare-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
+.compare-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
 }
 
-.compare-table th{
-    font-size:18px;
-    font-weight:600;
-    padding:15px;
+.compare-table th {
+	font-size: 18px;
+	font-weight: 600;
+	padding: 15px;
 }
 
-.compare-table td{
-    padding:14px;
-    border-bottom:1px solid #eee;
+.compare-table td {
+	padding: 14px;
+	border-bottom: 1px solid #eee;
 }
 
-.compare-table tr:hover{
-    background:#fafafa;
+.compare-table tr:hover {
+	background: #fafafa;
 }
 
-.compare-room-img{
-    width:150px;
-    height:100px;
-    object-fit:cover;
-    border-radius:6px;
-    margin-bottom:8px;
+.compare-room-img {
+	width: 150px;
+	height: 100px;
+	object-fit: cover;
+	border-radius: 6px;
+	margin-bottom: 8px;
 }
 </style>
 
@@ -429,7 +429,7 @@ function openCalendar(roomId) {
 
             const calendarEl = document.getElementById("calendar");
 
-            if(calendarInstance !== null){
+            if (calendarInstance !== null) {
                 calendarInstance.destroy();
             }
 
@@ -440,8 +440,7 @@ function openCalendar(roomId) {
                 selectMirror: true,
                 unselectAuto: false,
 
-                select: function(info){
-
+                select: function(info) {
                     let start = info.startStr;
                     let end = new Date(info.endStr);
 
@@ -449,12 +448,12 @@ function openCalendar(roomId) {
 
                     let adjustedEnd =
                         end.getFullYear() + "-"
-                        + String(end.getMonth()+1).padStart(2,'0') + "-"
-                        + String(end.getDate()).padStart(2,'0');
+                        + String(end.getMonth() + 1).padStart(2, '0') + "-"
+                        + String(end.getDate()).padStart(2, '0');
 
                     const nights = calculateNights(start, adjustedEnd);
 
-                    if(nights <= 0){
+                    if (nights <= 0) {
                         return;
                     }
 
@@ -466,23 +465,22 @@ function openCalendar(roomId) {
                     closeModal();
                 },
 
-                dateClick: function(info){
-
+                dateClick: function(info) {
                     const clickedDay = data.find(d => d.STAY_DATE === info.dateStr);
 
-                    if(clickedDay && clickedDay.AVAILABLE_COUNT === 0){
+                    if (clickedDay && clickedDay.AVAILABLE_COUNT === 0) {
                         alert("해당 날짜는 예약 마감입니다.");
                         return;
                     }
 
-                    if(!selectedCheckIn){
+                    if (!selectedCheckIn) {
                         selectedCheckIn = info.dateStr;
                         return;
                     }
 
                     selectedCheckOut = info.dateStr;
 
-                    if(new Date(selectedCheckOut) <= new Date(selectedCheckIn)){
+                    if (new Date(selectedCheckOut) <= new Date(selectedCheckIn)) {
                         alert("체크아웃은 체크인 이후 날짜여야 합니다.");
                         selectedCheckOut = null;
                         return;
@@ -496,8 +494,7 @@ function openCalendar(roomId) {
                     closeModal();
                 },
 
-                selectAllow: function(selectInfo){
-
+                selectAllow: function(selectInfo) {
                     const start = selectInfo.startStr;
                     const end = selectInfo.endStr;
 
@@ -507,7 +504,7 @@ function openCalendar(roomId) {
                         day.STAY_DATE < end
                     );
 
-                    if(hasSoldOut){
+                    if (hasSoldOut) {
                         alert("선택한 날짜 중 예약 마감된 날짜가 있습니다.");
                         return false;
                     }
@@ -522,11 +519,11 @@ function openCalendar(roomId) {
         });
 }
 
-function closeModal(){
+function closeModal() {
     document.getElementById("calendarModal").style.display = "none";
 }
 
-function applyDateToPage(checkIn, checkOut){
+function applyDateToPage(checkIn, checkOut) {
     const roomId = currentRoomId;
     const totalRoomPrice = calculateStayPrice(checkIn, checkOut);
 
@@ -536,11 +533,11 @@ function applyDateToPage(checkIn, checkOut){
     location.href = `/reservation/form?room_type_id=${roomId}&check_in=${checkIn}&check_out=${checkOut}&room_price=${totalRoomPrice}&currency=${currency}&tax=${tax}`;
 }
 
-function calculateStayPrice(checkIn, checkOut){
+function calculateStayPrice(checkIn, checkOut) {
     let total = 0;
 
     calendarData.forEach(day => {
-        if(day.STAY_DATE >= checkIn && day.STAY_DATE < checkOut){
+        if (day.STAY_DATE >= checkIn && day.STAY_DATE < checkOut) {
             total += day.FINAL_PRICE;
         }
     });
@@ -548,7 +545,7 @@ function calculateStayPrice(checkIn, checkOut){
     return total;
 }
 
-function calculateNights(start, end){
+function calculateNights(start, end) {
     const s = new Date(start);
     const e = new Date(end);
     const diff = e - s;
@@ -560,33 +557,32 @@ function handleReserveClick(roomId) {
     openCalendar(roomId);
 }
 
-function getMinPrice(calendarData){
-    if(!calendarData || calendarData.length === 0){
+function getMinPrice(calendarData) {
+    if (!calendarData || calendarData.length === 0) {
         return null;
     }
     return Math.min(...calendarData.map(d => d.FINAL_PRICE));
 }
 
-function loadMinPrice(roomId){
+function loadMinPrice(roomId) {
     fetch(`/room/calendar?room_id=${roomId}`)
         .then(res => res.json())
         .then(data => {
             const minPrice = getMinPrice(data);
             const priceArea = document.querySelector(`.price-${roomId}`);
 
-            if(!priceArea) return;
+            if (!priceArea) return;
 
-            if(minPrice){
+            if (minPrice) {
                 priceArea.dataset.basePrice = minPrice;
                 priceArea.innerText = "최저 " + calculateFinalPrice(minPrice) + " ~";
-            }else{
+            } else {
                 priceArea.innerText = "가격 정보 없음";
             }
         });
 }
 
 function loadRooms() {
-
     const hotel = document.querySelector("[name='hotel']").value;
     const roomGrade = document.querySelector("[name='room_grade']").value;
     const bedType = document.querySelector("[name='bed_type']").value;
@@ -597,10 +593,15 @@ function loadRooms() {
     const checkIn = document.getElementById("filterCheckIn").value;
     const checkOut = document.getElementById("filterCheckOut").value;
 
-    let url = `/room/filter?hotel=${hotel}&room_grade=${roomGrade}&bed_type=${bedType}&view_type=${viewType}&capacity=${capacity}&sort=${sort}`;
+    let url = `/room/filter?hotel=${encodeURIComponent(hotel)}`
+            + `&room_grade=${encodeURIComponent(roomGrade)}`
+            + `&bed_type=${encodeURIComponent(bedType)}`
+            + `&view_type=${encodeURIComponent(viewType)}`
+            + `&capacity=${encodeURIComponent(capacity)}`
+            + `&sort=${encodeURIComponent(sort)}`;
 
-    if(checkIn && checkOut){
-        url += `&check_in=${checkIn}&check_out=${checkOut}`;
+    if (checkIn && checkOut) {
+        url += `&check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`;
     }
 
     fetch(url)
@@ -610,7 +611,7 @@ function loadRooms() {
             const area = document.getElementById("roomListArea");
             area.innerHTML = "";
 
-            if(data.length === 0){
+            if (data.length === 0) {
                 area.innerHTML = "<p>검색 결과가 없습니다.</p>";
                 return;
             }
@@ -620,31 +621,28 @@ function loadRooms() {
                 let stockHtml = "";
                 let reserveBtn;
 
-                if(!checkIn || !checkOut){
+                if (!checkIn || !checkOut) {
                     reserveBtn = `
                         <button onclick="handleReserveClick(${room.room_type_id})">
                             예약하기
                         </button>
                     `;
-                }
-                else {
-                    if(room.availableCount === 0){
+                } else {
+                    if (room.availableCount === 0) {
                         stockHtml = `<div style="color:gray; font-weight:bold;">예약마감</div>`;
                         reserveBtn = `
                             <button disabled style="background:#ccc;">
                                 예약불가
                             </button>
                         `;
-                    }
-                    else if(room.availableCount < 3){
+                    } else if (room.availableCount < 3) {
                         stockHtml = `<div style="color:red; font-weight:bold;">⚠ 잔여 ${room.availableCount}개</div>`;
                         reserveBtn = `
                             <button onclick="handleReserveClick(${room.room_type_id})">
                                 예약하기
                             </button>
                         `;
-                    }
-                    else {
+                    } else {
                         reserveBtn = `
                             <button onclick="handleReserveClick(${room.room_type_id})">
                                 예약하기
@@ -691,29 +689,28 @@ function loadRooms() {
         });
 }
 
-document.getElementById("filterForm").addEventListener("submit", function(e){
+document.getElementById("filterForm").addEventListener("submit", function(e) {
     e.preventDefault();
     loadRooms();
 });
 
-document.getElementById("sortSelect").addEventListener("change", function(){
+document.getElementById("sortSelect").addEventListener("change", function() {
     loadRooms();
 });
 
-function addToCompare(roomId){
-
+function addToCompare(roomId) {
     let compareList = JSON.parse(localStorage.getItem("compareList")) || [];
     const card = event.target.closest(".room-card");
 
     const name = card.querySelector(".room-name a").innerText;
     const image = card.querySelector(".room-image img").src;
 
-    if(compareList.some(r => r.id === roomId)){
+    if (compareList.some(r => r.id === roomId)) {
         alert("이미 비교함에 추가된 객실입니다.");
         return;
     }
 
-    if(compareList.length >= 3){
+    if (compareList.length >= 3) {
         alert("최대 3개까지만 비교 가능합니다.");
         return;
     }
@@ -728,8 +725,7 @@ function addToCompare(roomId){
     updateCompareFooter();
 }
 
-function updateCompareFooter(){
-
+function updateCompareFooter() {
     let compareList = JSON.parse(localStorage.getItem("compareList")) || [];
 
     const bar = document.getElementById("compareBar");
@@ -737,7 +733,7 @@ function updateCompareFooter(){
 
     items.innerHTML = "";
 
-    if(compareList.length === 0){
+    if (compareList.length === 0) {
         bar.style.display = "none";
         return;
     }
@@ -755,62 +751,31 @@ function updateCompareFooter(){
                 padding:6px 12px;
                 border-radius:5px;
             ">
-
                 <img src="${room.image}"
-                     style="width:60px;height:40px;
-                     object-fit:cover;margin-right:10px;">
-
-                <span style="margin-right:10px;">
-                    ${room.name}
-                </span>
-
-                <button onclick="removeFromCompare(${room.id})">
-                    X
-                </button>
-
+                     style="width:60px;height:40px;object-fit:cover;margin-right:10px;">
+                <span style="margin-right:10px;">${room.name}</span>
+                <button onclick="removeFromCompare(${room.id})">X</button>
             </div>
         `;
     });
 }
 
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function() {
     const savedCurrency = localStorage.getItem("currency");
 
-    if(savedCurrency){
+    if (savedCurrency) {
         currentCurrency = savedCurrency;
         document.getElementById("currencySelect").value = savedCurrency;
-    }
-
-    const params = new URLSearchParams(window.location.search);
-
-    const hotelId = params.get("hotelId");
-    const daterange = params.get("daterange");
-
-    const hotelSelect = document.getElementById("hotelSelect");
-    const checkInInput = document.getElementById("filterCheckIn");
-    const checkOutInput = document.getElementById("filterCheckOut");
-
-    if(hotelSelect && !hotelSelect.value && hotelId){
-        hotelSelect.value = hotelId;
-    }
-
-    if(checkInInput && checkOutInput && !checkInInput.value && !checkOutInput.value && daterange && daterange.includes("~")){
-        const rangeArr = daterange.split("~");
-        if(rangeArr.length === 2){
-            checkInInput.value = rangeArr[0].trim();
-            checkOutInput.value = rangeArr[1].trim();
-        }
     }
 
     updateCompareFooter();
     loadExchangeRates();
 });
 
-function openCompareModal(){
-
+function openCompareModal() {
     let compareList = JSON.parse(localStorage.getItem("compareList")) || [];
 
-    if(compareList.length < 2){
+    if (compareList.length < 2) {
         alert("2개 이상 선택해주세요.");
         return;
     }
@@ -834,8 +799,7 @@ function openCompareModal(){
     });
 }
 
-function removeFromCompare(roomId){
-
+function removeFromCompare(roomId) {
     let compareList = JSON.parse(localStorage.getItem("compareList")) || [];
     compareList = compareList.filter(r => r.id !== roomId);
 
@@ -843,14 +807,13 @@ function removeFromCompare(roomId){
     updateCompareFooter();
 }
 
-function renderCompareModal(data){
-
+function renderCompareModal(data) {
     const modal = document.getElementById("compareModal");
     const body = document.getElementById("compareModalBody");
 
     let compareList = JSON.parse(localStorage.getItem("compareList")) || [];
 
-    if(data.length === 0){
+    if (data.length === 0) {
         body.innerHTML = "<p>비교 데이터가 없습니다.</p>";
         modal.style.display = "block";
         return;
@@ -858,7 +821,6 @@ function renderCompareModal(data){
 
     let html = `
         <table class="compare-table">
-
         <tr>
             <th>객실</th>
             ${compareList.map(r => `
@@ -872,8 +834,7 @@ function renderCompareModal(data){
         <tr>
             <td>가격</td>
             ${data.map(r => `
-                <td class="compare-price"
-                    data-base-price="${r.base_price}">
+                <td class="compare-price" data-base-price="${r.base_price}">
                     ${calculateFinalPrice(r.base_price)}
                 </td>
             `).join("")}
@@ -893,7 +854,6 @@ function renderCompareModal(data){
             <td>전망</td>
             ${data.map(r => `<td>${r.view_type}</td>`).join("")}
         </tr>
-
         </table>
     `;
 
@@ -901,7 +861,7 @@ function renderCompareModal(data){
     modal.style.display = "block";
 }
 
-function closeCompareModal(){
+function closeCompareModal() {
     document.getElementById("compareModal").style.display = "none";
 }
 
@@ -918,59 +878,53 @@ function loadExchangeRates() {
         });
 }
 
-function updatePricesByCurrency(currency){
-
+function updatePricesByCurrency(currency) {
     currentCurrency = currency;
 
-    document.querySelectorAll(".price")
-        .forEach(el => {
-            const basePrice = Number(el.dataset.basePrice);
+    document.querySelectorAll(".price").forEach(el => {
+        const basePrice = Number(el.dataset.basePrice);
 
-            if(basePrice){
-                el.innerText = "최저 " + calculateFinalPrice(basePrice) + " ~";
-            }
-        });
+        if (basePrice) {
+            el.innerText = "최저 " + calculateFinalPrice(basePrice) + " ~";
+        }
+    });
 }
 
-function formatCurrency(amount, currency){
+function formatCurrency(amount, currency) {
     return new Intl.NumberFormat('ko-KR', {
         style: 'currency',
         currency: currency
     }).format(amount);
 }
 
-document.getElementById("currencySelect")
-    .addEventListener("change", function(){
+document.getElementById("currencySelect").addEventListener("change", function() {
+    currentCurrency = this.value;
+    localStorage.setItem("currency", currentCurrency);
+    updatePricesByCurrency(this.value);
 
-        currentCurrency = this.value;
-        localStorage.setItem("currency", currentCurrency);
-        updatePricesByCurrency(this.value);
-
-        document.querySelectorAll(".compare-price")
-            .forEach(el => {
-                const base = Number(el.dataset.basePrice);
-                el.innerText = calculateFinalPrice(base);
-            });
-
-        if(calendarInstance !== null){
-            const currentRoomId = window.currentRoomId;
-            if(currentRoomId){
-                openCalendar(currentRoomId);
-            }
-        }
+    document.querySelectorAll(".compare-price").forEach(el => {
+        const base = Number(el.dataset.basePrice);
+        el.innerText = calculateFinalPrice(base);
     });
 
-function calculateFinalPrice(basePrice){
+    if (calendarInstance !== null) {
+        const currentRoomId = window.currentRoomId;
+        if (currentRoomId) {
+            openCalendar(currentRoomId);
+        }
+    }
+});
 
+function calculateFinalPrice(basePrice) {
     let price = basePrice;
 
-    if(includeExtraFee){
+    if (includeExtraFee) {
         price *= 1.1;
     }
 
     const rate = exchangeRates[currentCurrency] || 1;
 
-    if(currentCurrency !== "KRW"){
+    if (currentCurrency !== "KRW") {
         price *= rate;
     }
 
@@ -980,20 +934,17 @@ function calculateFinalPrice(basePrice){
     }).format(price);
 }
 
-document.getElementById("extraFeeCheck")
-.addEventListener("change", function(){
-
+document.getElementById("extraFeeCheck").addEventListener("change", function() {
     includeExtraFee = this.checked;
     updatePricesByCurrency(currentCurrency);
 
-    document.querySelectorAll(".compare-price")
-        .forEach(el => {
-            const base = Number(el.dataset.basePrice);
-            el.innerText = calculateFinalPrice(base);
-        });
+    document.querySelectorAll(".compare-price").forEach(el => {
+        const base = Number(el.dataset.basePrice);
+        el.innerText = calculateFinalPrice(base);
+    });
 
-    if(calendarInstance !== null){
-        if(window.currentRoomId){
+    if (calendarInstance !== null) {
+        if (window.currentRoomId) {
             openCalendar(window.currentRoomId);
         }
     }
