@@ -119,6 +119,7 @@ eureka:
   client:
     service-url:
       defaultZone: http://52.78.215.25:8761/eureka/
+      # 52.78.215.25:8761 / localhost
 
 iamport:
   api-key: 5112162085145453
