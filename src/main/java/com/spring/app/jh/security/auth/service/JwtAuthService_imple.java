@@ -26,6 +26,7 @@ import com.spring.app.jh.security.model.AdminDAO;
 import com.spring.app.jh.security.model.MemberDAO;
 import com.spring.app.jh.security.model.RefreshTokenDAO;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -263,12 +264,22 @@ public class JwtAuthService_imple implements JwtAuthService {
                        HttpServletRequest request,
                        HttpServletResponse response) {
 
+        // 1. DB refresh token 삭제
         if (principalNo != null) {
             refreshTokenDAO.deleteRefreshToken(principalType, principalNo);
         }
 
+        // 2. accessToken 쿠키 삭제
+        Cookie cookie = new Cookie("accessToken", "");
+        cookie.setPath("/");
+        cookie.setHttpOnly(false);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+
+        // 3. SecurityContext 제거
         SecurityContextHolder.clearContext();
 
+        // 4. 세션 무효화
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
