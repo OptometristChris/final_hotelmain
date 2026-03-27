@@ -24,7 +24,6 @@ h1 {
 	margin-bottom: 50px;
 }
 
-/* 카드 크기 줄임 */
 .room-card {
 	display: flex;
 	gap: 40px;
@@ -33,7 +32,6 @@ h1 {
 	align-items: center;
 }
 
-/* 이미지 줄임 */
 .room-image {
 	width: 420px;
 	height: 260px;
@@ -47,7 +45,6 @@ h1 {
 	object-fit: cover;
 }
 
-/* 정보 */
 .room-info {
 	flex: 1;
 }
@@ -76,7 +73,6 @@ h1 {
 	margin-top: 22px;
 }
 
-/* 버튼 */
 .button-group {
 	margin-top: 25px;
 	display: flex;
@@ -212,7 +208,6 @@ h1 {
     flex-wrap:wrap;
 }
 
-/* 비교 모달 */
 .compare-table{
     width:100%;
     border-collapse:collapse;
@@ -272,60 +267,59 @@ h1 {
 
 		</div>
 
-		<input type="hidden" id="checkInInput" name="check_in"> 
+		<input type="hidden" id="checkInInput" name="check_in">
 		<input type="hidden" id="checkOutInput" name="check_out">
 
 		<div style="display: flex; justify-content: center; margin-bottom: 20px;">
 
 			<div class="filter-wrapper">
-			    
+
 			    <div class="filter-row">
 			        <form id="filterForm" class="filter-group" th:action="@{/search}" method="get">
-			
+
 			            <select name="hotelId">
 			                <option value="">호텔 전체</option>
-			                
+
 			               <option th:each="hotel : ${hotelList}"
-			                    th:value="${hotel.HOTEL_ID}"
-			                    th:text="${hotel.HOTEL_NAME}"
-			                    th:selected="${searchParams != null and #strings.equals(hotel.HOTEL_ID, searchParams.hotelId)}">
+			                    th:value="${hotel.hotel_id}"
+			                    th:text="${hotel.hotel_name}"
+			                    th:selected="${searchParams != null and #strings.equals(hotel.hotel_id, searchParams['hotelId'])}">
 			           	   </option>
 			            </select>
-			
+
 			            <input type="hidden" name="reserveType" value="room" />
 
 			            <select name="room_grade">
 			                <option value="">객실등급 전체</option>
-			                <option value="DELUXE">DELUXE</option>
-			                <option value="PREMIER">PREMIER</option>
-			                <option value="SUITE">SUITE</option>
-			                <option value="STANDARD">STANDARD</option>
+			                <option value="DELUXE" th:selected="${searchParams != null and searchParams['room_grade'] == 'DELUXE'}">DELUXE</option>
+			                <option value="PREMIER" th:selected="${searchParams != null and searchParams['room_grade'] == 'PREMIER'}">PREMIER</option>
+			                <option value="SUITE" th:selected="${searchParams != null and searchParams['room_grade'] == 'SUITE'}">SUITE</option>
+			                <option value="STANDARD" th:selected="${searchParams != null and searchParams['room_grade'] == 'STANDARD'}">STANDARD</option>
 			            </select>
-			
+
 			            <select name="bed_type" id="bedTypeSelect">
 			             <option value="">침대타입 전체</option>
-			             <option value="DOUBLE" th:selected="${searchParams != null and searchParams.bedType == 'DOUBLE'}">DOUBLE</option>
-			             <option value="TWIN" th:selected="${searchParams != null and searchParams.bedType == 'TWIN'}">TWIN</option>
-			             <option value="KING" th:selected="${searchParams != null and searchParams.bedType == 'KING'}">KING</option>
+			             <option value="DOUBLE" th:selected="${searchParams != null and searchParams['bedType'] == 'DOUBLE'}">DOUBLE</option>
+			             <option value="TWIN" th:selected="${searchParams != null and searchParams['bedType'] == 'TWIN'}">TWIN</option>
+			             <option value="KING" th:selected="${searchParams != null and searchParams['bedType'] == 'KING'}">KING</option>
 			         	</select>
-			
+
 			            <select name="view_type">
 			                <option value="">전망 전체</option>
-			                <option value="CITY">CITY</option>
-			                <option value="RIVER">RIVER</option>
-			            </select>        
-			               
+			                <option value="CITY" th:selected="${searchParams != null and searchParams['view_type'] == 'CITY'}">CITY</option>
+			                <option value="RIVER" th:selected="${searchParams != null and searchParams['view_type'] == 'RIVER'}">RIVER</option>
+			            </select>
 
 			            <select name="capacity">
 						    <option value="">인원 전체</option>
-						    <option value="1">1명</option>
-						    <option value="2">2명</option>
-						    <option value="3">3명</option>
-						    <option value="4">4명 이상</option>
-						</select>   
-			
+						    <option value="1" th:selected="${searchParams != null and searchParams['capacity'] == '1'}">1명</option>
+						    <option value="2" th:selected="${searchParams != null and searchParams['capacity'] == '2'}">2명</option>
+						    <option value="3" th:selected="${searchParams != null and searchParams['capacity'] == '3'}">3명</option>
+						    <option value="4" th:selected="${searchParams != null and searchParams['capacity'] == '4'}">4명 이상</option>
+						</select>
+
 			        </form>
-			
+
 			        <div class="sort-group">
 			            <span>정렬</span>
 			            <select id="sortSelect">
@@ -334,18 +328,18 @@ h1 {
 			                <option value="priceDesc">가격 높은순</option>
 			            </select>
 			        </div>
-			
+
 			    </div>
-			    
+
 			    <div class="filter-row" style="margin-top:15px;">
 			        <div class="filter-date">
 			            <input type="date" id="filterCheckIn" name="filter_check_in"
-			                th:value="${searchParams != null ? searchParams.checkIn : ""}">
+			                th:value="${searchParams != null ? searchParams['checkIn'] : ''}">
 			            <span>~</span>
 			            <input type="date" id="filterCheckOut" name="filter_check_out"
-			                th:value="${searchParams != null ? searchParams.checkOut : ""}">
+			                th:value="${searchParams != null ? searchParams['checkOut'] : ''}">
 			        </div>
-			         
+
 			        <button type="submit" form="filterForm" class="filter-search-btn">
 			            검색
 			        </button>
@@ -474,8 +468,8 @@ function openCalendar(roomId) {
             calendarData = data;
 
             const events = data.map(day => ({
-			    title: day.AVAILABLE_COUNT === 0 
-			           ? "예약마감" 
+			    title: day.AVAILABLE_COUNT === 0
+			           ? "예약마감"
 			           : calculateFinalPrice(day.FINAL_PRICE),
 			    start: day.STAY_DATE,
 			    allDay: true,
@@ -494,7 +488,7 @@ function openCalendar(roomId) {
                 selectable: true,
                 selectMirror: true,
                 unselectAuto: false,
-                           
+
                 select: function(info){
 
                     let start = info.startStr;
@@ -520,7 +514,7 @@ function openCalendar(roomId) {
 
                     closeModal();
                 },
-                
+
                 dateClick: function(info){
 
                     const clickedDay = data.find(d => d.STAY_DATE === info.dateStr);
@@ -550,13 +544,13 @@ function openCalendar(roomId) {
 
                     closeModal();
                 },
-                
+
                 selectAllow: function(selectInfo){
 
                     const start = selectInfo.startStr;
                     const end = selectInfo.endStr;
 
-                    const hasSoldOut = data.some(day => 
+                    const hasSoldOut = data.some(day =>
                         day.AVAILABLE_COUNT === 0 &&
                         day.STAY_DATE >= start &&
                         day.STAY_DATE < end
@@ -571,7 +565,7 @@ function openCalendar(roomId) {
                 },
 
                 events: events
-            });                
+            });
 
             calendarInstance.render();
         });
@@ -585,7 +579,7 @@ function applyDateToPage(checkIn, checkOut){
 
     const roomId = currentRoomId;
     const totalRoomPrice = calculateStayPrice(checkIn, checkOut);
-    
+
     const currency = currentCurrency;
     const tax = includeExtraFee;
 
@@ -645,13 +639,13 @@ function loadMinPrice(roomId){
 
 function loadRooms() {
 
-    const hotel = document.querySelector("[name='hotel']").value;
+    const hotel = document.querySelector("[name='hotelId']").value;
     const roomGrade = document.querySelector("[name='room_grade']").value;
     const bedType = document.querySelector("[name='bed_type']").value;
     const viewType = document.querySelector("[name='view_type']").value;
     const capacity = document.querySelector("[name='capacity']").value;
     const sort = document.getElementById("sortSelect").value;
-    
+
     const checkIn = document.getElementById("filterCheckIn").value;
     const checkOut = document.getElementById("filterCheckOut").value;
 
@@ -660,7 +654,7 @@ function loadRooms() {
     if(checkIn && checkOut){
         url += `&check_in=${checkIn}&check_out=${checkOut}`;
     }
-    
+
     fetch(url)
         .then(res => res.json())
         .then(data => {
@@ -674,10 +668,10 @@ function loadRooms() {
             }
 
             data.forEach(room => {
-            	
+
             	let stockHtml = "";
             	let reserveBtn;
-            	
+
             	if(!checkIn || !checkOut){
             	    reserveBtn = `
             	        <button onclick="handleReserveClick(${room.room_type_id})">
@@ -714,7 +708,7 @@ function loadRooms() {
             		    `;
             		}
             	}
-            	
+
                 area.innerHTML += `
                     <div class="room-card">
                         <div class="room-image">
@@ -735,7 +729,7 @@ function loadRooms() {
 	                            가격 조회 중...
 	                        </div>
                             ${stockHtml}
-                            
+
                             <div style="margin-top:20px;">
 	                            ${reserveBtn}
 	                            <button onclick="addToCompare(${room.room_type_id})">
@@ -745,7 +739,7 @@ function loadRooms() {
                         </div>
                     </div>
                 `;
-                
+
                 loadMinPrice(room.room_type_id);
             });
 
@@ -842,7 +836,7 @@ document.addEventListener("DOMContentLoaded", function(){
         currentCurrency = savedCurrency;
         document.getElementById("currencySelect").value = savedCurrency;
     }
-	    
+
     updateCompareFooter();
     loadRooms();
     loadExchangeRates();
@@ -861,8 +855,8 @@ function openCompareModal(){
 
     const token = document.querySelector("meta[name='_csrf']").content;
     const header = document.querySelector("meta[name='_csrf_header']").content;
-    
-    fetch("/room/compare", { 
+
+    fetch("/room/compare", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -984,17 +978,17 @@ function formatCurrency(amount, currency){
 
 document.getElementById("currencySelect")
     .addEventListener("change", function(){
-    	
+
     	currentCurrency = this.value;
         localStorage.setItem("currency", currentCurrency);
         updatePricesByCurrency(this.value);
-        
+
         document.querySelectorAll(".compare-price")
             .forEach(el => {
                 const base = Number(el.dataset.basePrice);
                 el.innerText = calculateFinalPrice(base);
             });
-        
+
         if(calendarInstance !== null){
             const currentRoomId = window.currentRoomId;
             if(currentRoomId){
@@ -1002,8 +996,8 @@ document.getElementById("currencySelect")
             }
         }
     });
-    
-    
+
+
 function calculateFinalPrice(basePrice){
 
     let price = basePrice;
