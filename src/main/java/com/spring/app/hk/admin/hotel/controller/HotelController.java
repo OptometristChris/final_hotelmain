@@ -94,8 +94,8 @@ public class HotelController {
 
         int hotel_id = Integer.parseInt(param.get("hotel_id").toString());
 
-        int result = hotelService.deleteHotel(hotel_id) + 2;
-
+        int result = hotelService.deleteHotel(hotel_id);
+        System.out.println("result : "+ result );
         Map<String,Object> map = new HashMap<>();
         map.put("result", result);
 

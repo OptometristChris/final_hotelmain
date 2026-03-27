@@ -90,9 +90,23 @@ public class HotelService_imple implements HotelService {
 
 
 	// 호텔 상세페이지 내 비활성화하기
+	@Transactional
 	@Override
 	public int deleteHotel(int hotel_id) {
-		  return hotelDAO.deleteHotel(hotel_id);
+	    System.out.println(">>> 넘어온 호텔ID: " + hotel_id);
+	    
+	    int n1 = hotelDAO.deleteHotel(hotel_id);
+	    System.out.println(">>> 호텔 테이블 업데이트 결과(n1): " + n1);
+	    
+	    int n2 = hotelDAO.deleteBannersByHotel(hotel_id);
+	    System.out.println(">>> 배너 테이블 업데이트 결과(n2): " + n2);
+	    
+	    // 만약 n1이 0이라면, DB의 hotel_id 컬럼값과 
+	    // 실제 넘어온 hotel_id 값이 일치하는지 DB에서 직접 쿼리를 날려보세요.
+	    if(n1 == 1) {
+	        return 1;
+	    }
+	    return 0;
 	}
 	
 	// 호텔 활성화시키기

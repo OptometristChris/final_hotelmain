@@ -219,7 +219,7 @@ function deleteHotel(){
 
 	if(!confirm("숙소를 비활성화 하시겠습니까?")) return;
 	
-	let hotel_id = /*[[${hotel.HOTEL_ID}]]*/ 0;
+	const hotel_id = document.getElementById("hotel_id").value;
 	
 	const token = document.querySelector('meta[name="_csrf"]').content;
 	const header = document.querySelector('meta[name="_csrf_header"]').content;	

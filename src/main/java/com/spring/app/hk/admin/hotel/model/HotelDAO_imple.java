@@ -62,6 +62,12 @@ public class HotelDAO_imple implements HotelDAO {
 		return sqlsession.update("hotel.deleteHotel", hotel_id);
 	}
 	
+	// 호텔 배너 비활성화하기
+	@Override
+	public int deleteBannersByHotel(int hotel_id) {
+		return sqlsession.update("hotel.deleteBannersByHotel", hotel_id);
+	}
+	
 	// 호텔 활성화시키기
 	// 호텔 원복
 	@Override
@@ -74,7 +80,5 @@ public class HotelDAO_imple implements HotelDAO {
 	public List<Map<String, Object>> selectAllHotelLocation() {
 		return sqlsession.selectList("hotel.selectAllHotelLocation");
 	}
-
-
 
 }
