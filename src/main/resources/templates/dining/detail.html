@@ -55,7 +55,7 @@
             </div>
 
             <div class="intro-section text-center">
-                <p class="intro-text" th:text="${dining.description}">상세 소개글</p>
+                <p class="intro-text" th:text="${dining.description}">소개글</p>
             </div>
 
             <div class="my-5">
@@ -80,7 +80,7 @@
                             <div class="carousel-inner">
                                 <div th:each="img, stat : ${#strings.arraySplit(dining.store_imgs, ',')}" 
                                      class="carousel-item" th:classappend="${stat.first} ? 'active'">
-                                    <img th:src="@{/images/dining/{img}(img=${img})}" class="d-block w-100" alt="매장사진">
+                                    <img th:src="@{|/images/dining/${img}|}" class="d-block w-100" alt="매장사진">
                                 </div>
                             </div>
                             <a class="carousel-control-prev" href="#storeCarousel" data-slide="prev"><span class="carousel-control-prev-icon"></span></a>
@@ -93,7 +93,7 @@
                             <div class="carousel-inner">
                                 <div th:each="img, stat : ${#strings.arraySplit(dining.food_imgs, ',')}" 
                                      class="carousel-item" th:classappend="${stat.first} ? 'active'">
-                                    <img th:src="@{/images/dining/{img}(img=${img})}" class="d-block w-100" alt="음식사진">
+                                    <img th:src="@{|/images/dining/${img}|}" class="d-block w-100" alt="음식사진">
                                 </div>
                             </div>
                             <a class="carousel-control-prev" href="#foodCarousel" data-slide="prev"><span class="carousel-control-prev-icon"></span></a>
@@ -101,15 +101,15 @@
                         </div>
                         
                         <div class="menu-box text-center" th:if="${dining.menu_pdf != null}">
-                            <h5 class="mb-3" style="letter-spacing: 5px;">MENU PDF</h5>
-                            <a th:each="pdf : ${#strings.arraySplit(dining.menu_pdf, ',')}"
-                               th:href="@{|/images/dining/${pdf}|}" 
-                               class="btn btn-pdf" 
-                               target="_blank"
-                               style="margin-right: 10px;">
-                                MENU 상세보기 (PDF)
-                            </a>
-                        </div>
+						    <h5 class="mb-3" style="letter-spacing: 5px;">MENU PDF</h5>
+						    
+						    <a th:each="pdf : ${#strings.arraySplit(dining.menu_pdf, ',')}"
+						       th:href="@{/dining/downloadMenu(fileName=${pdf})}" 
+						       class="btn btn-pdf" 
+						       style="margin-right: 10px;">
+						        <i class="fas fa-file-download"></i> MENU 다운로드 (PDF)
+						    </a>
+						</div>
                     </div>
                 </div>
             </div>
@@ -128,6 +128,10 @@
                     <tr>
                         <th>전화번호</th>
                         <td th:text="${dining.tel}">전화번호</td>
+                    </tr>
+                    <tr>
+                        <th>매장소개</th>
+                        <td th:text="${dining.introduction}">매장소개</td>
                     </tr>
                 </table>
                 
