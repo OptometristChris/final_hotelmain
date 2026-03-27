@@ -8,6 +8,7 @@
     
     <th:block th:fragment="link">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
     </th:block>
 
     <th:block th:fragment="style">
@@ -270,6 +271,15 @@
             }
 
             const selectedRadio = document.querySelector('input[name="room_type_id"]:checked');
+            if (!selectedRadio) {
+                alert("객실을 선택해 주세요.");
+                return;
+            }
+
+            if (typeof IMP === 'undefined') {
+                alert("결제 모듈이 아직 로드되지 않았습니다. 새로고침 후 다시 시도해 주세요.");
+                return;
+            }
 
             IMP.init("imp76388561"); // 실제 연동된 가맹점 식별코드를 입력하세요
             IMP.request_pay({
@@ -294,14 +304,16 @@
                         body: JSON.stringify({
                             imp_uid: rsp.imp_uid,
                             merchant_uid: rsp.merchant_uid,
-                            room_type_id: selectedRadio.value,
+                            member_no: /*[[${memberNo}]]*/ 0,
                             promotion_id: document.querySelector('input[name="promotion_id"]').value,
                             fk_hotel_id: document.querySelector('input[name="fk_hotel_id"]').value,
+                            room_type_id: selectedRadio.value,
                             check_in: document.getElementById('checkIn').value,
                             check_out: document.getElementById('checkOut').value,
                             guest_count: document.getElementById("guestCount").value,
-                            applied_price: String(finalPrice),
-                            total_price: String(finalPrice),
+                            applied_price: finalPrice,
+                            discount_amount: document.getElementById('inputDiscPrice').value,
+                            total_price: finalPrice,
                             hotel_name: "CIEL HOTEL",
                             room_name: selectedRadio.dataset.name
                         })
