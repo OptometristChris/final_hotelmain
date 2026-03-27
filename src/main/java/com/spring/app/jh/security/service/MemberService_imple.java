@@ -131,119 +131,92 @@ public class MemberService_imple implements MemberService {
 	    return n;
 	}
 	
-	private Map<String, String> buildEncryptedFindMap(Map<String, String> paraMap) {
-		Map<String, String> workingMap = new HashMap<>(paraMap);
-
-		String email = paraMap.get("email");
-		if (email != null) {
-			email = email.trim();
-			workingMap.put("email", email);
-		}
-
-		String mobile = paraMap.get("mobile");
-		if (mobile != null) {
-			mobile = LookupKeyUtil.normalizePhone(mobile);
-			workingMap.put("mobile", mobile);
-		}
-
-		try {
-			if (email != null && !email.isBlank()) {
-				workingMap.put("email", aES256.encrypt(email));
-			}
-			if (mobile != null && !mobile.isBlank()) {
-				workingMap.put("mobile", aES256.encrypt(mobile));
-			}
-		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
-			throw new RuntimeException("아이디/비밀번호 찾기용 입력값 암호화 중 오류가 발생했습니다.", e);
-		}
-
-		return workingMap;
-	}
+	
 
 	// id 찾기
+	// id 찾기
 	@Override
-    public String findMemberId(Map<String, String> paraMap) {
-        Map<String, String> workingMap = buildEncryptedFindMap(paraMap);
-        return memberDao.findMemberId(workingMap);
-    }
-	
+	public String findMemberId(Map<String, String> paraMap) {
+	    Map<String, String> workingMap = buildEncryptedFindMap(paraMap);
+	    return memberDao.findMemberId(workingMap);
+	}
+
 	// 비밀번호 찾기 시 본인 검증하기
 	@Override
-    public boolean verifyMemberForPwReset(Map<String, String> paraMap) {
-        Map<String, String> workingMap = buildEncryptedFindMap(paraMap);
-        int n = memberDao.verifyMemberForPwReset(workingMap);
-        return n == 1;
-    }
-	
-	// 이메일 발송 없는 버전, 바로 화면에 띄움
+	public boolean verifyMemberForPwReset(Map<String, String> paraMap) {
+	    Map<String, String> workingMap = buildEncryptedFindMap(paraMap);
+	    int n = memberDao.verifyMemberForPwReset(workingMap);
+	    return n == 1;
+	}
+
 	// 비밀번호 찾기 시 임시비밀번호 발급과 DB 업데이트(성공 시 임시 비번 리턴, 실패 시 null 리턴)
 	@Override
-    public String issueTempPasswordAndUpdate(Map<String, String> paraMap) {
+	public String issueTempPasswordAndUpdate(Map<String, String> paraMap) {
 
-        Map<String, String> workingMap = buildEncryptedFindMap(paraMap);
+	    // 1) 먼저 검증(안전장치)
+	    Map<String, String> workingMap = buildEncryptedFindMap(paraMap);
 
-        // 1) 먼저 검증(안전장치)
-        int n = memberDao.verifyMemberForPwReset(workingMap);
-        if (n != 1) {
-            return null;
-        }
+	    int n = memberDao.verifyMemberForPwReset(workingMap);
+	    if (n != 1) {
+	        return null;
+	    }
 
-        // 2) 임시비밀번호 생성(원문)
-        String tempPw = generateTempPassword(10);
+	    // 2) 임시비밀번호 생성(원문)
+	    String tempPw = generateTempPassword(10);
 
-        // 3) 해시로 변환(BCrypt)
-        String hashedPw = passwordEncoder.encode(tempPw);
+	    // 3) 해시로 변환(BCrypt)
+	    String hashedPw = passwordEncoder.encode(tempPw);
 
-        // 4) 업데이트 파라미터 구성
-        // paraMap에 memberid가 들어있다고 가정(폼에서 memberid 필수)
-        // passwd 키는 mapper에서 #{passwd}로 받게 맞추는게 직관적
-        workingMap.put("memberid", paraMap.get("memberid"));
-        workingMap.put("passwd", hashedPw);
+	    // 4) 업데이트 파라미터 구성
+	    workingMap.put("passwd", hashedPw);
 
-        // 5) DB 업데이트
-        int updated = memberDao.updatePasswordForTemp(workingMap);
+	    // 5) DB 업데이트
+	    int updated = memberDao.updatePasswordForTemp(workingMap);
 
-        return (updated == 1) ? tempPw : null;
-    }
-	
-	
-	// 비밀번호 찾기 시 임시비밀번호 이메일 발송 및 DB 업데이트(성공 시 임시 비번 리턴, 실패 시 null 리턴)
+	    return (updated == 1) ? tempPw : null;
+	}
+
+
+	// 비밀번호 찾기 시 임시비밀번호 이메일 발송 및 DB 업데이트(성공 시 true, 실패 시 false)
 	@Override
-    public boolean issueTempPasswordAndSendEmail(Map<String, String> paraMap) {
+	public boolean issueTempPasswordAndSendEmail(Map<String, String> paraMap) {
 
-        // 1) 임시비번 발급 + DB 업데이트 (재사용)
-        String tempPw = issueTempPasswordAndUpdate(paraMap);
-        if (tempPw == null) {
-            return false;
-        }
+	    // 1) 임시비번 발급 + DB 업데이트
+	    String tempPw = issueTempPasswordAndUpdate(paraMap);
+	    if (tempPw == null) {
+	        return false;
+	    }
 
-        // 2) DB에 저장된 이메일로 발송(폼에서 입력받은 email을 그대로 쓰지 않는게 안전)
-        String memberid = paraMap.get("memberid");
-        String emailCipher = memberDao.findEmailByMemberid(memberid);
-        String toEmail;
-        
-		try {
-			toEmail = aES256.decrypt(emailCipher);
-			System.out.println(toEmail);
-		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
-			e.printStackTrace();
-            return false;
-		}
+	    // 2) DB에 저장된 이메일로 발송
+	    String memberid = paraMap.get("memberid");
+	    String emailCipher = memberDao.findEmailByMemberid(memberid);
 
-        if (toEmail == null || toEmail.trim().isEmpty()) {
-            return false;
-        }
+	    if (emailCipher == null || emailCipher.trim().isEmpty()) {
+	        return false;
+	    }
 
-        try {
-            emailService.sendTempPassword(toEmail, memberid, tempPw);
-            return true;
-        }
-        catch (Exception e) {
-            // 운영에서는 로그만 남기고 사용자에게 상세오류 노출 금지
-            e.printStackTrace();
-            return false;
-        }
-    }
+	    String toEmail;
+	    try {
+	        toEmail = aES256.decrypt(emailCipher);
+	    }
+	    catch (UnsupportedEncodingException | GeneralSecurityException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+
+	    if (toEmail == null || toEmail.trim().isEmpty()) {
+	        return false;
+	    }
+
+	    try {
+	        emailService.sendTempPassword(toEmail, memberid, tempPw);
+	        return true;
+	    }
+	    catch (Exception e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
 	
 	
 	
@@ -423,6 +396,52 @@ public class MemberService_imple implements MemberService {
 
 		List<String> authorityList = memberDao.authorityListByMemberNo(memberDto.getMemberNo());
 		memberDto.setAuthorities(authorityList);
+	}
+	
+	private Map<String, String> buildEncryptedFindMap(Map<String, String> paraMap) {
+	    Map<String, String> workingMap = new HashMap<>();
+
+	    if (paraMap != null) {
+	        workingMap.putAll(paraMap);
+	    }
+
+	    String email = paraMap.get("email");
+	    if (email != null) {
+	        email = email.trim();
+	        if (!email.isEmpty()) {
+	            try {
+	                workingMap.put("email", aES256.encrypt(email));
+	            }
+	            catch (UnsupportedEncodingException | GeneralSecurityException e) {
+	                throw new RuntimeException(e);
+	            }
+	        }
+	        else {
+	            workingMap.put("email", "");
+	        }
+	    }
+
+	    String mobile = normalizeMobile(paraMap.get("mobile"));
+	    if (mobile != null && !mobile.isEmpty()) {
+	        try {
+	            workingMap.put("mobile", aES256.encrypt(mobile));
+	        }
+	        catch (UnsupportedEncodingException | GeneralSecurityException e) {
+	            throw new RuntimeException(e);
+	        }
+	    }
+	    else {
+	        workingMap.put("mobile", "");
+	    }
+
+	    return workingMap;
+	}
+
+	private String normalizeMobile(String mobile) {
+	    if (mobile == null) {
+	        return "";
+	    }
+	    return mobile.replaceAll("[^0-9]", "").trim();
 	}
 
 	

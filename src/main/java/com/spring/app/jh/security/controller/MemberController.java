@@ -264,26 +264,38 @@ public class MemberController {
     }
 
 
-    // 비밀번호 변경 form 페이지 보여주기
-    @PreAuthorize("isAuthenticated()")
     @GetMapping(value="passwdChange")
-    public String passwdChange(){
+    public String passwdChange(HttpSession session){
+
+        Integer memberNo = resolveMemberNo(session);
+        if (memberNo == null) {
+            return "redirect:/security/login";
+        }
 
         return "security/member/passwdChangeForm";
-        // src/main/resources/templates/security/member/passwdChangeForm.html 파일 생성해줘야 함
     }
 
-
-    // 비밀번호 변경 하기
-    @PreAuthorize("isAuthenticated()")
     @PostMapping(value="passwdChange")
-    public String passwdChange(@RequestParam Map<String, String> paraMap, Model model){
+    public String passwdChange(@RequestParam Map<String, String> paraMap,
+                               HttpSession session,
+                               Model model){
+
+        Integer memberNo = resolveMemberNo(session);
+        if (memberNo == null) {
+            return "redirect:/security/login";
+        }
+
+        MemberDTO memberDto = memberService.findByMemberNo(memberNo);
+        if (memberDto == null) {
+            return "redirect:/security/login";
+        }
+
+        paraMap.put("memberid", memberDto.getMemberid());
 
         int result = memberService.passwdChange(paraMap);
         model.addAttribute("result", result);
 
         return "security/member/passwdChangeResult";
-        // src/main/resources/templates/security/member/passwdChangeResult.html 파일 생성해줘야 함
     }
 
 
