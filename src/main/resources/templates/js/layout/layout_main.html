@@ -257,6 +257,8 @@
                 },
                 success: function(){
                     sessionStorage.removeItem("JWT");
+                    document.cookie = "accessToken=; path=/; Max-Age=0";
+                    document.cookie = "refreshToken=; path=/; Max-Age=0";
                     location.href = contextPath + "index";
                 },
                 error: function(request, status, error){
@@ -284,7 +286,9 @@
                 },
                 success: function(){
                     sessionStorage.removeItem("JWT");
-                    location.href = contextPath + "admin/login";
+                    document.cookie = "accessToken=; path=/; Max-Age=0";
+                    document.cookie = "refreshToken=; path=/; Max-Age=0";
+                    location.href = contextPath + "index";
                 },
                 error: function(request, status, error){
                     alert("관리자 로그아웃 처리 중 오류가 발생했습니다.");
