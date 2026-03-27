@@ -62,9 +62,20 @@
 	
 	<!-- 호텔 다시 활성화시키기 -->
 	<update id="restoreHotel">
-	    UPDATE tbl_hotel
-	    SET active_yn = 'Y'
-	    WHERE hotel_id = #{hotel_id}
+	    {CALL
+	        DECLARE
+	        BEGIN
+	            -- 1. 호텔 테이블 상태를 활성('Y')으로 변경
+	            UPDATE tbl_hotel
+	               SET active_yn = 'Y'
+	             WHERE hotel_id = #{hotel_id};
+	
+	            -- 2. 해당 호텔의 프로모션 배너 정보가 있다면 함께 활성('Y')으로 변경
+	            UPDATE PROMOTION_BANNER
+	               SET active_yn = 'Y'
+	             WHERE fk_hotel_id = #{hotel_id};
+	        END
+	    }
 	</update>
 
 	
@@ -107,10 +118,21 @@
 	
 	
 	<!-- 호텔 상세페이지 내 비활성화하기 -->
-	<update id="deleteHotel">		
-		UPDATE tbl_hotel
-		SET active_yn = 'N'
-		WHERE hotel_id = #{hotel_id}	
+	<update id="deleteHotel">
+	    {CALL
+	        DECLARE
+	        BEGIN
+	            -- 1. 호텔 비활성화
+	            UPDATE tbl_hotel
+	               SET active_yn = 'N'
+	             WHERE hotel_id = #{hotel_id};
+	
+	            -- 2. 해당 호텔의 프로모션 배너도 함께 비활성화
+	            UPDATE PROMOTION_BANNER
+	               SET active_yn = 'N'
+	             WHERE fk_hotel_id = #{hotel_id};
+	        END
+	    }
 	</update>
 		
 	
