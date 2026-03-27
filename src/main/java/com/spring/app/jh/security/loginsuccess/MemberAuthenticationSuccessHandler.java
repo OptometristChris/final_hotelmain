@@ -171,7 +171,7 @@ public class MemberAuthenticationSuccessHandler extends SavedRequestAwareAuthent
             out.println("<html>");
             out.println("<head>"
                       + "<script type='text/javascript'>"
-                      + "if (confirm('" + n + "개월 동안 비밀번호를 변경하지 않았습니다.\n비밀번호 변경을 권장합니다!!.\n비밀번호 변경 페이지로 이동할까요?'))"
+                      + "if (confirm('" + n + "개월 동안 비밀번호를 변경하지 않았습니다.\\n비밀번호 변경을 권장합니다!!.\\n비밀번호 변경 페이지로 이동할까요?'))"
                       + "{location.href='" + ctxPath + "/security/passwdChange';}"
                       + "else"
                       + "{location.href='" + ctxPath + "/index';}"
@@ -281,10 +281,10 @@ public class MemberAuthenticationSuccessHandler extends SavedRequestAwareAuthent
             return "";
         }
 
-        return value.replace("\", "\\")
-                    .replace("'", "\'")
-                    .replace("", "")
-                    .replace("
-", "\n");
+        return value.replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("'", "\\'")
+                    .replace("\r", "")
+                    .replace("\n", "\\n");
     }
 }
