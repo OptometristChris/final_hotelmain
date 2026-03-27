@@ -56,7 +56,7 @@ public class RoomController {
     - 날짜 범위(check_in ~ check_out)를 받아
       해당 기간의 최소 재고를 계산하여 반환
     ============================== */
-	 @GetMapping("/room/filter")
+     @GetMapping("/room/filter")
 	 @ResponseBody
 	 public List<RoomTypeDTO> filterRoom(
 	
