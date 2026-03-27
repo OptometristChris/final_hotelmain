@@ -280,10 +280,10 @@ h1 {
 						<select name="hotelId">
 						    <option value="">호텔 전체</option>
 						    <option th:each="hotel : ${hotelList}"
-						            th:value="${hotel.hotel_id}"
-						            th:text="${hotel.hotel_name}"
-						            th:selected="${searchParams != null and #strings.equals(#strings.toString(hotel.hotel_id), #strings.toString(searchParams['hotelId']))}">
-						    </option>
+							        th:value="${hotel['hotel_id']}"
+							        th:text="${hotel['hotel_name']}"
+							        th:selected="${searchParams != null and #strings.equals(#strings.toString(hotel['hotel_id']), #strings.toString(searchParams['hotelId']))}">
+							</option>
 						</select>
 
 			            <input type="hidden" name="reserveType" value="room" />
