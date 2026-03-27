@@ -225,25 +225,24 @@
     </insert>
 
     <select id="getReservationDetail" resultType="com.spring.app.ih.dining.model.DiningReservationDTO">
-        SELECT
-            res.dining_reservation_id AS diningReservationId,
-            res.guest_name AS guestName,
-            res.guest_phone AS guestPhone,
-            res.res_date AS resDate,
-            res.res_time AS resTime,
-            res.adult_count AS adultCount,
-            res.child_count AS childCount,
-            res.infant_count AS infantCount,
-            res.status,
-            res.special_requests AS specialRequests,
-            res.request_term AS requestTerm,
-            res.created_at AS createdAt,
-            res.fk_member_no AS fkMemberNo,
-            d.name AS diningName
-        FROM dining_reservations res
-        JOIN tbl_dining d ON res.dining_id = d.dining_id
-        WHERE res.dining_reservation_id = #{resId}
-    </select>
+	    SELECT
+	        res.dining_reservation_id AS diningReservationId,
+	        res.guest_name AS guestName,
+	        res.guest_phone AS guestPhone,
+	        res.res_date AS resDate,
+	        res.res_time AS resTime,
+	        res.adult_count AS adultCount,
+	        res.child_count AS childCount,
+	        res.infant_count AS infantCount,
+	        res.status,
+	        res.special_requests AS specialRequests,
+	        res.created_at AS createdAt,
+	        res.fk_member_no AS fkMemberNo,
+	        d.name AS diningName
+	    FROM dining_reservations res
+	    JOIN tbl_dining d ON res.dining_id = d.dining_id
+	    WHERE res.dining_reservation_id = #{resId}
+	</select>
 
     <select id="checkAvailability" resultType="int">
         <![CDATA[
