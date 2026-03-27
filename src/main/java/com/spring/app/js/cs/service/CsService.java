@@ -33,4 +33,7 @@ public interface CsService {
 
 	// faq 삭제
 	int deleteFaq(String faqId);
+
+	List<Map<String, String>> getHotelList();
+
 }

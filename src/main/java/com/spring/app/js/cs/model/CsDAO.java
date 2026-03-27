@@ -43,5 +43,8 @@ public interface CsDAO {
 	// FAQ 삭제 구현
 	int deleteFaq(String faqId);
 
+	// 호텔리스트(notice service 대신)
+	List<Map<String, String>> getHotelList();
+
 
 }

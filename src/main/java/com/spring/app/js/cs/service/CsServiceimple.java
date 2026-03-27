@@ -110,6 +110,11 @@ public class CsServiceimple implements CsService {
         return dao.deleteFaq(faqId);
     }
     
+    @Override
+    public List<Map<String, String>> getHotelList() {
+        return dao.getHotelList();
+    }
+    
 }
 
 
