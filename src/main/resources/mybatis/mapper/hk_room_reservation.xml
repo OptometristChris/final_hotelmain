@@ -81,9 +81,6 @@
 	        created_at,
 	        cancel_deadline,
 	        refund_amount
-	        <if test="promotion_id != null and promotion_id != ''">
-	            , fk_promotion_id
-	        </if>
 	    )
 	    VALUES (
 	        #{reservation_id},
@@ -99,9 +96,6 @@
 	        SYSDATE,
 	        #{cancel_deadline},
 	        #{refund_amount}
-	        <if test="promotion_id != null and promotion_id != ''">
-	            , #{promotion_id}
-	        </if>
 	    )
 	</insert>
 	
