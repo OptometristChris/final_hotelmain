@@ -53,20 +53,44 @@ public class IndexController {
         String reserveType = request.getParameter("reserveType");
         String hotelId = request.getParameter("hotelId");
 
+        if (reserveType == null || reserveType.isBlank()) {
+            reserveType = "room";
+        }
+
         if ("dining".equals(reserveType)) {
             String diningType = request.getParameter("diningType");
-            return "redirect:/dining/all?hotel_id=" + hotelId + "&d_type=" + diningType;
+            return "redirect:/dining/all?hotel_id=" + (hotelId == null ? "" : hotelId)
+                    + "&d_type=" + (diningType == null ? "" : diningType);
         }
 
         String daterange = request.getParameter("daterange");
         String capacity = request.getParameter("capacity");
+        String filterCheckIn = request.getParameter("filter_check_in");
+        String filterCheckOut = request.getParameter("filter_check_out");
 
         String checkIn = "";
         String checkOut = "";
-        if (daterange != null && daterange.contains(" ~ ")) {
-            String[] dateParts = daterange.split(" ~ ");
-            checkIn = dateParts[0].trim();
-            checkOut = dateParts[1].trim();
+
+        if (daterange != null && !daterange.isBlank()) {
+            if (daterange.contains(" ~ ")) {
+                String[] dateParts = daterange.split(" ~ ");
+                if (dateParts.length == 2) {
+                    checkIn = dateParts[0].trim();
+                    checkOut = dateParts[1].trim();
+                }
+            }
+            else if (daterange.contains(" - ")) {
+                String[] dateParts = daterange.split(" - ");
+                if (dateParts.length == 2) {
+                    checkIn = dateParts[0].trim();
+                    checkOut = dateParts[1].trim();
+                }
+            }
+        }
+
+        if ((checkIn.isBlank() || checkOut.isBlank()) && filterCheckIn != null && filterCheckOut != null) {
+            checkIn = filterCheckIn.trim();
+            checkOut = filterCheckOut.trim();
         }
 
         Map<String, Object> paraMap = new HashMap<>();
