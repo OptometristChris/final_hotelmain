@@ -26,7 +26,6 @@ import com.spring.app.jh.security.model.AdminDAO;
 import com.spring.app.jh.security.model.MemberDAO;
 import com.spring.app.jh.security.model.RefreshTokenDAO;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -94,24 +93,7 @@ public class JwtAuthService_imple implements JwtAuthService {
             throw new RuntimeException("회원 정보를 찾을 수 없습니다.");
         }
 
-        JwtToken jwtToken = jwtTokenProvider.generateToken(
-                authentication,
-                "MEMBER",
-                Long.valueOf(member.getMemberNo()),
-                member.getName(),
-                null,
-                null
-        );
-
-        upsertRefreshToken("MEMBER",
-                           Long.valueOf(member.getMemberNo()),
-                           member.getMemberid(),
-                           jwtToken.getRefreshToken());
-
-        saveAuthenticationToSession(authentication, request);
-        saveMemberSessionDto(member, request);
-
-        return jwtToken;
+        return issueMemberToken(authentication, member, request, response);
     }
 
     // =====================================================================
@@ -157,7 +139,44 @@ public class JwtAuthService_imple implements JwtAuthService {
     }
 
     // =====================================================================
-    // 3) 토큰 재발급
+    // 3) 소셜로그인 성공 후 JWT 발급(이미 인증 완료된 회원용)
+    // =====================================================================
+    @Override
+    public JwtToken issueMemberToken(Authentication authentication,
+                                     MemberDTO member,
+                                     HttpServletRequest request,
+                                     HttpServletResponse response) {
+
+        if (authentication == null) {
+            throw new RuntimeException("인증 객체가 없습니다.");
+        }
+
+        if (member == null || member.getMemberNo() == null) {
+            throw new RuntimeException("회원 정보가 올바르지 않습니다.");
+        }
+
+        JwtToken jwtToken = jwtTokenProvider.generateToken(
+                authentication,
+                "MEMBER",
+                Long.valueOf(member.getMemberNo()),
+                member.getName(),
+                null,
+                null
+        );
+
+        upsertRefreshToken("MEMBER",
+                           Long.valueOf(member.getMemberNo()),
+                           member.getMemberid(),
+                           jwtToken.getRefreshToken());
+
+        saveAuthenticationToSession(authentication, request);
+        saveMemberSessionDto(member, request);
+
+        return jwtToken;
+    }
+
+    // =====================================================================
+    // 4) 토큰 재발급
     // =====================================================================
     @Override
     public JwtToken refresh(TokenRequestDTO tokenRequestDto) {
@@ -236,7 +255,7 @@ public class JwtAuthService_imple implements JwtAuthService {
     }
 
     // =====================================================================
-    // 4) 로그아웃
+    // 5) 로그아웃
     // =====================================================================
     @Override
     public void logout(String principalType,
@@ -244,38 +263,20 @@ public class JwtAuthService_imple implements JwtAuthService {
                        HttpServletRequest request,
                        HttpServletResponse response) {
 
-        // 1. refresh token DB 정리
-        if (principalType != null && principalNo != null) {
+        if (principalNo != null) {
             refreshTokenDAO.deleteRefreshToken(principalType, principalNo);
         }
 
-        // 2. SecurityContext 정리
         SecurityContextHolder.clearContext();
 
-        // 3. 세션 무효화
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
-
-        // 4. 인증 관련 쿠키 삭제
-        expireCookie(response, "accessToken", "/");
-        expireCookie(response, "refreshToken", "/");
-        expireCookie(response, "JSESSIONID", "/");
-
-        // CSRF 쿠키도 같이 비우고 싶으면 추가
-        expireCookie(response, "XSRF-TOKEN", "/");
-    }
-
-    private void expireCookie(HttpServletResponse response, String cookieName, String path) {
-        Cookie cookie = new Cookie(cookieName, null);
-        cookie.setPath(path);
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
     }
 
     // =====================================================================
-    // 5) refresh token insert / update 공통처리
+    // 6) refresh token insert / update 공통처리
     // =====================================================================
     private void upsertRefreshToken(String principalType,
                                     Long principalNo,
@@ -304,7 +305,7 @@ public class JwtAuthService_imple implements JwtAuthService {
     }
 
     // =====================================================================
-    // 6) 하이브리드 구조용 세션 저장
+    // 7) 하이브리드 구조용 세션 저장
     // =====================================================================
     private void saveAuthenticationToSession(Authentication authentication,
                                              HttpServletRequest request) {

@@ -1,11 +1,14 @@
 package com.spring.app.jh.security.auth.service;
 
+import org.springframework.security.core.Authentication;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import com.spring.app.jh.security.auth.domain.AdminLoginRequestDTO;
 import com.spring.app.jh.security.auth.domain.MemberLoginRequestDTO;
 import com.spring.app.jh.security.auth.domain.TokenRequestDTO;
+import com.spring.app.jh.security.domain.MemberDTO;
 import com.spring.app.jh.security.jwt.JwtToken;
 
 /* ===== (#JWT-SERVICE-01) ===== */
@@ -39,6 +42,13 @@ public interface JwtAuthService {
                         HttpServletResponse response);
 
 
+    // =====================================================================
+    // 3) 소셜로그인 성공 후 JWT 발급(이미 인증 완료된 회원용)
+    // =====================================================================
+    JwtToken issueMemberToken(Authentication authentication,
+                              MemberDTO member,
+                              HttpServletRequest request,
+                              HttpServletResponse response);
 
 
     // =====================================================================
