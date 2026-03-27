@@ -3,33 +3,54 @@
 
 <mapper namespace="com.spring.app.ih.dining.mapper.DiningMapper">
 
-    <select id="getDiningList" resultType="DiningDTO" parameterType="HashMap">
-        SELECT
-            dining_id, name, d_type, description,
-            tel, floor, main_img, fk_hotel_id, business_hours,
-            available_times
-        FROM tbl_dining
-        <where>
-            <if test="hotel_id != null and hotel_id != ''">
-                AND fk_hotel_id = #{hotel_id}
-            </if>
-            <if test="d_type != null and d_type != ''">
-                AND UPPER(d_type) = UPPER(#{d_type})
-            </if>
-        </where>
-        ORDER BY dining_id ASC
-    </select>
+    <select id="getDiningList" resultType="map" parameterType="HashMap">
+	    SELECT
+	        d.dining_id AS "DINING_ID",
+	        d.name AS "NAME",
+	        d.d_type AS "D_TYPE",
+	        d.description AS "DESCRIPTION",
+	        d.tel AS "TEL",
+	        d.floor AS "FLOOR",
+	        d.main_img AS "MAIN_IMG",
+	        d.fk_hotel_id AS "FK_HOTEL_ID",
+	        d.business_hours AS "BUSINESS_HOURS",
+	        d.available_times AS "AVAILABLE_TIMES",
+	        d.max_total_capacity AS "MAX_TOTAL_CAPACITY"
+	    FROM tbl_dining d
+	    <where>
+	        <if test="hotel_id != null and hotel_id != ''">
+	            AND d.fk_hotel_id = #{hotel_id}
+	        </if>
+	        <if test="d_type != null and d_type != ''">
+	            AND UPPER(d.d_type) = UPPER(#{d_type})
+	        </if>
+	    </where>
+	    ORDER BY d.dining_id ASC
+	</select>
 
     <select id="getDiningDetail" resultType="DiningDTO">
-        SELECT
-            dining_id, name, d_type, description,
-            introduction, business_hours,
-            tel, floor, main_img, store_imgs,
-            food_imgs, menu_pdf, extra_info, fk_hotel_id,
-            open_time, close_time, available_times
-        FROM tbl_dining
-        WHERE dining_id = #{dining_id}
-    </select>
+	    SELECT
+	        dining_id,
+	        name,
+	        d_type,
+	        description,
+	        introduction,
+	        business_hours,
+	        tel,
+	        floor,
+	        main_img,
+	        store_imgs,
+	        food_imgs,
+	        menu_pdf,
+	        extra_info,
+	        fk_hotel_id,
+	        open_time,
+	        close_time,
+	        available_times,
+	        max_total_capacity
+	    FROM tbl_dining
+	    WHERE dining_id = #{dining_id}
+	</select>
 
     <insert id="registerReservation" parameterType="DiningReservationDTO">
         INSERT INTO dining_reservations (
