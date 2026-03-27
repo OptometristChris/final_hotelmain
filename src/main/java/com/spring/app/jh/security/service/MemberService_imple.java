@@ -3,6 +3,7 @@ package com.spring.app.jh.security.service;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -134,29 +135,15 @@ public class MemberService_imple implements MemberService {
 	@Override
     public String findMemberId(Map<String, String> paraMap) {
         // paraMap: name/email/mobile 중 뭐를 쓰든 DAO/mapper에서 처리
-		
-		try {
-			String mobile = aES256.encrypt(paraMap.get("mobile"));
-			
-			paraMap.put("mobile", mobile);
-		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
-			e.printStackTrace();
-		}
-		
-        return memberDao.findMemberId(paraMap);
+        Map<String, String> workingMap = encryptFindParams(paraMap);
+        return memberDao.findMemberId(workingMap);
     }
 	
 	// 비밀번호 찾기 시 본인 검증하기
 	@Override
     public boolean verifyMemberForPwReset(Map<String, String> paraMap) {
-		try {
-			String mobile = aES256.encrypt(paraMap.get("mobile"));
-			
-			paraMap.put("mobile", mobile);
-		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
-			e.printStackTrace();
-		}
-        int n = memberDao.verifyMemberForPwReset(paraMap);
+        Map<String, String> workingMap = encryptFindParams(paraMap);
+        int n = memberDao.verifyMemberForPwReset(workingMap);
         return n == 1;
     }
 	
@@ -165,8 +152,10 @@ public class MemberService_imple implements MemberService {
 	@Override
     public String issueTempPasswordAndUpdate(Map<String, String> paraMap) {
 
+        Map<String, String> workingMap = encryptFindParams(paraMap);
+
         // 1) 먼저 검증(안전장치)
-        int n = memberDao.verifyMemberForPwReset(paraMap);
+        int n = memberDao.verifyMemberForPwReset(workingMap);
         if (n != 1) {
             return null;
         }
@@ -178,12 +167,10 @@ public class MemberService_imple implements MemberService {
         String hashedPw = passwordEncoder.encode(tempPw);
 
         // 4) 업데이트 파라미터 구성
-        // paraMap에 memberid가 들어있다고 가정(폼에서 memberid 필수)
-        // passwd 키는 mapper에서 #{passwd}로 받게 맞추는게 직관적
-        paraMap.put("passwd", hashedPw);
+        workingMap.put("passwd", hashedPw);
 
         // 5) DB 업데이트
-        int updated = memberDao.updatePasswordForTemp(paraMap);
+        int updated = memberDao.updatePasswordForTemp(workingMap);
 
         return (updated == 1) ? tempPw : null;
     }
@@ -231,6 +218,28 @@ public class MemberService_imple implements MemberService {
 	
 	
 	
+
+    private Map<String, String> encryptFindParams(Map<String, String> paraMap) {
+        Map<String, String> workingMap = new HashMap<>(paraMap);
+
+        try {
+            String email = workingMap.get("email");
+            if (email != null && !email.trim().isEmpty()) {
+                workingMap.put("email", aES256.encrypt(email.trim()));
+            }
+
+            String mobile = workingMap.get("mobile");
+            if (mobile != null && !mobile.trim().isEmpty()) {
+                workingMap.put("mobile", aES256.encrypt(mobile.trim()));
+            }
+        }
+        catch (UnsupportedEncodingException | GeneralSecurityException e) {
+            throw new RuntimeException("회원 찾기용 암호화 처리 중 오류가 발생했습니다.", e);
+        }
+
+        return workingMap;
+    }
+
 
     // ------------------------------------------------------------
     // 임시 비밀번호 생성기

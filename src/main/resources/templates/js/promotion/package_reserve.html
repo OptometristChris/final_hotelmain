@@ -294,12 +294,14 @@
                         body: JSON.stringify({
                             imp_uid: rsp.imp_uid,
                             merchant_uid: rsp.merchant_uid,
-                            member_no: /*[[${memberNo}]]*/ 0,
                             room_type_id: selectedRadio.value,
+                            promotion_id: document.querySelector('input[name="promotion_id"]').value,
+                            fk_hotel_id: document.querySelector('input[name="fk_hotel_id"]').value,
                             check_in: document.getElementById('checkIn').value,
                             check_out: document.getElementById('checkOut').value,
                             guest_count: document.getElementById("guestCount").value,
-                            total_price: finalPrice,
+                            applied_price: String(finalPrice),
+                            total_price: String(finalPrice),
                             hotel_name: "CIEL HOTEL",
                             room_name: selectedRadio.dataset.name
                         })

@@ -350,6 +350,7 @@ public class MemberController {
 
         MemberDTO memberdto = memberService.findByMemberNo(memberNo);
         model.addAttribute("memberdto", memberdto);
+        model.addAttribute("memberDto", memberdto);
 
         boolean canEditEmail =
                 memberdto != null

@@ -238,16 +238,15 @@ document.addEventListener('DOMContentLoaded', () => {
 <body>
 <div class="container"
      th:with="
-       m = ${memberDto},
-       name = (${m != null and m.name != null} ? ${m.name} : '홍길동'),
-       memberid = (${m != null and m.memberid != null} ? ${m.memberid} : 'hong123'),
-       email = (${m != null and m.email != null} ? ${m.email} : ''),
-       mobile = (${m != null and m.mobile != null} ? ${m.mobile} : '01012345678'),
-       postcode = (${m != null and m.postcode != null} ? ${m.postcode} : '06236'),
-       address = (${m != null and m.address != null} ? ${m.address} : '서울특별시 강남구 테헤란로'),
-       detail = (${m != null and m.detail_address != null} ? ${m.detail_address} : '101동 1001호'),
-       extra = (${m != null and m.extra_address != null} ? ${m.extra_address} : '(참고) OO빌딩'),
-       canEditEmailValue = (${canEditEmail != null} ? ${canEditEmail} : false)
+       m=${memberDto},
+       name=${m != null and m.name != null ? m.name : ''},
+       memberid=${m != null and m.memberid != null ? m.memberid : ''},
+       email=${m != null and m.email != null ? m.email : ''},
+       mobile=${m != null and m.mobile != null ? m.mobile : ''},
+       postcode=${m != null and m.postcode != null ? m.postcode : ''},
+       address=${m != null and m.address != null ? m.address : ''},
+       detail=${m != null and m.detail_address != null ? m.detail_address : ''},
+       extra=${m != null and m.extra_address != null ? m.extra_address : ''}
      ">
 
   <div class="wrap">
@@ -260,11 +259,11 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="body">
-        <div class="hint" th:if="${!canEditEmailValue}">
+        <div class="hint" th:if="${!canEditEmail}">
           아이디와 이메일은 정책상 수정 불가이며, 연락처와 주소 정보만 변경 가능합니다.
         </div>
 
-        <div class="hint hint-email" th:if="${canEditEmailValue}">
+        <div class="hint hint-email" th:if="${canEditEmail}">
           카카오 간편가입 회원은 이메일이 비어있는 경우에 한해 최초 1회 이메일 등록이 가능합니다.
         </div>
 
@@ -286,13 +285,13 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="label"><span>이메일</span></div>
 
               <input class="input"
-                     th:if="${!canEditEmailValue}"
+                     th:if="${!canEditEmail}"
                      type="text"
                      th:value="${email}"
                      readonly />
 
               <input class="input"
-                     th:if="${canEditEmailValue}"
+                     th:if="${canEditEmail}"
                      type="email"
                      name="email"
                      id="email"
