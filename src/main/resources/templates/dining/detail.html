@@ -61,14 +61,12 @@
             <div class="my-5">
                 <ul class="nav nav-tabs" id="diningTab" role="tablist" style="border-bottom: 1px solid #eee; justify-content: center;">
 				    <li class="nav-item">
-				        <a class="nav-link active" id="store-tab" data-toggle="tab" href="#store" role="tab" 
-				           style="color: #9d815d !important; font-weight: bold; border: none; border-bottom: 2px solid #9d815d;">
+				        <a class="nav-link active" id="store-tab" data-toggle="tab" href="#store" role="tab">
 				           매장 전경
 				        </a>
 				    </li>
 				    <li class="nav-item">
-				        <a class="nav-link" id="food-tab" data-toggle="tab" href="#food" role="tab" 
-				           style="color: #555 !important; border: none;">
+				        <a class="nav-link" id="food-tab" data-toggle="tab" href="#food" role="tab">
 				           음식 메뉴
 				        </a>
 				    </li>
@@ -155,11 +153,13 @@
                  <a th:href="@{/dining/all}" class="btn btn-outline-secondary px-5 py-3 mr-3" style="border-radius: 0;">목록으로</a>
             </div>
             
-        </div> </div> <script th:fragment="script" src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+        </div>
+    </div>
+
+    <script th:fragment="script" src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
     <script th:fragment="script" src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script th:fragment="script">
         $(document).ready(function(){
-            // 탭 활성화를 위한 기본 스크립트
             $('#diningTab a').on('click', function (e) {
                 e.preventDefault();
                 $(this).tab('show');
