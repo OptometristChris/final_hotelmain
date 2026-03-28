@@ -136,9 +136,9 @@
                                 <select name="fkDiningId" class="form-select" onchange="changeDining(this)">
                                     <option value="">-- 업장 선택 --</option>
                                     <option th:each="dining : ${diningList}" 
-                                            th:value="${dining.DINING_ID}" 
-                                            th:data-times="${dining.AVAILABLE_TIMES}" 
-                                            th:text="${dining.NAME}"></option>
+									        th:value="${dining['dining_id']}" 
+									        th:data-times="${dining['available_times']}" 
+									        th:text="${dining['name']}"></option>
                                 </select>
                             </div>
 

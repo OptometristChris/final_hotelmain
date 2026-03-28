@@ -385,7 +385,7 @@ public class AdminDiningController {
         model.addAttribute("diningList", diningList);
         
         if((diningId == null || diningId.isEmpty()) && !diningList.isEmpty()) {
-            diningId = String.valueOf(diningList.get(0).get("DINING_ID"));
+            diningId = String.valueOf(diningList.get(0).get("dining_id"));
         }
 
         List<Map<String, Object>> statsList = diningservice.getDailyStatistics(diningId);
