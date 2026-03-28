@@ -141,7 +141,7 @@
       const ctxPath    = /*[[@{/}]]*/ "/";
 
       $.ajax({
-        url: ctxPath + "api/auth/member/withdraw",
+    	url: ctxPath + "security/api/auth/member/withdraw",
         type: "POST",
         data: {},
         beforeSend: function(xhr) {
@@ -149,10 +149,14 @@
         },
         success: function(json) {
 
-          if (json.success) {
-            alert(json.message);
-            location.href = ctxPath + "index";
-          }
+       	if (json.success) {
+       		  sessionStorage.removeItem("JWT");
+       		  document.cookie = "accessToken=; path=/; Max-Age=0";
+       		  document.cookie = "refreshToken=; path=/; Max-Age=0";
+
+       		  alert(json.message);
+       		  location.href = ctxPath + "index";
+       		}
           else {
             alert(json.message || "회원탈퇴 처리에 실패했습니다.");
           }

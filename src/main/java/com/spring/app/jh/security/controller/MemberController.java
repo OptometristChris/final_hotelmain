@@ -410,6 +410,10 @@ public class MemberController {
         }
 
         MemberDTO memberDto = memberService.findByMemberNo(memberNo);
+        if (memberDto == null) {
+            return "redirect:/security/member/mypage";
+        }
+
         model.addAttribute("memberDto", memberDto);
 
         return "security/member/withdrawForm";
