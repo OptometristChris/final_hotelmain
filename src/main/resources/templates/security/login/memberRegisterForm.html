@@ -170,8 +170,8 @@ form[name="registerFrm"]{
   max-width:100%;
 }
 
-#tblMemberRegister img#idcheck,
-#tblMemberRegister img#zipcodeSearch{
+#tblMemberRegister button#idcheck,
+#tblMemberRegister button#zipcodeSearch{
   vertical-align:middle !important;
   cursor:pointer;
   border:1px solid var(--line-2);
@@ -247,6 +247,24 @@ span#emailCheckResult{
   padding-top:8px;
 }
 
+.mini-emoji-btn{
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px 12px;
+  margin-left: 8px;
+  font-size: .85rem;
+  line-height: 1;
+  color: #111;
+  font-weight: 600;
+}
+
+.mini-emoji-btn:hover{
+  background:#f8f8f8;
+}
+
 @media (max-width:900px){
   #divRegisterFrm{
     padding:145px 12px 80px;
@@ -303,6 +321,8 @@ span#emailCheckResult{
   #tblMemberRegister input#hp3{
     width:calc(33.333% - 8px);
   }
+  
+  
 }
 </style>
 
@@ -512,7 +532,7 @@ span#emailCheckResult{
 		});// 아이디가 hp3 인 것은 포커스를 잃어버렸을 경우(blur) 이벤트를 처리해주는 것이다.
 		
 		
-		$("img#zipcodeSearch").click(function(){
+		$("button#zipcodeSearch").click(function(){
 		
 			new daum.Postcode({
 	            oncomplete: function(data) {
@@ -675,7 +695,7 @@ span#emailCheckResult{
          
          
          // "우편번호찾기" 을 클릭했을 때 이벤트 처리하기
-         $("img#zipcodeSearch").click(function() {
+         $("button#zipcodeSearch").click(function() {
         	 b_flag_zipcodeSearch_click = true; 
          });
          
@@ -688,7 +708,7 @@ span#emailCheckResult{
      
      
       // "아이디중복확인" 을 클릭했을 때 이벤트 처리하기
-         $("img#idcheck").click(function() {
+         $("button#idcheck").click(function() {
         	 b_flag_idDuplicate_click = true; 
         	 // 가입하기 버튼을 클릭시 "아이디중복확인" 을 클릭했는지 클릭안했는지 알아보기 위한 용도임. 
         	 
@@ -738,7 +758,7 @@ span#emailCheckResult{
 				 }
          	 });
 			    
-         });// end of $("img#idcheck").click(function() {})---------------------         
+         });// end of $("button#idcheck").click(function() {})---------------------         
         
          
          // 아이디값이 변경되면 가입하기 버튼을 클릭시 "아이디중복확인" 을 클릭했는지 클릭안했는지를 알아보기위한 용도 초기화 시키기  
@@ -922,7 +942,9 @@ span#emailCheckResult{
 					<td style="width: 80%; text-align: left;">
 					    <input type="text" name="memberid" id="memberid" class="requiredInfo" autocomplete="off" />&nbsp;&nbsp;
 					    <!--/* 아이디중복체크 */-->
-					    <img id="idcheck" th:src="@{/images/b_id_check.gif}" style="vertical-align: middle;" />
+					    <button type="button" id="idcheck" class="mini-emoji-btn" aria-label="아이디 중복확인">
+						  🔎 아이디확인
+						</button>
 					    <span id="idcheckResult"></span> 
 					    <span class="error">아이디는 필수입력 사항입니다.</span>
 					</td> 
@@ -952,7 +974,9 @@ span#emailCheckResult{
 					    <span class="error">이메일 형식에 맞지 않습니다.</span>
 					    
 					    <!--/* ==== 퀴즈 시작 ==== */-->
-					    <span style="display: inline-block; width: 80px; height: 30px; border: solid 1px gray; border-radius: 5px; font-size: 8pt; text-align: center; margin-left: 10px; cursor: pointer;" onclick="isExistEmailCheck();">이메일중복확인</span> 
+					     <button type="button" id="emailCheckBtn" class="mini-emoji-btn" onclick="isExistEmailCheck();" aria-label="이메일 중복확인">
+						  📧 이메일확인
+						</button>
 					    <span id="emailCheckResult"></span>
 					    <!--/* ==== 퀴즈 끝 ==== */-->
 					</td>
@@ -971,7 +995,9 @@ span#emailCheckResult{
 					<td style="width: 80%; text-align: left;">
 					   <input type="text" id="postcode" name="postcode" size="6" maxlength="5" />&nbsp;&nbsp;
 					   <!--/* 우편번호 찾기 */-->
-					   <img id="zipcodeSearch" th:src="@{/images/b_zipcode.gif}" style="vertical-align: middle;" />
+					   <button type="button" id="zipcodeSearch" class="mini-emoji-btn" aria-label="우편번호 찾기">
+						  📮 주소검색
+						</button>
 					   <span class="error">우편번호 형식이 아닙니다.</span> 
 					</td>
 				</tr>

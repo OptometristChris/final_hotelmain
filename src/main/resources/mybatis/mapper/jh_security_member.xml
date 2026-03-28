@@ -14,16 +14,17 @@
 
 	<!-- 회원가입시 아이디 중복확인 -->
 	<select id="member_id_check" resultType="Integer">
-		select count(*)
-		from tbl_member_security
-		where memberid = #{memberid}
+	    select count(*)
+	    from tbl_member_security
+	    where memberid = #{memberid}
+	      and enabled = '1'
 	</select>
-
-	<!-- 회원가입시 이메일 중복확인 -->
+	
 	<select id="emailDuplicateCheck" resultType="Integer">
-		select count(*)
-		from tbl_member_security
-		where email = #{email}
+	    select count(*)
+	    from tbl_member_security
+	    where email = #{email}
+	      and enabled = '1'
 	</select>
 
 
