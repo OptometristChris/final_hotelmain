@@ -245,27 +245,29 @@
             회원은 현재 JWT 로그인 + 세션 하이브리드 구조이므로
             로그아웃도 Auth API 를 AJAX 로 호출한다.
          */
-        function logoutMember() {
+         function logoutMember() {
 
-            const csrf = getCsrfInfo();
+        	    const csrf = getCsrfInfo();
 
-            $.ajax({
-                url: contextPath + "api/auth/member/logout",
-                type: "post",
-                beforeSend: function(xhr){
-                    xhr.setRequestHeader(csrf.header, csrf.token);
-                },
-                success: function(){
-                    sessionStorage.removeItem("JWT");
-                    document.cookie = "accessToken=; path=/; Max-Age=0";
-                    document.cookie = "refreshToken=; path=/; Max-Age=0";
-                    location.href = contextPath + "index";
-                },
-                error: function(request, status, error){
-                    alert("회원 로그아웃 처리 중 오류가 발생했습니다.");
-                }
-            });
-        }
+        	    $.ajax({
+        	        url: contextPath + "api/auth/member/logout",
+        	        type: "post",
+        	        beforeSend: function(xhr){
+        	            xhr.setRequestHeader(csrf.header, csrf.token);
+        	        },
+        	        success: function(){
+        	            location.href = contextPath + "index";
+        	        },
+        	        error: function(request, status, error){
+        	            alert("회원 로그아웃 처리 중 오류가 발생했습니다.");
+        	        },
+        	        complete: function() {
+        	            sessionStorage.removeItem("JWT");
+        	            document.cookie = "accessToken=; path=/; Max-Age=0";
+        	            document.cookie = "refreshToken=; path=/; Max-Age=0";
+        	        }
+        	    });
+        	}
 
         // =========================================================
         // 3) 관리자 로그아웃

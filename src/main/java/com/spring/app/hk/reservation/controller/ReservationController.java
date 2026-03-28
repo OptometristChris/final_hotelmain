@@ -16,8 +16,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.app.common.AES256;
 import com.spring.app.hk.reservation.service.ReservationService;
+import com.spring.app.jh.security.auth.domain.JwtPrincipalDTO;
 import com.spring.app.jh.security.domain.CustomUserDetails;
 import com.spring.app.jh.security.domain.Session_GuestDTO;
+import com.spring.app.jh.security.domain.Session_MemberDTO;
+import com.spring.app.jh.security.oauth.OAuth2MemberPrincipal;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -200,48 +203,42 @@ public class ReservationController {
 	// 마이페이지 : 로그인 회원의 예약 목록 조회
 	// =======================================================
 	@GetMapping("/mypage")
-	public String myReservationList(Authentication auth, Model model) {
+	public String myReservationList(Authentication auth, Model model,
+	                                HttpSession session) {
 
 	    Integer memberNo = null;
 
-	    // 1️⃣ 일반 로그인
-	    if (auth.getPrincipal() instanceof CustomUserDetails userDetails) {
-	        memberNo = userDetails.getMemberDto().getMemberNo();
-	    }
+	    if (auth != null && auth.getPrincipal() != null) {
 
-	    // 2️⃣ 소셜 로그인
-	    else if (auth.getPrincipal() instanceof org.springframework.security.oauth2.core.user.OAuth2User oauthUser) {
+	        Object principal = auth.getPrincipal();
 
-	        String email = null;
-
-	        Map<String, Object> response = (Map<String, Object>) oauthUser.getAttributes().get("response");
-	        if (response != null) {
-	            email = (String) response.get("email");
+	        // 1️⃣ 일반 로그인
+	        if (principal instanceof CustomUserDetails userDetails) {
+	            memberNo = userDetails.getMemberDto().getMemberNo();
 	        }
 
-	        if (email == null) {
-	            Map<String, Object> kakao = (Map<String, Object>) oauthUser.getAttributes().get("kakao_account");
-	            if (kakao != null) {
-	                email = (String) kakao.get("email");
-	            }
+	        // 2️⃣ 소셜 로그인
+	        else if (principal instanceof OAuth2MemberPrincipal oauth2Principal) {
+	            memberNo = oauth2Principal.getMemberDto().getMemberNo();
 	        }
 
-	        if (email != null) {
-	            try {
-	                email = aes256.encrypt(email.trim());
-	            } catch (Exception e) {
-	                e.printStackTrace();
-	            }
-
-	            Map<String, Object> member = reservationService.findMemberByEmail(email);
-
-	            if (member != null) {
-	                memberNo = ((Number) member.get("MEMBER_NO")).intValue();
+	        // 3️⃣ JWT 로그인
+	        else if (principal instanceof JwtPrincipalDTO jwtPrincipal) {
+	            if ("MEMBER".equals(jwtPrincipal.getPrincipalType())) {
+	                memberNo = jwtPrincipal.getPrincipalNo().intValue();
 	            }
 	        }
 	    }
 
-	    // ❗ 로그인 안된 경우
+	    // 4️⃣ 세션 fallback
+	    if (memberNo == null) {
+	        Object sessionObj = session.getAttribute("sessionMemberDTO");
+
+	        if (sessionObj instanceof Session_MemberDTO sessionMemberDTO) {
+	            memberNo = sessionMemberDTO.getMemberNo();
+	        }
+	    }
+
 	    if (memberNo == null) {
 	        return "redirect:/security/login";
 	    }
