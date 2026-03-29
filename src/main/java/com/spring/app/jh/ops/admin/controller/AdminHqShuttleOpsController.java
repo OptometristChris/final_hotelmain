@@ -66,6 +66,8 @@ public class AdminHqShuttleOpsController {
                            @RequestParam("startPlaceCode") String startPlaceCode,
                            @RequestParam("endPlaceCode") String endPlaceCode,
                            @RequestParam("routeName") String routeName,
+                           @RequestParam("departTime") String departTime,
+                           @RequestParam("capacity") int capacity,
                            HttpSession session) {
 
         Integer adminNo = getSessionAdminNo(session);
@@ -73,10 +75,26 @@ public class AdminHqShuttleOpsController {
             return "redirect:/admin/login";
         }
 
-        shuttleOpsService.addRoute(hotelId, routeType, startPlaceCode, endPlaceCode, routeName);
+        shuttleOpsService.addRoute(hotelId, routeType, startPlaceCode, endPlaceCode, routeName, departTime, capacity);
 
         return "redirect:/admin/hq/shuttle?hotelId=" + hotelId;
     }
+    
+    @PostMapping("/route/{routeId}/activate")
+    public String activateRoute(@PathVariable("routeId") long routeId,
+                                @RequestParam("hotelId") int hotelId,
+                                HttpSession session) {
+
+        Integer adminNo = getSessionAdminNo(session);
+        if (adminNo == null) {
+            return "redirect:/admin/login";
+        }
+
+        shuttleOpsService.activateRoute(hotelId, routeId);
+
+        return "redirect:/admin/hq/shuttle?hotelId=" + hotelId;
+    }
+    
 
     @PostMapping("/route/{routeId}/deactivate")
     public String deactivateRoute(@PathVariable("routeId") long routeId,

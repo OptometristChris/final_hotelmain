@@ -42,12 +42,12 @@
     background:var(--bg);
     color:var(--text);
     min-height:100vh;
-    padding:28px 16px 40px;
+    padding:0 16px 40px;
   }
 
   .container{
     width:100%;
-    padding-top:36px;
+    padding-top:170px;
   }
 
   .wrap{
@@ -582,6 +582,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const startPlaceCode = startPlaceCodeEl ? startPlaceCodeEl.value : "";
       const endPlaceCode = endPlaceCodeEl ? endPlaceCodeEl.value : "";
       const routeName = routeNameEl ? routeNameEl.value.trim() : "";
+      const departTime = document.getElementById('departTime')?.value || "";
+      const capacity = document.getElementById('capacity')?.value || "";
 
       if(!routeType){
         alert('구분을 선택하세요.');
@@ -609,6 +611,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if(!routeName){
         alert('노선명을 확인하세요.');
+        e.preventDefault();
+        return;
+      }
+
+      if(!departTime){
+        alert('출발시간을 입력하세요.');
+        e.preventDefault();
+        return;
+      }
+
+      if(!capacity || Number(capacity) <= 0){
+        alert('정원은 1 이상이어야 합니다.');
         e.preventDefault();
         return;
       }
@@ -809,6 +823,16 @@ document.addEventListener('DOMContentLoaded', function() {
                   </div>
 
                   <div class="field gcol-2">
+                    <div class="label">출발시간</div>
+                    <input type="time" name="departTime" id="departTime" class="input" required />
+                  </div>
+
+                  <div class="field gcol-2">
+                    <div class="label">정원</div>
+                    <input type="number" name="capacity" id="capacity" class="input" min="1" required />
+                  </div>
+
+                  <div class="field gcol-2">
                     <div class="label">등록</div>
                     <button type="submit" class="btn btn-ok">노선 추가</button>
                   </div>
@@ -864,12 +888,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="badge badge-off" th:if="${r.activeYn != 'Y'}">비활성</span>
                       </td>
                       <td>
-                        <form th:action="@{'/admin/hq/shuttle/route/' + ${r.routeId} + '/deactivate'}"
+                        <form th:if="${r.activeYn == 'Y'}"
+                              th:action="@{'/admin/hq/shuttle/route/' + ${r.routeId} + '/deactivate'}"
                               method="post"
                               onsubmit="return confirm('해당 노선을 비활성화하시겠습니까?');">
                           <input type="hidden" name="hotelId" th:value="${selectedHotelId}" />
                           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                          <button type="submit" class="btn btn-danger" th:disabled="${r.activeYn != 'Y'}">비활성화</button>
+                          <button type="submit" class="btn btn-danger">비활성화</button>
+                        </form>
+
+                        <form th:if="${r.activeYn != 'Y'}"
+                              th:action="@{'/admin/hq/shuttle/route/' + ${r.routeId} + '/activate'}"
+                              method="post"
+                              onsubmit="return confirm('해당 노선을 다시 활성화하시겠습니까?');">
+                          <input type="hidden" name="hotelId" th:value="${selectedHotelId}" />
+                          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                          <button type="submit" class="btn btn-sub">활성화</button>
                         </form>
                       </td>
                     </tr>
@@ -1062,7 +1096,7 @@ document.addEventListener('DOMContentLoaded', function() {
                       onsubmit="return confirm('오늘 기준 1개월 이전 셔틀 데이터를 삭제하시겠습니까?');">
                   <input type="hidden" name="hotelId" th:value="${selectedHotelId}" />
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                  <button type="submit" class="btn btn-danger">1개월 이전 셔틀 데이터 삭제</button>
+                  <button type="submit" class="btn btn-danger">과거 데이터 삭제</button>
                 </form>
               </div>
             </div>
@@ -1071,6 +1105,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
     </section>
+
   </div>
 </div>
 </body>

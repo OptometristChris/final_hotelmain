@@ -52,56 +52,59 @@ public class AdminHqShuttleOpsService_imple implements AdminHqShuttleOpsService 
                         String routeType,
                         String startPlaceCode,
                         String endPlaceCode,
-                        String routeName) {
+                        String routeName,
+                        String departTime,
+                        int capacity) {
 
         if (hotelId <= 0) {
-            throw new IllegalArgumentException("호텔 번호가 올바르지 않습니다.");
+            throw new IllegalArgumentException("호텔 정보가 올바르지 않습니다.");
         }
 
-        if (routeType == null || (!"TO_HOTEL".equals(routeType) && !"FROM_HOTEL".equals(routeType))) {
-            throw new IllegalArgumentException("routeType 값이 올바르지 않습니다.");
+        if (routeType == null || routeType.trim().isEmpty()) {
+            throw new IllegalArgumentException("노선 유형은 필수입니다.");
         }
 
-        if (startPlaceCode == null || endPlaceCode == null) {
-            throw new IllegalArgumentException("출발지/도착지는 필수입니다.");
+        if (startPlaceCode == null || startPlaceCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("출발지는 필수입니다.");
         }
 
-        if (startPlaceCode.equals(endPlaceCode)) {
-            throw new IllegalArgumentException("출발지와 도착지는 같을 수 없습니다.");
-        }
-
-        // 화면에서 "선택 호텔" 은 HOTEL_{hotelId} 코드로 넘어오도록 맞춘 상태
-        String hotelPlaceCode = "HOTEL_" + hotelId;
-
-        if ("TO_HOTEL".equals(routeType)) {
-
-            // TO_HOTEL : 외부 장소 -> 선택 호텔
-            if (!hotelPlaceCode.equals(endPlaceCode)) {
-                throw new IllegalArgumentException("TO_HOTEL 노선의 도착지는 선택 호텔이어야 합니다.");
-            }
-
-            if (hotelPlaceCode.equals(startPlaceCode)) {
-                throw new IllegalArgumentException("TO_HOTEL 노선의 출발지는 외부 장소여야 합니다.");
-            }
-        }
-
-        if ("FROM_HOTEL".equals(routeType)) {
-
-            // FROM_HOTEL : 선택 호텔 -> 외부 장소
-            if (!hotelPlaceCode.equals(startPlaceCode)) {
-                throw new IllegalArgumentException("FROM_HOTEL 노선의 출발지는 선택 호텔이어야 합니다.");
-            }
-
-            if (hotelPlaceCode.equals(endPlaceCode)) {
-                throw new IllegalArgumentException("FROM_HOTEL 노선의 도착지는 외부 장소여야 합니다.");
-            }
+        if (endPlaceCode == null || endPlaceCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("도착지는 필수입니다.");
         }
 
         if (routeName == null || routeName.trim().isEmpty()) {
             throw new IllegalArgumentException("노선명은 필수입니다.");
         }
 
-        return shuttleDao.insertRoute(hotelId, routeType, startPlaceCode, endPlaceCode, routeName);
+        if (departTime == null || departTime.trim().isEmpty()) {
+            throw new IllegalArgumentException("출발시간은 필수입니다.");
+        }
+
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("정원은 1 이상이어야 합니다.");
+        }
+
+        shuttleDao.insertRoute(hotelId, routeType, startPlaceCode, endPlaceCode, routeName);
+
+        Long routeId = shuttleDao.selectLastRouteId(hotelId, routeType, startPlaceCode, endPlaceCode, routeName);
+
+        if (routeId == null) {
+            throw new IllegalStateException("생성된 노선 ID를 찾을 수 없습니다.");
+        }
+
+        shuttleDao.insertTimetable(routeId, departTime, capacity);
+
+        shuttleDao.extendSlotStock(hotelId, LocalDate.now(), LocalDate.now().plusDays(90));
+
+        return 1;
+    }
+    
+    
+    @Override
+    @Transactional
+    public int activateRoute(int hotelId, long routeId) {
+        shuttleDao.activateRoute(hotelId, routeId);
+        return shuttleDao.activateTimetableByRoute(hotelId, routeId);
     }
 
     @Override

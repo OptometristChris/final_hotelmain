@@ -313,5 +313,66 @@
 	  )
 	    AND ride_date &lt; #{cutoffDate}
 	</delete>
+	
+	
+	<!-- 방금 생성한 route_id 찾기 -->
+	<select id="selectLastRouteId" resultType="long">
+	    SELECT MAX(route_id)
+	    FROM tbl_shuttle_route
+	    WHERE fk_hotel_id = #{hotelId}
+	      AND route_type = #{routeType}
+	      AND start_place_code = #{startPlaceCode}
+	      AND end_place_code = #{endPlaceCode}
+	      AND route_name = #{routeName}
+	</select>
+	
+	<!-- 시간표 1건 생성 -->
+	<insert id="insertTimetable">
+	    INSERT INTO tbl_shuttle_timetable
+	    (
+	        timetable_id,
+	        fk_route_id,
+	        depart_time,
+	        capacity,
+	        active_yn,
+	        created_at
+	    )
+	    VALUES
+	    (
+	        seq_tbl_shuttle_timetable.NEXTVAL,
+	        #{routeId},
+	        #{departTime},
+	        #{capacity},
+	        'Y',
+	        SYSTIMESTAMP
+	    )
+	</insert>
+	
+	
+	<!-- 노선 재활성화 -->
+	<update id="activateRoute">
+	    UPDATE tbl_shuttle_route
+	    SET active_yn = 'Y'
+	    WHERE fk_hotel_id = #{hotelId}
+	      AND route_id = #{routeId}
+	      AND active_yn = 'N'
+	</update>
+	
+	<!-- 해당 노선 시간표 재활성화 -->
+	<update id="activateTimetableByRoute">
+	    UPDATE tbl_shuttle_timetable
+	    SET active_yn = 'Y'
+	    WHERE fk_route_id IN (
+	        SELECT route_id
+	        FROM tbl_shuttle_route
+	        WHERE fk_hotel_id = #{hotelId}
+	          AND route_id = #{routeId}
+	    )
+	      AND active_yn = 'N'
+	</update>
+	
+	
+	
+	
 
 </mapper>

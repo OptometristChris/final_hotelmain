@@ -22,10 +22,14 @@ public interface AdminHqShuttleOpsService {
     List<ShuttleBlockDTO> getBlockList(int hotelId);
 
     int addRoute(int hotelId,
-                 String routeType,
-                 String startPlaceCode,
-                 String endPlaceCode,
-                 String routeName);
+	            String routeType,
+	            String startPlaceCode,
+	            String endPlaceCode,
+	            String routeName,
+	            String departTime,
+	            int capacity);
+	
+	int activateRoute(int hotelId, long routeId);
 
     int deactivateRoute(int hotelId, long routeId);
 

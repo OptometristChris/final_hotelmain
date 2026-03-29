@@ -26,10 +26,30 @@ public interface AdminHqShuttleOpsDAO {
     List<ShuttleBlockDTO> selectBlockList(@Param("hotelId") int hotelId);
 
     int insertRoute(@Param("hotelId") int hotelId,
-                    @Param("routeType") String routeType,
-                    @Param("startPlaceCode") String startPlaceCode,
-                    @Param("endPlaceCode") String endPlaceCode,
-                    @Param("routeName") String routeName);
+	            @Param("routeType") String routeType,
+	            @Param("startPlaceCode") String startPlaceCode,
+	            @Param("endPlaceCode") String endPlaceCode,
+	            @Param("routeName") String routeName);
+	
+	Long selectLastRouteId(@Param("hotelId") int hotelId,
+	                   @Param("routeType") String routeType,
+	                   @Param("startPlaceCode") String startPlaceCode,
+	                   @Param("endPlaceCode") String endPlaceCode,
+	                   @Param("routeName") String routeName);
+	
+	int insertTimetable(@Param("routeId") long routeId,
+	                @Param("departTime") String departTime,
+	                @Param("capacity") int capacity);
+	
+	int extendSlotStock(@Param("hotelId") int hotelId,
+	                @Param("startDate") LocalDate startDate,
+	                @Param("endDate") LocalDate endDate);
+	
+	int activateRoute(@Param("hotelId") int hotelId,
+	              @Param("routeId") long routeId);
+	
+	int activateTimetableByRoute(@Param("hotelId") int hotelId,
+	                         @Param("routeId") long routeId);
 
     int deactivateRoute(@Param("hotelId") int hotelId,
                         @Param("routeId") long routeId);
@@ -53,4 +73,6 @@ public interface AdminHqShuttleOpsDAO {
 
     int deleteOldSlotStock(@Param("hotelId") int hotelId,
                            @Param("cutoffDate") LocalDate cutoffDate);
+    
+    
 }
