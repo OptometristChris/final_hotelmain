@@ -76,14 +76,14 @@
                         <p class="info-text"><i class="bi bi-info-circle"></i> 회원 계정으로 작성됩니다.</p>
                     </div>
                 
-                    <div sec:authorize="isAnonymous()" th:if="${session.Session_GuestDTO != null}">
+                    <div sec:authorize="isAnonymous()" th:if="${session.guestSession != null}">
                         <input type="text" name="writer_name" id="writer_name" 
                                class="form-control w-100" 
-                               th:value="${session.Session_GuestDTO.guestName}" readonly>
+                               th:value="${session.guestSession.guestName}" readonly>
                         <p class="info-text"><i class="bi bi-info-circle"></i> 비회원 예약 정보로 작성됩니다.</p>
                     </div>
                 
-                    <div sec:authorize="isAnonymous()" th:if="${session.Session_GuestDTO == null}">
+                    <div sec:authorize="isAnonymous()" th:if="${session.guestSession == null}">
                         <input type="text" name="writer_name" id="writer_name" 
                                class="form-control w-100" 
                                placeholder="성함을 입력해주세요.">

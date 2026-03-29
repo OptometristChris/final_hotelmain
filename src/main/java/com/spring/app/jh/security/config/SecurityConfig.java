@@ -229,7 +229,7 @@ public class SecurityConfig {
 	                .hasAnyRole("ADMIN_HQ", "ADMIN_BRANCH")
 	            .requestMatchers("/promotion/reserve").authenticated()
 	            .requestMatchers("/promotion/**").permitAll()
-	            .requestMatchers("/cs/qnaWrite", "/cs/qnaDelete").authenticated()
+	            .requestMatchers("/cs/qnaWrite", "/cs/qnaWriteEnd", "/cs/qnaDelete").permitAll()
                 .requestMatchers("/reservation/**").permitAll()
                 .requestMatchers("/payment/**").permitAll()
                 .requestMatchers("/shuttle/**").permitAll()

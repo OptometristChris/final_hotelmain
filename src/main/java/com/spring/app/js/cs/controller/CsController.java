@@ -111,7 +111,7 @@ public class CsController {
         mav.addObject("hotelList", hotelList);
 
         boolean isMember = (principal != null);
-        boolean isGuest = (session.getAttribute("Session_GuestDTO") != null);
+        boolean isGuest = (session.getAttribute("guestSession") != null);
 
         if (!isMember && !isGuest) {
             mav.addObject("message", "로그인이 필요한 서비스입니다.");
@@ -144,7 +144,7 @@ public class CsController {
         }
         else {
             com.spring.app.jh.security.domain.Session_GuestDTO guest =
-                (com.spring.app.jh.security.domain.Session_GuestDTO) session.getAttribute("Session_GuestDTO");
+                (com.spring.app.jh.security.domain.Session_GuestDTO) session.getAttribute("guestSession");
 
             if (guest != null) {
                 paraMap.put("writer_name", guest.getGuestName());
@@ -205,7 +205,7 @@ public class CsController {
 
         boolean isMemberOwner = (principal != null && principal.getName().equals(writerName));
         com.spring.app.jh.security.domain.Session_GuestDTO guest =
-            (com.spring.app.jh.security.domain.Session_GuestDTO) session.getAttribute("Session_GuestDTO");
+            (com.spring.app.jh.security.domain.Session_GuestDTO) session.getAttribute("guestSession");
         boolean isGuestOwner = (guest != null && guest.getGuestName().equals(writerName));
 
         if ("Y".equals(qna.get("IS_SECRET"))) {
@@ -252,7 +252,7 @@ public class CsController {
         String writerName = String.valueOf(qna.get("WRITER_NAME"));
         boolean isMemberOwner = (principal != null && principal.getName().equals(writerName));
         com.spring.app.jh.security.domain.Session_GuestDTO guest =
-            (com.spring.app.jh.security.domain.Session_GuestDTO) session.getAttribute("Session_GuestDTO");
+            (com.spring.app.jh.security.domain.Session_GuestDTO) session.getAttribute("guestSession");
         boolean isGuestOwner = (guest != null && guest.getGuestName().equals(writerName));
 
         if (!isMemberOwner && !isGuestOwner) {
@@ -332,7 +332,7 @@ public class CsController {
         boolean isOwner = (principal != null && principal.getName().equals(writerName));
         if (!isOwner) {
             com.spring.app.jh.security.domain.Session_GuestDTO guest =
-                (com.spring.app.jh.security.domain.Session_GuestDTO) session.getAttribute("Session_GuestDTO");
+                (com.spring.app.jh.security.domain.Session_GuestDTO) session.getAttribute("guestSession");
             if (guest != null && guest.getGuestName().equals(writerName)) {
                 isOwner = true;
             }
