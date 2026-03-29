@@ -92,7 +92,7 @@ public class AdminHqShuttleOpsService_imple implements AdminHqShuttleOpsService 
             throw new IllegalStateException("생성된 노선 ID를 찾을 수 없습니다.");
         }
 
-        shuttleDao.insertTimetable(hotelId, routeId, departTime, capacity);
+        shuttleDao.insertTimetable(hotelId, routeId, departTime, capacity, routeType);
 
         shuttleDao.extendSlotStock(hotelId, LocalDate.now(), LocalDate.now().plusDays(90));
 

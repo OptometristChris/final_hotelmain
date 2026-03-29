@@ -38,63 +38,75 @@
   <!-- 3. 노선 목록                                                    -->
   <!-- =============================================================== -->
   <select id="selectRouteList"
-          parameterType="int"
-          resultType="ShuttleRouteDTO">
-    SELECT
-      r.route_id          AS routeId,
-      r.fk_hotel_id       AS fkHotelId,
-      h.hotel_name        AS hotelName,
-      r.route_type        AS routeType,
-      r.start_place_code  AS startPlaceCode,
-      sp.place_name       AS startPlaceName,
-      r.end_place_code    AS endPlaceCode,
-      ep.place_name       AS endPlaceName,
-      r.route_name        AS routeName,
-      r.active_yn         AS activeYn
-    FROM tbl_shuttle_route r
-    JOIN tbl_hotel h
-      ON h.hotel_id = r.fk_hotel_id
-    JOIN tbl_shuttle_place sp
-      ON sp.place_code = r.start_place_code
-    JOIN tbl_shuttle_place ep
-      ON ep.place_code = r.end_place_code
-    WHERE r.fk_hotel_id = #{hotelId}
-    ORDER BY r.route_type, r.route_id
-  </select>
+	        parameterType="int"
+	        resultType="ShuttleRouteDTO">
+	  SELECT
+	    r.route_id          AS routeId,
+	    r.fk_hotel_id       AS fkHotelId,
+	    h.hotel_name        AS hotelName,
+	    r.route_type        AS routeType,
+	    r.start_place_code  AS startPlaceCode,
+	    sp.place_name       AS startPlaceName,
+	    r.end_place_code    AS endPlaceCode,
+	    ep.place_name       AS endPlaceName,
+	    r.route_name        AS routeName,
+	    r.active_yn         AS activeYn
+	  FROM tbl_shuttle_route r
+	  JOIN tbl_hotel h
+	    ON h.hotel_id = r.fk_hotel_id
+	  JOIN tbl_shuttle_place sp
+	    ON sp.place_code = r.start_place_code
+	  JOIN tbl_shuttle_place ep
+	    ON ep.place_code = r.end_place_code
+	  WHERE r.fk_hotel_id = #{hotelId}
+	    AND EXISTS (
+	      SELECT 1
+	      FROM tbl_shuttle_timetable t
+	      WHERE t.fk_route_id = r.route_id
+	        AND t.fk_hotel_id = r.fk_hotel_id
+	        AND t.depart_time IS NOT NULL
+	        AND t.capacity IS NOT NULL
+	        AND t.capacity > 0
+	    )
+	  ORDER BY r.route_type, r.route_id
+	</select>
 
 
   <!-- =============================================================== -->
   <!-- 4. 시간표 목록                                                  -->
   <!-- =============================================================== -->
   <select id="selectTimetableList"
-          parameterType="int"
-          resultType="ShuttleAdminTimetableDTO">
-    SELECT
-      t.timetable_id       AS timetableId,
-      t.fk_route_id        AS fkRouteId,
-      r.fk_hotel_id        AS fkHotelId,
-      h.hotel_name         AS hotelName,
-      r.route_type         AS routeType,
-      r.route_name         AS routeName,
-      r.start_place_code   AS startPlaceCode,
-      sp.place_name        AS startPlaceName,
-      r.end_place_code     AS endPlaceCode,
-      ep.place_name        AS endPlaceName,
-      t.depart_time        AS departTime,
-      t.capacity           AS capacity,
-      t.active_yn          AS activeYn
-    FROM tbl_shuttle_timetable t
-    JOIN tbl_shuttle_route r
-      ON r.route_id = t.fk_route_id
-    JOIN tbl_hotel h
-      ON h.hotel_id = r.fk_hotel_id
-    JOIN tbl_shuttle_place sp
-      ON sp.place_code = r.start_place_code
-    JOIN tbl_shuttle_place ep
-      ON ep.place_code = r.end_place_code
-    WHERE r.fk_hotel_id = #{hotelId}
-    ORDER BY r.route_type, r.route_id, t.depart_time
-  </select>
+	        parameterType="int"
+	        resultType="ShuttleAdminTimetableDTO">
+	  SELECT
+	    t.timetable_id       AS timetableId,
+	    t.fk_route_id        AS fkRouteId,
+	    r.fk_hotel_id        AS fkHotelId,
+	    h.hotel_name         AS hotelName,
+	    r.route_type         AS routeType,
+	    r.route_name         AS routeName,
+	    r.start_place_code   AS startPlaceCode,
+	    sp.place_name        AS startPlaceName,
+	    r.end_place_code     AS endPlaceCode,
+	    ep.place_name        AS endPlaceName,
+	    t.depart_time        AS departTime,
+	    t.capacity           AS capacity,
+	    t.active_yn          AS activeYn
+	  FROM tbl_shuttle_timetable t
+	  JOIN tbl_shuttle_route r
+	    ON r.route_id = t.fk_route_id
+	  JOIN tbl_hotel h
+	    ON h.hotel_id = r.fk_hotel_id
+	  JOIN tbl_shuttle_place sp
+	    ON sp.place_code = r.start_place_code
+	  JOIN tbl_shuttle_place ep
+	    ON ep.place_code = r.end_place_code
+	  WHERE r.fk_hotel_id = #{hotelId}
+	    AND t.depart_time IS NOT NULL
+	    AND t.capacity IS NOT NULL
+	    AND t.capacity > 0
+	  ORDER BY r.route_type, r.route_id, t.depart_time
+	</select>
 
 
   <!-- =============================================================== -->
@@ -329,25 +341,27 @@
 	<!-- 시간표 1건 생성 -->
 	<insert id="insertTimetable">
 	    INSERT INTO tbl_shuttle_timetable
-		(
-		    timetable_id,
-		    fk_hotel_id,
-		    fk_route_id,
-		    depart_time,
-		    capacity,
-		    active_yn,
-		    created_at
-		)
-		VALUES
-		(
-		    seq_tbl_shuttle_timetable.NEXTVAL,
-		    #{hotelId},
-		    #{routeId},
-		    #{departTime},
-		    #{capacity},
-		    'Y',
-		    SYSTIMESTAMP
-		)
+	    (
+	        timetable_id,
+	        fk_hotel_id,
+	        fk_route_id,
+	        leg_type,
+	        depart_time,
+	        capacity,
+	        active_yn,
+	        created_at
+	    )
+	    VALUES
+	    (
+	        seq_tbl_shuttle_timetable.NEXTVAL,
+	        #{hotelId},
+	        #{routeId},
+	        #{legType},
+	        #{departTime},
+	        #{capacity},
+	        'Y',
+	        SYSTIMESTAMP
+	    )
 	</insert>
 	
 	
