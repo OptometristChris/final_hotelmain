@@ -259,10 +259,9 @@
 	  MERGE INTO tbl_shuttle_slot_stock s
 	  USING (
 	    SELECT
-	      seq_tbl_shuttle_slot_stock.NEXTVAL AS stock_id,
-	      t.timetable_id                     AS fk_timetable_id,
-	      d.ride_date                        AS ride_date,
-	      t.capacity                         AS capacity
+	      t.timetable_id AS fk_timetable_id,
+	      d.ride_date    AS ride_date,
+	      t.capacity     AS capacity
 	    FROM tbl_shuttle_timetable t
 	    JOIN tbl_shuttle_route r
 	      ON r.route_id = t.fk_route_id
@@ -291,7 +290,7 @@
 	    )
 	    VALUES
 	    (
-	      src.stock_id,
+	      seq_tbl_shuttle_slot_stock.NEXTVAL,
 	      src.fk_timetable_id,
 	      src.ride_date,
 	      src.capacity,
@@ -375,6 +374,7 @@
 	      AND route_id = #{routeId}
 	      AND active_yn = 'N'
 	</update>
+	
 	
 	<!-- 해당 노선 시간표 재활성화 -->
 	<update id="activateTimetableByRoute">
