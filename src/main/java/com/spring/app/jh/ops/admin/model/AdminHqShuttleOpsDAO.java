@@ -45,8 +45,8 @@ public interface AdminHqShuttleOpsDAO {
 			            @Param("capacity") int capacity);
 	
 	int extendSlotStock(@Param("hotelId") int hotelId,
-	                @Param("startDate") LocalDate startDate,
-	                @Param("endDate") LocalDate endDate);
+			            @Param("startDate") java.sql.Date startDate,
+			            @Param("days") int days);
 	
 	int activateRoute(@Param("hotelId") int hotelId,
 	              @Param("routeId") long routeId);

@@ -256,47 +256,45 @@
   <!-- 11. slot_stock 기간 연장                                         -->
   <!-- =============================================================== -->
 	<insert id="extendSlotStock">
-	  MERGE INTO tbl_shuttle_slot_stock s
-	  USING (
-	    SELECT
-	      t.timetable_id AS fk_timetable_id,
-	      d.ride_date    AS ride_date,
-	      t.capacity     AS capacity
-	    FROM tbl_shuttle_timetable t
-	    JOIN tbl_shuttle_route r
-	      ON r.route_id = t.fk_route_id
-	    CROSS JOIN (
-	      SELECT #{startDate} + LEVEL - 1 AS ride_date
-	      FROM dual
-	      CONNECT BY LEVEL &lt;= (#{endDate} - #{startDate}) + 1
-	    ) d
-	    WHERE r.fk_hotel_id = #{hotelId}
-	      AND r.active_yn = 'Y'
-	      AND t.active_yn = 'Y'
-	  ) src
-	  ON (
-	    s.fk_timetable_id = src.fk_timetable_id
-	    AND s.ride_date = src.ride_date
-	  )
-	  WHEN NOT MATCHED THEN
-	    INSERT
-	    (
-	      stock_id,
-	      fk_timetable_id,
-	      ride_date,
-	      capacity,
-	      booked_qty,
-	      updated_at
+	    MERGE INTO tbl_shuttle_slot_stock s
+	    USING (
+	        SELECT
+	            t.timetable_id AS fk_timetable_id,
+	            (#{startDate} + LEVEL - 1) AS ride_date,
+	            t.capacity AS capacity
+	        FROM tbl_shuttle_timetable t
+	        JOIN tbl_shuttle_route r
+	          ON r.route_id = t.fk_route_id
+	        WHERE r.fk_hotel_id = #{hotelId}
+	          AND r.active_yn = 'Y'
+	          AND t.active_yn = 'Y'
+	        CONNECT BY LEVEL &lt;= #{days}
+	           AND PRIOR t.timetable_id = t.timetable_id
+	           AND PRIOR SYS_GUID() IS NOT NULL
+	    ) src
+	    ON (
+	        s.fk_timetable_id = src.fk_timetable_id
+	        AND s.ride_date = src.ride_date
 	    )
-	    VALUES
-	    (
-	      seq_tbl_shuttle_slot_stock.NEXTVAL,
-	      src.fk_timetable_id,
-	      src.ride_date,
-	      src.capacity,
-	      0,
-	      SYSTIMESTAMP
-	    )
+	    WHEN NOT MATCHED THEN
+	      INSERT
+	      (
+	        stock_id,
+	        fk_timetable_id,
+	        ride_date,
+	        capacity,
+	        booked_qty,
+	        updated_at
+	      )
+	      VALUES
+	      (
+	        seq_tbl_shuttle_slot_stock.NEXTVAL,
+	        src.fk_timetable_id,
+	        src.ride_date,
+	        src.capacity,
+	        0,
+	        SYSTIMESTAMP
+	      )
 	</insert>
 
 

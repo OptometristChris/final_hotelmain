@@ -87,7 +87,7 @@ public class AdminHqShuttleOpsService_imple implements AdminHqShuttleOpsService 
         shuttleDao.insertRoute(hotelId, routeType, startPlaceCode, endPlaceCode, routeName);
 
         Long routeId = shuttleDao.selectLastRouteId(
-            hotelId, routeType, startPlaceCode, endPlaceCode, routeName
+                hotelId, routeType, startPlaceCode, endPlaceCode, routeName
         );
 
         if (routeId == null) {
@@ -95,15 +95,22 @@ public class AdminHqShuttleOpsService_imple implements AdminHqShuttleOpsService 
         }
 
         shuttleDao.insertTimetable(
-            hotelId,
-            routeId,
-            routeType,
-            startPlaceCode,
-            departTime,
-            capacity
+                hotelId,
+                routeId,
+                routeType,
+                startPlaceCode,
+                departTime,
+                capacity
         );
 
-        shuttleDao.extendSlotStock(hotelId, LocalDate.now(), LocalDate.now().plusDays(90));
+        LocalDate startLocalDate = LocalDate.now();
+        int days = 91; // 오늘 포함 90일 뒤까지 생성
+
+        shuttleDao.extendSlotStock(
+                hotelId,
+                java.sql.Date.valueOf(startLocalDate),
+                days
+        );
 
         return 1;
     }
