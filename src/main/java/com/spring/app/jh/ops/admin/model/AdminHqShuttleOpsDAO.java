@@ -37,9 +37,10 @@ public interface AdminHqShuttleOpsDAO {
 	                   @Param("endPlaceCode") String endPlaceCode,
 	                   @Param("routeName") String routeName);
 	
-	int insertTimetable(@Param("routeId") long routeId,
-	                @Param("departTime") String departTime,
-	                @Param("capacity") int capacity);
+	int insertTimetable(@Param("hotelId") int hotelId,
+			            @Param("routeId") long routeId,
+			            @Param("departTime") String departTime,
+			            @Param("capacity") int capacity);
 	
 	int extendSlotStock(@Param("hotelId") int hotelId,
 	                @Param("startDate") LocalDate startDate,

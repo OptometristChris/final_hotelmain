@@ -329,23 +329,25 @@
 	<!-- 시간표 1건 생성 -->
 	<insert id="insertTimetable">
 	    INSERT INTO tbl_shuttle_timetable
-	    (
-	        timetable_id,
-	        fk_route_id,
-	        depart_time,
-	        capacity,
-	        active_yn,
-	        created_at
-	    )
-	    VALUES
-	    (
-	        seq_tbl_shuttle_timetable.NEXTVAL,
-	        #{routeId},
-	        #{departTime},
-	        #{capacity},
-	        'Y',
-	        SYSTIMESTAMP
-	    )
+		(
+		    timetable_id,
+		    fk_hotel_id,
+		    fk_route_id,
+		    depart_time,
+		    capacity,
+		    active_yn,
+		    created_at
+		)
+		VALUES
+		(
+		    seq_tbl_shuttle_timetable.NEXTVAL,
+		    #{hotelId},
+		    #{routeId},
+		    #{departTime},
+		    #{capacity},
+		    'Y',
+		    SYSTIMESTAMP
+		)
 	</insert>
 	
 	
