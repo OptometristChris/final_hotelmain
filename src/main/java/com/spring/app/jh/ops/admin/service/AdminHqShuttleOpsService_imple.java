@@ -86,13 +86,22 @@ public class AdminHqShuttleOpsService_imple implements AdminHqShuttleOpsService 
 
         shuttleDao.insertRoute(hotelId, routeType, startPlaceCode, endPlaceCode, routeName);
 
-        Long routeId = shuttleDao.selectLastRouteId(hotelId, routeType, startPlaceCode, endPlaceCode, routeName);
+        Long routeId = shuttleDao.selectLastRouteId(
+            hotelId, routeType, startPlaceCode, endPlaceCode, routeName
+        );
 
         if (routeId == null) {
             throw new IllegalStateException("생성된 노선 ID를 찾을 수 없습니다.");
         }
 
-        shuttleDao.insertTimetable(hotelId, routeId, departTime, capacity, routeType);
+        shuttleDao.insertTimetable(
+            hotelId,
+            routeId,
+            routeType,
+            startPlaceCode,
+            departTime,
+            capacity
+        );
 
         shuttleDao.extendSlotStock(hotelId, LocalDate.now(), LocalDate.now().plusDays(90));
 
