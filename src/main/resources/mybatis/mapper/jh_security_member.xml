@@ -404,66 +404,104 @@
 	<select id="selectMypagePromoList"
 	        resultType="com.spring.app.js.promotion.domain.PromotionDTO">
 	
-	    SELECT *
-	    FROM (
-	        /* 1. 최근 판매로 이어진 프로모션 중 판매량 1위 */
+	    WITH valid_promo AS (
 	        SELECT
 	            pm.promotion_id,
 	            pm.fk_hotel_id,
 	            pb.title,
-	            pb.image_url,
+	            REPLACE(pb.image_url, '/final_hotel', '') AS image_url,
 	            pb.benefits,
 	            pm.price,
-	            pm.start_date,
-	            pm.end_date,
+	            TO_CHAR(pm.start_date, 'YYYY-MM-DD') AS start_date,
+	            TO_CHAR(pm.end_date, 'YYYY-MM-DD') AS end_date,
 	            pm.discount_rate,
-	            1 AS sort_no
+	            pm.created_at,
+	            NVL(sales.sales_cnt, 0) AS sales_cnt
 	        FROM promotion_master pm
 	        JOIN promotion_banner pb
 	          ON pb.fk_promotion_id = pm.promotion_id
-	        JOIN (
-	            SELECT promotion_id
+	        LEFT JOIN (
+	            SELECT
+	                promotion_id,
+	                COUNT(*) AS sales_cnt
 	            FROM reservation_promotion_mapping
 	            GROUP BY promotion_id
-	            ORDER BY COUNT(*) DESC, promotion_id DESC
-	            FETCH FIRST 1 ROWS ONLY
-	        ) best
-	          ON best.promotion_id = pm.promotion_id
+	        ) sales
+	          ON sales.promotion_id = pm.promotion_id
+	        WHERE pm.is_active = 1
+	          AND pb.active_yn = 'Y'
+	          AND pb.banner_type = 'CARD'
+	          AND TRUNC(SYSDATE) BETWEEN TRUNC(pm.start_date) AND TRUNC(pm.end_date)
+	    ),
 	
-	        UNION ALL
+	    best_one AS (
+	        SELECT
+	            promotion_id,
+	            fk_hotel_id,
+	            title,
+	            image_url,
+	            benefits,
+	            price,
+	            start_date,
+	            end_date,
+	            discount_rate,
+	            1 AS sort_no
+	        FROM valid_promo
+	        WHERE sales_cnt > 0
+	        ORDER BY sales_cnt DESC, promotion_id DESC
+	        FETCH FIRST 1 ROWS ONLY
+	    ),
 	
-	        /* 2~3. 최신 등록순 2개 */
-	        SELECT *
-	        FROM (
-	            SELECT
-	                pm.promotion_id,
-	                pm.fk_hotel_id,
-	                pb.title,
-	                pb.image_url,
-	                pb.benefits,
-	                pm.price,
-	                pm.start_date,
-	                pm.end_date,
-	                pm.discount_rate,
-	                2 AS sort_no
-	            FROM promotion_master pm
-	            JOIN promotion_banner pb
-	              ON pb.fk_promotion_id = pm.promotion_id
-	            WHERE pm.promotion_id NOT IN (
-	                SELECT promotion_id
-	                FROM (
-	                    SELECT promotion_id
-	                    FROM reservation_promotion_mapping
-	                    GROUP BY promotion_id
-	                    ORDER BY COUNT(*) DESC, promotion_id DESC
-	                    FETCH FIRST 1 ROWS ONLY
-	                )
-	            )
-	            ORDER BY pm.created_at DESC, pm.promotion_id DESC
-	            FETCH FIRST 2 ROWS ONLY
+	    latest_ranked AS (
+	        SELECT
+	            vp.promotion_id,
+	            vp.fk_hotel_id,
+	            vp.title,
+	            vp.image_url,
+	            vp.benefits,
+	            vp.price,
+	            vp.start_date,
+	            vp.end_date,
+	            vp.discount_rate,
+	            2 AS sort_no,
+	            ROW_NUMBER() OVER (
+	                ORDER BY vp.created_at DESC, vp.promotion_id DESC
+	            ) AS rn
+	        FROM valid_promo vp
+	        WHERE vp.promotion_id NOT IN (
+	            SELECT promotion_id FROM best_one
 	        )
 	    )
-	    ORDER BY sort_no, promotion_id
+	
+	    SELECT
+	        promotion_id,
+	        fk_hotel_id,
+	        title,
+	        image_url,
+	        benefits,
+	        price,
+	        start_date,
+	        end_date,
+	        discount_rate
+	    FROM best_one
+	
+	    UNION ALL
+	
+	    SELECT
+	        promotion_id,
+	        fk_hotel_id,
+	        title,
+	        image_url,
+	        benefits,
+	        price,
+	        start_date,
+	        end_date,
+	        discount_rate
+	    FROM latest_ranked
+	    WHERE rn &lt;= CASE
+	                   WHEN EXISTS (SELECT 1 FROM best_one) THEN 2
+	                   ELSE 3
+	                END
 	
 	</select>
 
