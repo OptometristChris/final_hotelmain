@@ -3,7 +3,7 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기시 공백�
     name: final-hotelmain
  
   profiles: #실행환경(dev(개발),test(테스트),local(로컬),prod(운영))
-    active: local
+    active: ${SPRING_PROFILES_ACTIVE:local}
 
   thymeleaf:
     cache: false
@@ -15,8 +15,8 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기시 공백�
       client:
         registration:
           kakao:
-            client-id: d377529b8bcc772efadf510ff661e587
-            client-secret: dl4n3gTCmte1RmqnM9RMffPUVz5cvFgm
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
@@ -25,8 +25,8 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기시 공백�
               - profile_nickname
 
           naver:
-            client-id: Liwm7IYxfBKDxRlM6aii
-            client-secret: WK26XsRYYK
+            client-id: ${NAVER_CLIENT_ID}
+            client-secret: ${NAVER_CLIENT_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
@@ -48,9 +48,10 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기시 공백�
 
   datasource-finalorauser1: #첫번째 DB 접속. 이름을 다르게 해서 쓰되 _ 가 들어가면 작동안됨.
     driver-class-name: oracle.jdbc.OracleDriver
-    jdbcUrl: jdbc:oracle:thin:@211.63.89.70:1521:xe    # SID 방식  
-    username: final_orauser1
-    password: sistsix
+    # jdbcUrl: jdbc:oracle:thin:@211.63.89.70:1521:xe    # SID 방식  
+    jdbcUrl: ${DB_JDBC_URL}    # SID 방식  (127.0.0.1 = localhost)
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     type: com.zaxxer.hikari.HikariDataSource
     hikari: #커넥션풀 
       minimum-idle: 5        # 최소 유휴 커넥션
@@ -78,8 +79,8 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기시 공백�
   mail:
     host: smtp.gmail.com
     port: 587
-    username: jehyung00000@gmail.com
-    password: fiusxjigotlrzqzy
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -101,7 +102,7 @@ logging: #로그 지정
     org.springframework.cloud.netflix.eureka: WARN
 
 server:
-  port: 8001
+  port: ${SERVER_PORT:8001}
   forward-headers-strategy: framework
   servlet:
     # 기존 /final_hotel context-path 제거
@@ -122,21 +123,21 @@ eureka:
       # 52.78.215.25:8761 / localhost
 
 iamport:
-  api-key: 5112162085145453
-  api-secret: Z2DoVZFrrjMwOs8Jbi6sxs30pW4LukrfdyghYaj9P4cDxf08qlVNxDjX8GoKKj15so3nF6ZoiCOfISo2
+  api-key: ${IAMPORT_API_KEY}
+  api-secret: ${IAMPORT_API_SECRET}
 
 app:
   mail:
-    from: "CIEL <jehyung00000@gmail.com>"
+    from: ${APP_MAIL_FROM:CIEL <noreply@example.com>}
     
 file:
   images-dir: /app/file_images
 
 coolsms:
   api:
-    key: NCSKSXJ1S7X4BSFB
-    secret: G6ZSVCJAAXIARC4EGOJM4D2HVKWKJKMG
-  from: 01095994076
+    key: ${COOLSMS_API_KEY}
+    secret: ${COOLSMS_API_SECRET}
+  from: ${COOLSMS_FROM}
 
 jwt:
-  secret: e37ea07e222779c4066309ce10e47004a9718bbbc8e1062b7b4bca9b5d89a83d
+  secret: ${JWT_SECRET}
