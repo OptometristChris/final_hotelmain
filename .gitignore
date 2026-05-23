@@ -55,3 +55,5 @@ src/main/resources/application-prod.yml
 *.key
 *.p12
 *.jks
+
+src/main/resources/application.yml(로컬연습용)
