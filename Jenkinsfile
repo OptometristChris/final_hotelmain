@@ -28,6 +28,26 @@ pipeline {
 
                     chmod +x ./gradlew
                     ./gradlew clean build -x test --no-daemon
+
+                    find build/libs \
+                        -maxdepth 1 \
+                        -type f \
+                        -name '*-plain.jar' \
+                        -delete
+                    
+                    JAR_COUNT="$(
+                        find build/libs \
+                            -maxdepth 1 \
+                            -type f \
+                            -name '*.jar' |
+                        wc -l
+                    )"
+                    
+                    if [ "$JAR_COUNT" -ne 1 ]; then
+                        echo "배포 대상 JAR 파일 수가 1개가 아닙니다."
+                        find build/libs -maxdepth 1 -type f -name '*.jar'
+                        exit 1
+                    fi
                 '''
             }
         }
@@ -90,10 +110,7 @@ pipeline {
                             -o StrictHostKeyChecking=accept-new \
                             -o UserKnownHostsFile="$KNOWN_HOSTS" \
                             "$SSH_TARGET" \
-                            "DOCKER_CONFIG='$REMOTE_DOCKER_CONFIG'
-                             docker login
-                             -u '$DOCKER_USER'
-                             --password-stdin"
+                            "DOCKER_CONFIG='$REMOTE_DOCKER_CONFIG' docker login -u '$DOCKER_USER' --password-stdin"
 
                         tar -cf - \
                             Dockerfile \
