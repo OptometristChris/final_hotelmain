@@ -1,18 +1,20 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = "jehyung/final_hotelmain"
-        SERVER_IP = "52.78.215.25"
-        CONTAINER_NAME = "final_hotelmain"
+    options {
+        skipDefaultCheckout(true)
+        disableConcurrentBuilds()
+        timestamps()
     }
 
-    tools {
-        jdk 'jdk17'   // Jenkins 관리 > Tools > JDK installations 의 JDK Name 에 입력한 이름
+    environment {
+        DOCKER_IMAGE  = 'jehyung/final_hotelmain'
+        SERVICE_NAME  = 'hotelmain'
+        CONTAINER_NAME = 'final_hotelmain'
+        DEPLOY_DIR    = '/home/chris/ciel'
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -21,97 +23,278 @@ pipeline {
 
         stage('Build with Gradle') {
             steps {
-                sh 'chmod +x ./gradlew'
-                sh './gradlew clean build -x test --no-daemon'
+                sh '''
+                    set -eu
+
+                    chmod +x ./gradlew
+                    ./gradlew clean build -x test --no-daemon
+                '''
             }
         }
 
         stage('Docker Build & Push') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub_info', // 반드시 Jenkins 설치시 New credentials 에서 Username with password 에서 입력하였던 ID 이름을 넣어야 함. 
-                    usernameVariable: 'DOCKER_USER', // Jenkins 내부에서 쓰는 환경 변수 이름이므로 그대로 써야함. 바꾸면 안됨. 
-                    passwordVariable: 'DOCKER_PASS'  // Jenkins 내부에서 쓰는 환경 변수 이름이므로 그대로 써야함. 바꾸면 안됨. 
-                )]) {
-
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub_info',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    ),
+                    sshUserPrivateKey(
+                        credentialsId: 'CIEL_MINIPC_SSH',
+                        keyFileVariable: 'CIEL_SSH_KEY',
+                        usernameVariable: 'CIEL_SSH_USER'
+                    )
+                ]) {
                     sh '''
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker build -t $DOCKER_IMAGE:latest .
-                        docker push $DOCKER_IMAGE:latest
+                        set -eu
+                        set +x
+
+                        KNOWN_HOSTS="$(mktemp)"
+                        JOB_SAFE="$(
+                            printf '%s' "$JOB_NAME" |
+                            tr -c 'A-Za-z0-9_.-' '_'
+                        )"
+
+                        REMOTE_DOCKER_CONFIG="/tmp/ciel-docker-${JOB_SAFE}-${BUILD_NUMBER}"
+                        SSH_TARGET="${CIEL_SSH_USER}@127.0.0.1"
+
+                        cleanup() {
+                            ssh -T \
+                                -i "$CIEL_SSH_KEY" \
+                                -o BatchMode=yes \
+                                -o StrictHostKeyChecking=accept-new \
+                                -o UserKnownHostsFile="$KNOWN_HOSTS" \
+                                "$SSH_TARGET" \
+                                "rm -rf '$REMOTE_DOCKER_CONFIG'" \
+                                >/dev/null 2>&1 || true
+
+                            rm -f "$KNOWN_HOSTS"
+                        }
+
+                        trap cleanup EXIT
+
+                        ssh -T \
+                            -i "$CIEL_SSH_KEY" \
+                            -o BatchMode=yes \
+                            -o StrictHostKeyChecking=accept-new \
+                            -o UserKnownHostsFile="$KNOWN_HOSTS" \
+                            "$SSH_TARGET" \
+                            "mkdir -p '$REMOTE_DOCKER_CONFIG' &&
+                             chmod 700 '$REMOTE_DOCKER_CONFIG'"
+
+                        printf '%s' "$DOCKER_PASS" |
+                        ssh -T \
+                            -i "$CIEL_SSH_KEY" \
+                            -o BatchMode=yes \
+                            -o StrictHostKeyChecking=accept-new \
+                            -o UserKnownHostsFile="$KNOWN_HOSTS" \
+                            "$SSH_TARGET" \
+                            "DOCKER_CONFIG='$REMOTE_DOCKER_CONFIG'
+                             docker login
+                             -u '$DOCKER_USER'
+                             --password-stdin"
+
+                        tar -cf - \
+                            Dockerfile \
+                            build/libs/*.jar |
+                        ssh -T \
+                            -i "$CIEL_SSH_KEY" \
+                            -o BatchMode=yes \
+                            -o StrictHostKeyChecking=accept-new \
+                            -o UserKnownHostsFile="$KNOWN_HOSTS" \
+                            "$SSH_TARGET" "
+                                set -eu
+
+                                export DOCKER_CONFIG='$REMOTE_DOCKER_CONFIG'
+
+                                docker build \
+                                    --pull \
+                                    -t '$DOCKER_IMAGE:latest' \
+                                    -
+
+                                docker push '$DOCKER_IMAGE:latest'
+                            "
                     '''
                 }
             }
         }
 
-        stage('Deploy to Server') {
-		    steps {
-		        withCredentials([
-		            string(credentialsId: 'HOTEL_DB_JDBC_URL', variable: 'DB_JDBC_URL'),
-		            string(credentialsId: 'HOTEL_DB_USERNAME', variable: 'DB_USERNAME'),
-		            string(credentialsId: 'HOTEL_DB_PASSWORD', variable: 'DB_PASSWORD'),
-		
-		            string(credentialsId: 'HOTEL_MAIL_USERNAME', variable: 'MAIL_USERNAME'),
-		            string(credentialsId: 'HOTEL_MAIL_PASSWORD', variable: 'MAIL_PASSWORD'),
-		            string(credentialsId: 'HOTEL_APP_MAIL_FROM', variable: 'APP_MAIL_FROM'),
-		
-		            string(credentialsId: 'HOTEL_KAKAO_CLIENT_ID', variable: 'KAKAO_CLIENT_ID'),
-		            string(credentialsId: 'HOTEL_KAKAO_CLIENT_SECRET', variable: 'KAKAO_CLIENT_SECRET'),
-		
-		            string(credentialsId: 'HOTEL_NAVER_CLIENT_ID', variable: 'NAVER_CLIENT_ID'),
-		            string(credentialsId: 'HOTEL_NAVER_CLIENT_SECRET', variable: 'NAVER_CLIENT_SECRET'),
-		
-		            string(credentialsId: 'HOTEL_IAMPORT_API_KEY', variable: 'IAMPORT_API_KEY'),
-		            string(credentialsId: 'HOTEL_IAMPORT_API_SECRET', variable: 'IAMPORT_API_SECRET'),
-		
-		            string(credentialsId: 'HOTEL_COOLSMS_API_KEY', variable: 'COOLSMS_API_KEY'),
-		            string(credentialsId: 'HOTEL_COOLSMS_API_SECRET', variable: 'COOLSMS_API_SECRET'),
-		            string(credentialsId: 'HOTEL_COOLSMS_FROM', variable: 'COOLSMS_FROM'),
-		
-		            string(credentialsId: 'HOTEL_JWT_SECRET', variable: 'JWT_SECRET')
-		        ]) {
-		            sshagent(['SERVER_SSH_KEY']) {
-		                sh """
-		                    ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP "
-		                        docker stop $CONTAINER_NAME || true
-		                        docker rm $CONTAINER_NAME || true
-		                        docker pull $DOCKER_IMAGE:latest
-		                        docker run -d \\
-		                          --name $CONTAINER_NAME \\
-		                          -p 8001:8001 \\
-		                          -v /home/ubuntu/file_images:/app/file_images \\
-		                          -e SPRING_PROFILES_ACTIVE=local \\
-		                          -e SERVER_PORT=8001 \\
-		                          -e DB_JDBC_URL='$DB_JDBC_URL' \\
-		                          -e DB_USERNAME='$DB_USERNAME' \\
-		                          -e DB_PASSWORD='$DB_PASSWORD' \\
-		                          -e MAIL_USERNAME='$MAIL_USERNAME' \\
-		                          -e MAIL_PASSWORD='$MAIL_PASSWORD' \\
-		                          -e APP_MAIL_FROM='$APP_MAIL_FROM' \\
-		                          -e KAKAO_CLIENT_ID='$KAKAO_CLIENT_ID' \\
-		                          -e KAKAO_CLIENT_SECRET='$KAKAO_CLIENT_SECRET' \\
-		                          -e NAVER_CLIENT_ID='$NAVER_CLIENT_ID' \\
-		                          -e NAVER_CLIENT_SECRET='$NAVER_CLIENT_SECRET' \\
-		                          -e IAMPORT_API_KEY='$IAMPORT_API_KEY' \\
-		                          -e IAMPORT_API_SECRET='$IAMPORT_API_SECRET' \\
-		                          -e COOLSMS_API_KEY='$COOLSMS_API_KEY' \\
-		                          -e COOLSMS_API_SECRET='$COOLSMS_API_SECRET' \\
-		                          -e COOLSMS_FROM='$COOLSMS_FROM' \\
-		                          -e JWT_SECRET='$JWT_SECRET' \\
-		                          $DOCKER_IMAGE:latest
-		                    "
-		                """
-		            }
-		        }
-		    }
-		}
+        stage('Deploy to MiniPC') {
+            steps {
+                withCredentials([
+                    file(
+                        credentialsId: 'CIEL_CREDENTIALS_ENC',
+                        variable: 'CIEL_CREDENTIALS_FILE'
+                    ),
+                    string(
+                        credentialsId: 'CIEL_EXPORT_PASSWORD',
+                        variable: 'CIEL_EXPORT_PASSWORD'
+                    ),
+                    sshUserPrivateKey(
+                        credentialsId: 'CIEL_MINIPC_SSH',
+                        keyFileVariable: 'CIEL_SSH_KEY',
+                        usernameVariable: 'CIEL_SSH_USER'
+                    )
+                ]) {
+                    sh '''
+                        set -eu
+                        set +x
+
+                        KNOWN_HOSTS="$(mktemp)"
+                        trap 'rm -f "$KNOWN_HOSTS"' EXIT
+
+                        REMOTE_SCRIPT_B64="$(cat <<'PY' | base64 -w 0
+import json
+import os
+import subprocess
+import sys
+
+data = json.load(sys.stdin)
+
+required = [
+    "DB_USERNAME",
+    "DB_PASSWORD",
+    "MAIL_USERNAME",
+    "MAIL_PASSWORD",
+    "APP_MAIL_FROM",
+    "KAKAO_CLIENT_ID",
+    "KAKAO_CLIENT_SECRET",
+    "NAVER_CLIENT_ID",
+    "NAVER_CLIENT_SECRET",
+    "IAMPORT_API_KEY",
+    "IAMPORT_API_SECRET",
+    "COOLSMS_API_KEY",
+    "COOLSMS_API_SECRET",
+    "COOLSMS_FROM",
+    "JWT_SECRET"
+]
+
+missing = [
+    key for key in required
+    if key not in data
+    or data[key] is None
+    or str(data[key]) == ""
+]
+
+if missing:
+    raise SystemExit(
+        "Missing credentials: " + ", ".join(missing)
+    )
+
+environment = os.environ.copy()
+
+for key in required:
+    environment[key] = str(data[key])
+
+deploy_directory = "/home/chris/ciel"
+
+subprocess.run(
+    [
+        "docker",
+        "compose",
+        "pull",
+        "hotelmain"
+    ],
+    cwd=deploy_directory,
+    env=environment,
+    check=True
+)
+
+subprocess.run(
+    [
+        "docker",
+        "compose",
+        "up",
+        "-d",
+        "--no-deps",
+        "hotelmain"
+    ],
+    cwd=deploy_directory,
+    env=environment,
+    check=True
+)
+PY
+)"
+
+                        openssl enc -d \
+                            -aes-256-cbc \
+                            -pbkdf2 \
+                            -iter 200000 \
+                            -in "$CIEL_CREDENTIALS_FILE" \
+                            -pass env:CIEL_EXPORT_PASSWORD |
+                        ssh -T \
+                            -i "$CIEL_SSH_KEY" \
+                            -o BatchMode=yes \
+                            -o StrictHostKeyChecking=accept-new \
+                            -o UserKnownHostsFile="$KNOWN_HOSTS" \
+                            "$CIEL_SSH_USER@127.0.0.1" \
+                            "python3 -c \\"import base64; exec(base64.b64decode('$REMOTE_SCRIPT_B64'))\\""
+
+                        ssh -T \
+                            -i "$CIEL_SSH_KEY" \
+                            -o BatchMode=yes \
+                            -o StrictHostKeyChecking=accept-new \
+                            -o UserKnownHostsFile="$KNOWN_HOSTS" \
+                            "$CIEL_SSH_USER@127.0.0.1" '
+                                set -eu
+
+                                STARTED=0
+
+                                for count in \
+                                    1 2 3 4 5 6 \
+                                    7 8 9 10 11 12
+                                do
+                                    STATUS="$(
+                                        docker inspect \
+                                            -f "{{.State.Status}}" \
+                                            final_hotelmain \
+                                            2>/dev/null || true
+                                    )"
+
+                                    if [ "$STATUS" != "running" ]; then
+                                        echo "HotelMain container status=$STATUS"
+                                        docker logs --tail 120 final_hotelmain || true
+                                        exit 1
+                                    fi
+
+                                    if docker logs final_hotelmain 2>&1 |
+                                        grep -q "Started "
+                                    then
+                                        STARTED=1
+                                        break
+                                    fi
+
+                                    sleep 5
+                                done
+
+                                echo "===== Container ====="
+
+                                docker ps \
+                                    --filter name=final_hotelmain \
+                                    --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"
+
+                                echo "===== Logs ====="
+
+                                docker logs \
+                                    --tail 120 \
+                                    final_hotelmain
+
+                                test "$STARTED" = "1"
+                            '
+                    '''
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo "Deployment completed successfully."
+            echo 'HotelMain build and MiniPC deployment completed.'
         }
+
         failure {
-            echo "Deployment failed."
+            echo 'HotelMain pipeline failed.'
         }
     }
 }
